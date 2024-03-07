@@ -2,6 +2,8 @@
 
 #include "3d.h"
 
+// https://microstudio.dev/community/articles/how-to-make-your-own-3d-3d-projection/37/
+
 int FOV = 120;
 
 void projecao3D(ponto *p)
@@ -22,7 +24,7 @@ void rotacao3D(ponto *p, int angulo)
 
     pAux.sX = p->z;
     pAux.sY = p->x;
-    
+
     p->rotX = cos(angulo) * p->sX - sin(angulo) * p->sY;
     p->rotY = sin(angulo) * p->sX + cos(angulo) * p->sY;
     p->rotZ = sin(angulo) * p->sX + cos(angulo) * p->sY;
