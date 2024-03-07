@@ -4,6 +4,8 @@
 
 #include "gfx_ptBR.h"
 
+// gcc example.c gfx.c gfx_ptBR.c -o example -lX11 -lm
+
 void gfx_triangulo(int x1, int y1, int x2, int y2, int x3, int y3, int corR, int corG, int corB)
 {
 	// Transforma os params em array
