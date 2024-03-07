@@ -42,6 +42,7 @@ void gfx_triangulo(int x1, int y1, int x2, int y2, int x3, int y3, int corR, int
 	}
 	pMinY = 3 - pMaxY - pMedY;
 
+	// DESENHA
 	float xI = ponto[pMinY][0];
 	float xF = xI;
 
@@ -62,7 +63,7 @@ void gfx_triangulo(int x1, int y1, int x2, int y2, int x3, int y3, int corR, int
 			xL2 = (int)xI;
 		}
 
-		// Draw HORIZONTAL LINE at Y=cY, from XL1 to xL2
+		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
 		for (int cX = xL1; cX <= xL2; cX++)
 		{
 			gfx_ponto(cX, cY, corR, corG, corB);
@@ -79,6 +80,7 @@ void gfx_triangulo(int x1, int y1, int x2, int y2, int x3, int y3, int corR, int
 		xF += deltaXF;
 	}
 
+	// VERTICES
 	// for (int c = 0; c < 3; c++)
 	// {
 	// gfx_ponto(p[c][0], p[c][1], 250, 250, 250);
