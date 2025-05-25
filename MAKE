@@ -1,2 +1,0 @@
-#!/bin/bash
-gcc example.c gfx.c gfx_ptBR.c -o example -lX11 -lm
