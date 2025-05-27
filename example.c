@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 		if (numFrameSel >= obj->numframes)
 			numFrameSel = obj->numframes - 1;
 		
-		usleep(10000);
+		usleep(20000);
 	}
 
 	freeObj3D(obj);
