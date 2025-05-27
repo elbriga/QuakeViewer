@@ -16,6 +16,9 @@ Version 2, 9/23/2011 - Fixes a bug that could result in jerky animation.
 
 #include "gfx.h"
 
+#include "doublebuffer_pixmap.h"
+DB db = {0};
+
 /*
 gfx_open creates several X11 objects, and stores them in globals
 for use by the other functions in the library.
@@ -71,8 +74,11 @@ void gfx_open( int width, int height, const char *title )
 
 	XSetForeground(gfx_display, gfx_gc, whiteColor);
 
-	// Wait for the MapNotify event
+	// Init Double Buffering
+	db_init(&db, gfx_display, gfx_window, width, height);
+	gfx_color(250, 2, 2);
 
+	// Wait for the MapNotify event
 	for(;;) {
 		XEvent e;
 		XNextEvent(gfx_display, &e);
@@ -85,27 +91,32 @@ void gfx_open( int width, int height, const char *title )
 
 void gfx_point( int x, int y )
 {
-	XDrawPoint(gfx_display,gfx_window,gfx_gc,x,y);
+	//XDrawPoint(gfx_display,gfx_window,gfx_gc,x,y);
+
+	db_point(&db, x, y);
 }
 
 /* Draw a line from (x1,y1) to (x2,y2) */
 
 void gfx_line( int x1, int y1, int x2, int y2 )
 {
-	XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
+	//XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
+
+	printf("TODO\n");
 }
 
 /* Change the current drawing color. */
 
 void gfx_color( int r, int g, int b )
 {
+/*
 	XColor color;
 
 	if(gfx_fast_color_mode) {
-		/* If this is a truecolor display, we can just pick the color directly. */
+		// If this is a truecolor display, we can just pick the color directly
 		color.pixel = ((b&0xff) | ((g&0xff)<<8) | ((r&0xff)<<16) );
 	} else {
-		/* Otherwise, we have to allocate it from the colormap of the display. */
+		// Otherwise, we have to allocate it from the colormap of the display
 		color.pixel = 0;
 		color.red = r<<8;
 		color.green = g<<8;
@@ -114,19 +125,24 @@ void gfx_color( int r, int g, int b )
 	}
 
 	XSetForeground(gfx_display, gfx_gc, color.pixel);
+*/
+
+	db_color(&db, r, g, b);
 }
 
 /* Clear the graphics window to the background color. */
 
 void gfx_clear()
 {
-	XClearWindow(gfx_display,gfx_window);
+	//XClearWindow(gfx_display,gfx_window);
+	db_clear(&db);
 }
 
 /* Change the current background color. */
 
 void gfx_clear_color( int r, int g, int b )
 {
+/*
 	XColor color;
 	color.pixel = 0;
 	color.red = r<<8;
@@ -137,6 +153,9 @@ void gfx_clear_color( int r, int g, int b )
 	XSetWindowAttributes attr;
 	attr.background_pixel = color.pixel;
 	XChangeWindowAttributes(gfx_display,gfx_window,CWBackPixel,&attr);
+*/
+
+	printf("TODO db_clear_color\n");
 }
 
 int gfx_event_waiting()
@@ -168,21 +187,13 @@ char gfx_wait()
 {
 	XEvent event;
 
-	gfx_flush();
-
-	while(1) {
-		XNextEvent(gfx_display,&event);
-
+	if (XCheckWindowEvent(gfx_display, gfx_window, 0xFFFFFFFF, &event)) {
 		if(event.type==KeyPress) {
-			saved_xpos = event.xkey.x;
-			saved_ypos = event.xkey.y;
 			return XLookupKeysym(&event.xkey,0);
-		} else if(event.type==ButtonPress) {
-			saved_xpos = event.xkey.x;
-			saved_ypos = event.xkey.y;
-			return event.xbutton.button;
 		}
 	}
+
+	return 0;
 }
 
 /* Return the X and Y coordinates of the last event. */
@@ -201,6 +212,8 @@ int gfx_ypos()
 
 void gfx_flush()
 {
-	XFlush(gfx_display);
+	//XFlush(gfx_display);
+
+	db_swap_buffers(&db);
 }
 

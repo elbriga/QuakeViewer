@@ -1,144 +1,138 @@
-// sdltest.c
-#ifdef _WIN32a
-#include "SDL.h"   /* All SDL App's need this */
-#else
-#include<linux/time.h>
-#define __timespec_defined 1
-#define __timeval_defined 1
-#define __itimerspec_defined 1
-#include "SDL2/SDL.h"
-#endif
-#include <time.h>
+#include <X11/Xlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "hr_time.h"
 
+/*
+COMPILAR COM
+gcc teste.c -o teste -lX11 -lm
+*/
 
-#define QUITKEY SDLK_ESCAPE
-#define WIDTH 1024
-#define HEIGHT 768
+typedef struct {
+    int width, height;
+    Display *display;
+    Window window;
+    GC gc;
+    Pixmap back_buffer;
+} DB;
 
-SDL_Window* screen = NULL;
-SDL_Renderer* renderer;
-SDL_Event event;
-SDL_Rect source, destination, dst;
-
-int errorCount = 0;
-int keypressed;
-int rectCount = 0;
-stopWatch s;
-
-/* returns a number between 1 and max */
-int Random(int max) {
-	return (rand() % max) + 1;
-}
-
-void LogError(char* msg) {
-	printf("%s\n", msg);
-	errorCount++;
-}
-
-/* Sets Window caption according to state - eg in debug mode or showing fps */
-void SetCaption(char* msg) {
-	SDL_SetWindowTitle(screen, msg);
-}
-
-/* Initialize all setup, set screen mode, load images etc */
-void InitSetup() {
-	srand((int)time(NULL));
-	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, SDL_WINDOW_SHOWN, &screen, &renderer);
-	if (!screen) {
-		LogError("InitSetup failed to create window");
-	}
-	SetCaption("Example One");
-}
-
-/* Cleans up after game over */
-void FinishOff() {
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(screen);
-	//Quit SDL
-	SDL_Quit();
-	exit(0);
-}
-
-/* read a character */
-char getaChar() {
-	int result = -1;
-
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_KEYDOWN)
-		{
-			result = event.key.keysym.sym;
-			break;
-		}
-	}
-	return result;
-}
-
-void DrawRandomRectangle() {
-	char buff[20];
-	SDL_Rect rect;
-	SDL_SetRenderDrawColor(renderer, Random(256) - 1, Random(256) - 1, Random(256) - 1, 255);
-	rect.h = 120;// Random(100) + 20;
-	rect.w = 120;// Random(100) + 20;
-	rect.y = Random(HEIGHT - rect.h - 1);
-	rect.x = Random(WIDTH - rect.w - 1);
-	SDL_RenderFillRect(renderer, &rect);
-
-	rectCount++;
-	if (rectCount % 100000 == 0) {
-		SDL_RenderPresent(renderer);
-		stopTimer(&s);
-#ifdef _WIN32
-		sprintf_s(buff, sizeof(buff), "%10.6f", getElapsedTime(&s));
-#else
-		snprintf(buff, sizeof(buff),"%10.6f",diff(&s));
-#endif
-		SetCaption(buff);
-		startTimer(&s);
-	}
-}
-
-/* main game loop. Handles demo mode, high score and game play */
-void GameLoop() {
-	int gameRunning = 1;
-	startTimer(&s);
-	while (gameRunning)
-	{
-		DrawRandomRectangle();
-
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_KEYDOWN:
-				keypressed = event.key.keysym.sym;
-				if (keypressed == QUITKEY)
-				{
-					gameRunning = 0;
-					break;
-				}
-
-				break;
-			case SDL_QUIT: /* if mouse click to close window */
-			{
-				gameRunning = 0;
-				break;
-			}
-			case SDL_KEYUP: {
-				break;
-			}
-			} /* switch */
-
-		} /* while SDL_PollEvent */
-	}
-}
-
-int main(int argc, char* args[])
+void db_init(DB *db, Display *display, Window window, int width, int height)
 {
-	InitSetup();
-	GameLoop();
-	FinishOff();
-	return 0;
+    db->width  = width;
+    db->height = height;
+
+    db->display = display;
+    db->window  = window;
+
+    db->gc          = XCreateGC(display, window, 0, NULL);
+    db->back_buffer = XCreatePixmap(display, window, db->width, db->height, 24);
 }
 
+void db_color(DB *db, int r, int g, int b)
+{
+    XSetForeground(db->display, db->gc, ((b&0xff) | ((g&0xff)<<8) | ((r&0xff)<<16)));
+}
+
+void db_point(DB *db, int x, int y)
+{
+    XDrawPoint(db->display, db->back_buffer, db->gc, x ,y);
+}
+
+void db_swap_buffers(DB *db)
+{
+    XCopyArea(db->display,
+              db->back_buffer,
+              db->window,
+              db->gc,
+              0, 0,
+              db->width, db->height,
+              0, 0);
+}
+
+int main()
+{
+	Display *gfx_display=0;
+	Window  gfx_window;
+	GC      gfx_gc;
+	Colormap gfx_colormap;
+	int      gfx_fast_color_mode = 0;
+	int width = 800, height = 600;
+
+	gfx_display = XOpenDisplay(0);
+	if(!gfx_display) {
+		fprintf(stderr,"gfx_open: unable to open the graphics window.\n");
+		exit(1);
+	}
+
+	Visual *visual = DefaultVisual(gfx_display,0);
+	if(visual && visual->class==TrueColor) {
+		gfx_fast_color_mode = 1;
+	} else {
+		gfx_fast_color_mode = 0;
+	}
+
+	int blackColor = BlackPixel(gfx_display, DefaultScreen(gfx_display));
+	int whiteColor = WhitePixel(gfx_display, DefaultScreen(gfx_display));
+
+	gfx_window = XCreateSimpleWindow(gfx_display, DefaultRootWindow(gfx_display), 0, 0, width, height, 0, blackColor, blackColor);
+
+	XSetWindowAttributes attr;
+	attr.backing_store = Always;
+
+	XChangeWindowAttributes(gfx_display,gfx_window,CWBackingStore,&attr);
+
+	XStoreName(gfx_display,gfx_window,"TESTE");
+
+	XSelectInput(gfx_display, gfx_window, StructureNotifyMask|KeyPressMask|ButtonPressMask);
+
+	XMapWindow(gfx_display,gfx_window);
+
+	gfx_gc = XCreateGC(gfx_display, gfx_window, 0, 0);
+
+	gfx_colormap = DefaultColormap(gfx_display,0);
+
+	XSetForeground(gfx_display, gfx_gc, whiteColor);
+
+	// Wait for the MapNotify event
+
+	for(;;) {
+		XEvent e;
+		XNextEvent(gfx_display, &e);
+		if (e.type == MapNotify)
+			break;
+	}
+
+	XDrawPoint(gfx_display,gfx_window,gfx_gc, 10, 10);
+
+	for(;;) {
+		XEvent e;
+		XNextEvent(gfx_display, &e);
+		if (e.type == KeyPress)
+			break;
+	}
+
+
+
+
+
+	DB db;
+	db_init(&db, gfx_display, gfx_window, width, height);
+
+	int r=250, g=2, b=2;
+	db_color(&db, r, g, b);
+
+	db_point(&db, 200, 200);
+	db_swap_buffers(&db);
+
+
+
+
+
+
+	for(;;) {
+		XEvent e;
+		XNextEvent(gfx_display, &e);
+		if (e.type == KeyPress)
+			break;
+	}
+}

@@ -36,6 +36,9 @@ void freeObj3D(obj3d_t *obj)
         }
     }
 
+    free(obj->framesanims);
+    free(obj->skin);
+    free(obj->skinmap);
     free(obj->frames);
     free(obj->tris);
     free(obj);

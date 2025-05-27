@@ -48,7 +48,7 @@ obj3d_t *readMdl(char *mdlfilename)
     printf("NumVerts: %d - numTris: %d - numFrames: %d\n", header.numverts, header.numtris, header.numframes);
     printf("SyncType: %d - flags: %d - Size: %f\n", header.synctype, header.flags, header.size);
 
-    ret = malloc(sizeof(obj3d_t));
+    ret = calloc(1, sizeof(obj3d_t));
     if (!ret) {
         fclose(fp);
         printf("Erro malloc!\n\n");
@@ -60,8 +60,14 @@ obj3d_t *readMdl(char *mdlfilename)
     ret->numverts  = header.numverts;
     ret->numtris   = header.numtris;
 
+    ret->skinwidth  = header.skinwidth;
+    ret->skinheight = header.skinheight;
+
     // CARREGAR SKINS ==========================================
-    printf("Carregando %d Skins\n", header.numskins);
+
+    ret->skin = malloc(header.skinwidth * header.skinheight);
+
+    printf("Carregando %d Skins [%d x %d\n", header.numskins, header.skinwidth, header.skinheight);
     aliasskintype_t tipoSkin;
     unsigned char pixelSkin;
 
@@ -71,12 +77,14 @@ obj3d_t *readMdl(char *mdlfilename)
         printf("TipoSkin[%d]: %d\n", cnt_skin, tipoSkin);
 
         if (ALIAS_SKIN_SINGLE == tipoSkin) {
-            for (int y=0; y<header.skinheight; y++) {
+            /*for (int y=0; y<header.skinheight; y++) {
                 for (int x=0; x<header.skinwidth; x++) {
                     fread(&pixelSkin, 1, 1, fp);
                     // PONTO gfx
                 }
-            }
+            }*/
+
+            fread(ret->skin, 1, header.skinwidth * header.skinheight, fp);
         } else {
             printf("SKIN MULTIPLA!\n\n");
             fclose(fp);
@@ -87,10 +95,17 @@ obj3d_t *readMdl(char *mdlfilename)
 
     // CARREGAR VERTS ==========================================
     printf("Carregando %d Verts\n", header.numverts);
+
+    ret->skinmap = malloc(header.numverts * sizeof(skinvert_t));
+
     stvert_t vert;
     for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
         // TODO littleLong??
         fread(&vert, 1, sizeof(stvert_t), fp);
+
+        ret->skinmap[cnt_vert].onseam = vert.onseam;
+        ret->skinmap[cnt_vert].s      = vert.s;
+        ret->skinmap[cnt_vert].t      = vert.t;
 
 //        printf("Vert[%d]: on:%d T:%d S:%d\n", cnt_vert, vert.onseam, vert.t, vert.s);
     }
@@ -169,9 +184,65 @@ obj3d_t *readMdl(char *mdlfilename)
         }
     }
 
-    printf("FTELL %d \n\n", (int)ftell(fp));
+    char basenome[16] = {0}, strFramesAnims[256] = {0}, strNumFrames[16] = {0};
+	int frameInicial, frameFinal;
+	int totAnims = 0;
+    for (int nf=0; nf<ret->numframes; nf++) {
+        char *nomeFrame = ret->frames[nf].nome;
+
+        if (!strlen(basenome)) {
+            // Achar a base do nome do frame, sem o numero
+            strncpy(basenome, nomeFrame, 16);
+
+            for (char n=0; n<16; n++) {
+                if (nomeFrame[n] >= '0' && nomeFrame[n] <= '9') {
+                    basenome[n] = 0;
+                }
+            }
+
+            frameInicial = nf;
+            totAnims++;
+        } else {
+            if (!strncmp(nomeFrame, basenome, strlen(basenome))) {
+                // Ainda estamos no mesmo basenome
+                frameFinal = nf;
+            } else {
+                sprintf(strNumFrames, "%d-%d ", frameInicial, frameFinal);
+                strcat(strFramesAnims, strNumFrames);
+
+                printf("Base %s :: %d-%d\n", basenome, frameInicial, frameFinal);
+
+                basenome[0] = 0; // proximo
+                nf--;
+            }
+        }
+    }
+
+    printf("Base %s :: %d-%d\n", basenome, frameInicial, frameFinal);
+    sprintf(strNumFrames, "%d-%d", frameInicial, frameFinal);
+    strcat(strFramesAnims, strNumFrames);
+
+    ret->totAnims    = totAnims;
+    ret->framesanims = malloc(totAnims * sizeof(animationframes_t));
+
+    //printf("frames: %s\n", strFramesAnims);
+
+    char *tok = strtok(strFramesAnims, " ");
+    int numAnim = 0;
+    while (tok) {
+        sscanf(tok, "%d-%d", &ret->framesanims[numAnim].frameI, &ret->framesanims[numAnim].frameF);
+
+        tok = strtok(NULL, " ");
+        numAnim++;
+    }
+
+    if (numAnim != ret->totAnims) {
+        printf("ERRO!!!!!!!!!!!!! numAnim: %d - totAnims: %d\n", numAnim, ret->totAnims);
+    }
 
     fclose(fp);
+
+    printf("Modelo carregado!\n\n\n");
 
     return ret;
 }

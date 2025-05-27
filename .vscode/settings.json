@@ -1,6 +1,17 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "readmdl.h": "c"
+        "readmdl.h": "c",
+        "gfx.h": "c",
+        "gfx_ptbr.h": "c",
+        "xlib.h": "c",
+        "unistd.h": "c",
+        "array": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "string_view": "c",
+        "initializer_list": "c"
     }
 }

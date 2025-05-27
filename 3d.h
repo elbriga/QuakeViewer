@@ -16,6 +16,12 @@ typedef struct
     int r, g, b;
 } cor_t;
 
+typedef struct {
+	int		onseam;
+	int		s;
+	int		t;
+} skinvert_t;
+
 typedef struct
 {
     vetor3d_t pos;
@@ -41,14 +47,29 @@ typedef struct
 
 typedef struct
 {
+	int frameI;
+    int frameF;
+} animationframes_t;
+
+typedef struct
+{
     char nome[64];
 
     int numverts;
     int numtris;
     int numframes;
+    int totAnims;
+
+    int   skinwidth;
+    int   skinheight;
+
+    char       *skin;
+    skinvert_t *skinmap;
 
     frame_t     *frames;
     triangulo_t *tris;
+
+    animationframes_t *framesanims;
 } obj3d_t;
 
 void freeObj3D(obj3d_t *obj);
