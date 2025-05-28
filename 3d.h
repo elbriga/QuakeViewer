@@ -36,7 +36,7 @@ typedef struct
 typedef struct
 {
     int v[3];
-    cor_t cor;
+    char isFront;
 } triangulo_t;
 
 typedef struct

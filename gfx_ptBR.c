@@ -161,10 +161,13 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	float deltaXI = (float)(ponto[pMaxY][0] - ponto[pMinY][0]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
 	float deltaXF = (float)(ponto[pMedY][0] - ponto[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
 
-	unsigned char idx_cor = textura[tt1 * textW + ts1];
 
-	grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
+	// Textura
+	float texX = ts1;
+	float texY = tt1;
 
+
+	unsigned char idx_cor;
 	for (int cY = ponto[pMinY][1]; cY <= ponto[pMaxY][1]; cY++)
 	{
 		int xL1, xL2;
@@ -180,10 +183,15 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 		}
 
 		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
+		texX = ts1;
 		for (int cX = xL1; cX <= xL2; cX++)
 		{
+			idx_cor = textura[(int)texY * textW + (int)texX++];
+			grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
+
 			grafico_ponto(cX, cY);
 		}
+		texY++;
 
 		// If came to middle point, change the deltaXF
 		if (cY == ponto[pMedY][1])

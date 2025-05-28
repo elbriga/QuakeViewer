@@ -124,9 +124,7 @@ obj3d_t *readMdl(char *mdlfilename)
         ret->tris[cnt_tris].v[1] = tri.vertindex[1];
         ret->tris[cnt_tris].v[2] = tri.vertindex[2];
 
-        ret->tris[cnt_tris].cor.r = 250;
-        ret->tris[cnt_tris].cor.g = 250;
-        ret->tris[cnt_tris].cor.b = 250;
+        ret->tris[cnt_tris].isFront = tri.facesfront;
 
 //        printf("Tri[%d]: v1:%d v2:%d v3:%d\n", cnt_tris, tri.vertindex[0], tri.vertindex[1], tri.vertindex[2]);
     }

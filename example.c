@@ -35,6 +35,25 @@ int main(int argc, char **argv)
 
 	grafico_init(janX, janY, "MDL Viewer");
 
+
+
+	grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+    	10,10, 300,30, 150,200,
+    	10,10, 100,30, 50,100);
+	grafico_mostra();
+
+	char tecla;
+	while(1) {
+		tecla = grafico_tecla();
+		if (tecla) {
+			break;
+		}
+		usleep(1000);
+	}
+
+
+
+
 	int numAnimSel = 0;
 	int numFrameSel = 0;
 	while (1)

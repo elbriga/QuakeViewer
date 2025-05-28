@@ -5,24 +5,54 @@
 
 void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
+	int meiaSkin = obj->skinwidth / 2;
 	frame_t *frame = &obj->frames[numFrameSel];
 
-	for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
-		triangulo_t *tri = &obj->tris[cnt_tri];
+	for (int scan=0; scan<2; scan++) {
+		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
+			triangulo_t *tri = &obj->tris[cnt_tri];
 
-		vetor3d_t *vertice1 = &frame->verts[tri->v[0]];
-		vetor3d_t *vertice2 = &frame->verts[tri->v[1]];
-		vetor3d_t *vertice3 = &frame->verts[tri->v[2]];
+			if (!scan) {
+				if (tri->isFront) continue;
+			} else {
+				if (!tri->isFront) continue;
+			}
 
-		skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
-		skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
-		skinvert_t *svxt3 = &obj->skinmap[tri->v[2]];
+			vetor3d_t *vertice1 = &frame->verts[tri->v[0]];
+			vetor3d_t *vertice2 = &frame->verts[tri->v[1]];
+			vetor3d_t *vertice3 = &frame->verts[tri->v[2]];
 
-		grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta, vertice1->x, vertice1->y, vertice2->x, vertice2->y, vertice3->x, vertice3->y, svxt1->s,svxt1->t, svxt2->s,svxt2->t, svxt3->s,svxt3->t);
-		grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta, vertice1->y+260, 255-vertice1->z, vertice2->y+260, 255-vertice2->z, vertice3->y+260, 255-vertice3->z, svxt1->s,svxt1->t, svxt2->s,svxt2->t, svxt3->s,svxt3->t);
-		grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta, vertice1->x, (255-vertice1->z)+260, vertice2->x, (255-vertice2->z)+260, vertice3->x, (255-vertice3->z)+260, svxt1->s,svxt1->t, svxt2->s,svxt2->t, svxt3->s,svxt3->t);
+			skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
+			skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
+			skinvert_t *svxt3 = &obj->skinmap[tri->v[2]];
+
+			int skinX1 = svxt1->s;
+			int skinY1 = svxt1->t;
+			int skinX2 = svxt2->s;
+			int skinY2 = svxt2->t;
+			int skinX3 = svxt3->s;
+			int skinY3 = svxt3->t;
+
+			if (!tri->isFront) {
+				if (svxt1->onseam) skinX1 += meiaSkin;
+				if (svxt2->onseam) skinX2 += meiaSkin;
+				if (svxt3->onseam) skinX3 += meiaSkin;
+			}
+
+			grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+				vertice1->x, vertice1->y, vertice2->x, vertice2->y, vertice3->x, vertice3->y,
+				skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
+			
+			grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+				vertice1->y+260, 255-vertice1->z, vertice2->y+260, 255-vertice2->z, vertice3->y+260, 255-vertice3->z,
+				skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
+			
+			grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+				vertice1->x, (255-vertice1->z)+260, vertice2->x, (255-vertice2->z)+260, vertice3->x, (255-vertice3->z)+260,
+				skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
+		}
 	}
-
+/*
 	grafico_cor( 0, 250, 0 );
 	for (int cnt_vert=0; cnt_vert<obj->numverts; cnt_vert++) {
 		vetor3d_t *vertice = &frame->verts[cnt_vert];
@@ -35,7 +65,7 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 
 		//printf("PONTO X:%f Y:%f Z:%f\n", vertice->x, vertice->y, vertice->z);
 	}
-
+*/
 	// SKIN
 	for (int skinY=0; skinY<obj->skinheight; skinY++) {
 		for (int skinX=0; skinX<obj->skinwidth; skinX++) {
