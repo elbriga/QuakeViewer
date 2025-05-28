@@ -129,6 +129,14 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	ponto[2][0] = x3;
 	ponto[2][1] = y3;
 
+	int pontoTex[3][2];
+	pontoTex[0][0] = ts1;
+	pontoTex[0][1] = tt1;
+	pontoTex[1][0] = ts2;
+	pontoTex[1][1] = tt2;
+	pontoTex[2][0] = ts3;
+	pontoTex[2][1] = tt3;
+
 	// Ordena os pontos pelo Y
 	int maxY = 0;
 	int pMaxY = 0, pMedY = 0, pMinY = 0;
@@ -161,15 +169,25 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	float deltaXI = (float)(ponto[pMaxY][0] - ponto[pMinY][0]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
 	float deltaXF = (float)(ponto[pMedY][0] - ponto[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
 
-
 	// Textura
+	float texXI = pontoTex[pMinY][0];
+	float texYI = pontoTex[pMinY][1];
+	float texXF = texXI;
+	float texYF = texYI;
+
+	float deltaTexXI = (float)(pontoTex[pMaxY][0] - pontoTex[pMinY][0]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
+	float deltaTexYI = (float)(pontoTex[pMaxY][1] - pontoTex[pMinY][1]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
+	float deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
+	float deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMinY][1]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
+
 	float texX = ts1;
 	float texY = tt1;
-
 
 	unsigned char idx_cor;
 	for (int cY = ponto[pMinY][1]; cY <= ponto[pMaxY][1]; cY++)
 	{
+		//printf("Y[%d] => texXI: %d - texYI: %d - texXF: %d - texYF: %d\n", cY, (int)texXI, (int)texXF, (int)texYI, (int)texYF);
+
 		int xL1, xL2;
 		if (xF >= xI)
 		{
@@ -183,24 +201,41 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 		}
 
 		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
-		texX = ts1;
+		float deltaTexX = (texXF - texXI) / (float)(xL2 - xL1);
+		float deltaTexY = (texYF - texYI) / (float)(xL2 - xL1);
+
+		texX = texXI;
+		texY = texYI;
 		for (int cX = xL1; cX <= xL2; cX++)
 		{
-			idx_cor = textura[(int)texY * textW + (int)texX++];
+			idx_cor = textura[(int)texY * textW + (int)texX];
 			grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
 
 			grafico_ponto(cX, cY);
-		}
-		texY++;
 
-		// If came to middle point, change the deltaXF
+			texX += deltaTexX;
+			texY += deltaTexY;
+		}
+
+		// Se chegamos no ponto do meio mudar os deltas de XF,texXF,texYF
 		if (cY == ponto[pMedY][1])
 		{
 			xF = ponto[pMedY][0];
 			deltaXF = (float)(ponto[pMedY][0] - ponto[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+
+			texXF = pontoTex[pMedY][0];
+			deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+
+			texYF = pontoTex[pMedY][1];
+			deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMaxY][1]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
 		}
 
 		xI += deltaXI;
 		xF += deltaXF;
+
+		texXI += deltaTexXI;
+		texYI += deltaTexYI;
+		texXF += deltaTexXF;
+		texYF += deltaTexYF;
 	}
 }

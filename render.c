@@ -8,7 +8,7 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 	int meiaSkin = obj->skinwidth / 2;
 	frame_t *frame = &obj->frames[numFrameSel];
 
-	for (int scan=0; scan<2; scan++) {
+	for (int scan=0; scan<2; scan++) { // Desenhar primeiro os tris->isFront = 1, depois os = 0
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
 			triangulo_t *tri = &obj->tris[cnt_tri];
 

@@ -74,6 +74,10 @@ void gfx_open( int width, int height, const char *title )
 
 	XSetForeground(gfx_display, gfx_gc, whiteColor);
 
+	// Handle window close
+	Atom wm_delete = XInternAtom( gfx_display, "WM_DELETE_WINDOW", 1 );
+	XSetWMProtocols( gfx_display, gfx_window, &wm_delete, 1 );
+
 	// Init Double Buffering
 	db_init(&db, gfx_display, gfx_window, width, height);
 	gfx_color(250, 2, 2);
@@ -188,8 +192,15 @@ char gfx_wait()
 	XEvent event;
 
 	if (XCheckWindowEvent(gfx_display, gfx_window, 0xFFFFFFFF, &event)) {
+		printf("Tipo: %d\n", event.type);
 		if(event.type==KeyPress) {
 			return XLookupKeysym(&event.xkey,0);
+		} else if (event.type==ClientMessage) {
+			// Handle window close
+			return 'q';
+		} else if (event.type==NoExpose) {
+			// Remover os eventos 14 da queue
+			return gfx_wait();
 		}
 	}
 

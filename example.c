@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <libgen.h> // basename
 
 #include "gfx_ptBR.h"
 
@@ -33,13 +34,15 @@ int main(int argc, char **argv)
 
 	printf("Paleta OK [%d]\n", pRead);
 
-	grafico_init(janX, janY, "MDL Viewer");
+	char tituloJanela[128];
+	sprintf(tituloJanela, "MDL VIEWER - %s", basename(argv[1]));
+	grafico_init(janX, janY, tituloJanela);
 
 
 
 	grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
     	10,10, 300,30, 150,200,
-    	10,10, 100,30, 50,100);
+    	20,20, 100,30, 50,100);
 	grafico_mostra();
 
 	char tecla;
@@ -107,6 +110,7 @@ int main(int argc, char **argv)
 		usleep(20000);
 	}
 
+	printf("Free Myke Tyson FREE\n\n");
 	freeObj3D(obj);
 
 	return 0;
