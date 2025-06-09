@@ -192,7 +192,6 @@ char gfx_wait()
 	XEvent event;
 
 	if (XCheckWindowEvent(gfx_display, gfx_window, 0xFFFFFFFF, &event)) {
-		printf("Tipo: %d\n", event.type);
 		if(event.type==KeyPress) {
 			return XLookupKeysym(&event.xkey,0);
 		} else if (event.type==ClientMessage) {
