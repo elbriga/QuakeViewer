@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <libgen.h> // basename
 
+#include <sys/time.h> // gettimeofday localtime
+#include <time.h>
+
 #include "gfx_ptBR.h"
 
 #include "readMdl.h"
@@ -13,26 +16,59 @@
 #include "render.h"
 
 char paleta[256][3];
+float oldTS = 0;
+
+void msg(char *out) {
+    struct timeval tv;
+    struct tm *timeinfo;
+    char buffDataHora[64];
+	float newTS;
+	float tempoDesdeUltimaMsg = 0.0;
+
+    gettimeofday(&tv, NULL);
+    timeinfo = localtime(&tv.tv_sec);
+    
+    strftime(buffDataHora, 64, "%H:%M:%S", timeinfo);
+
+	newTS = (timeinfo->tm_hour * 3600) + (timeinfo->tm_min * 60) + timeinfo->tm_sec + 
+			((float)tv.tv_usec / 1000000.0);
+
+	if (oldTS > 0) {
+		tempoDesdeUltimaMsg = newTS - oldTS;
+	}
+	oldTS = newTS;
+
+	printf("[%s.%03ld] [%f / %f] > [%s]\n", buffDataHora, tv.tv_usec / 1000, tempoDesdeUltimaMsg, 1.0/tempoDesdeUltimaMsg, out);
+}
 
 int main(int argc, char **argv)
 {
 	int janX = 800, janY = 600, totAnims;
 
+	msg("Quake MDL Viewer");
+
+	if (argc < 2 || strlen(argv[1]) < 4) {
+		msg("Uso: mdlViewer ARQUIVO.mdl");
+		exit(1);
+	}
+
 	obj3d_t *obj = readMdl(argv[1]);
+	if (!obj) {
+		msg("Falha ao carregar ARQUIVO.mdl");
+		exit(2);
+	}
 
 	// Use current time as
 	// seed for random generator
 	srand(time(0));
 
-	FILE *fpPal = fopen("paleta", "rb");
+	FILE *fpPal = fopen("data/paleta", "rb");
 	if(!fpPal) {
-		printf("Paleta nao encontrada!\n");
-		return 99;
+		msg("Paleta nao encontrada!");
+		exit(99);
 	}
 	int pRead = fread(&paleta, 1, 768, fpPal);
 	fclose(fpPal);
-
-	printf("Paleta OK [%d]\n", pRead);
 
 	char tituloJanela[128];
 	sprintf(tituloJanela, "MDL VIEWER - %s", basename(argv[1]));
@@ -59,20 +95,18 @@ int main(int argc, char **argv)
 
 	int numAnimSel = 0;
 	int numFrameSel = 0;
+	char out[256];
+
 	while (1)
 	{
 		frame_t *frame = &obj->frames[numFrameSel];
-
-		clock_t clock_start = clock();
 
 		grafico_desenha_objeto(obj, numFrameSel, paleta);
 
 		grafico_mostra();
 
-		clock_t clock_end = clock();
-		float tempo_um_frame = (float)(clock_end - clock_start) / CLOCKS_PER_SEC;
-
-		printf("Mostrando frame[%d]: %s >> tempo render: %f\n", numFrameSel, frame->nome, tempo_um_frame);
+		sprintf(out, "Mostrando frame[%d]: %s", numFrameSel, frame->nome);
+		msg(out);
 
 		numFrameSel++;
 
@@ -109,7 +143,7 @@ int main(int argc, char **argv)
 		//usleep(20000);
 	}
 
-	printf("Free Myke Tyson FREE\n\n");
+	msg("Free Myke Tyson FREE");
 	freeObj3D(obj);
 
 	return 0;
