@@ -38,6 +38,11 @@ char grafico_tecla()
 	return gfx_wait();
 }
 
+char grafico_tecla_espera()
+{
+	return gfx_wait_block();
+}
+
 void grafico_triangulo(int x1, int y1, int x2, int y2, int x3, int y3,
 	int r, int g, int b)
 {

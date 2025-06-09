@@ -81,14 +81,7 @@ int main(int argc, char **argv)
     	20,20, 100,30, 50,100);
 	grafico_mostra();
 
-	char tecla;
-	while(1) {
-		tecla = grafico_tecla();
-		if (tecla) {
-			break;
-		}
-		usleep(1000);
-	}
+	grafico_tecla_espera();
 
 
 

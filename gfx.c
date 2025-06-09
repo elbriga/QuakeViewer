@@ -206,6 +206,18 @@ char gfx_wait()
 	return 0;
 }
 
+char gfx_wait_block()
+{
+	char key = 0;
+	while(1) {
+		key = gfx_wait();
+		if (key) {
+			break;
+		}
+		usleep(1000);
+	}
+	return key;
+}
 /* Return the X and Y coordinates of the last event. */
 
 int gfx_xpos()

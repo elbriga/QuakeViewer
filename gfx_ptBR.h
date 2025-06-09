@@ -16,5 +16,6 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
     int ts1, int tt1, int ts2, int tt2, int ts3, int tt3);
 
 char grafico_tecla();
+char grafico_tecla_espera();
 
 #endif
