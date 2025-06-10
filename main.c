@@ -72,13 +72,26 @@ int main(int argc, char **argv)
 
 	char tituloJanela[128];
 	sprintf(tituloJanela, "MDL VIEWER - %s", basename(argv[1]));
-	grafico_init(janX, janY, tituloJanela);
 
+	int erro = grafico_init(janX, janY, tituloJanela);
+	if (erro) {
+		msg("Erro ao inicializar graficos");
+		exit(33);
+	}
 
 
 	grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
     	10,10, 300,30, 150,200,
     	20,20, 100,30, 50,100);
+
+	grafico_limpa_zbuffer();
+	grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+    	10,10,10, 300,30,100, 150,200,50,
+    	20,20,    100,30,     50,100);
+	grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+    	10,100,100, 300,30,50, 150,200,150,
+    	20,20,      100,30,    50,100);
+	
 	grafico_mostra();
 
 	grafico_tecla_espera();
@@ -137,7 +150,9 @@ int main(int argc, char **argv)
 	}
 
 	msg("Free Myke Tyson FREE");
+
 	freeObj3D(obj);
+	grafico_desliga();
 
 	return 0;
 }
