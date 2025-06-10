@@ -3,10 +3,30 @@
 #include "gfx_ptBR.h"
 #include "3d.h"
 
-void grafico_desenha_objeto(obj3d_t *obj, vetor3d_t posicao, int numFrameSel, char paleta[256][3])
+void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
 	ponto *verts = &obj->frames[numFrameSel * obj->numverts];
+
+	// rotacionar
+	if (obj->rotacao.y) {
+		for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
+			rotacao2DEixoY(&verts[cnt_vxt], obj->rotacao.y);
+		}
+	} else {
+		for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
+			verts[cnt_vxt].rot.x = verts[cnt_vxt].pos.x;
+			verts[cnt_vxt].rot.y = verts[cnt_vxt].pos.y;
+			verts[cnt_vxt].rot.z = verts[cnt_vxt].pos.z;
+		}
+	}
+
+	// posicionar
+	for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
+		verts[cnt_vxt].rot.x += obj->posicao.x;
+		verts[cnt_vxt].rot.y += obj->posicao.y;
+		verts[cnt_vxt].rot.z += obj->posicao.z;
+	}
 
 	for (int scan=0; scan<2; scan++) { // Desenhar primeiro os tris->isFront = 1, depois os = 0
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
@@ -44,9 +64,9 @@ void grafico_desenha_objeto(obj3d_t *obj, vetor3d_t posicao, int numFrameSel, ch
 			// 	skinX1,skinY1,                         skinX2,skinY2,                         skinX3,skinY3);
 			
 			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->pos.y+posicao.x, vertice1->pos.z, vertice1->pos.x, skinX1,skinY1,
-				vertice2->pos.y+posicao.x, vertice2->pos.z, vertice2->pos.x, skinX2,skinY2,
-				vertice3->pos.y+posicao.x, vertice3->pos.z, vertice3->pos.x, skinX3,skinY3);
+				vertice1->rot.x, vertice1->rot.y, vertice1->rot.z, skinX1,skinY1,
+				vertice2->rot.x, vertice2->rot.y, vertice2->rot.z, skinX2,skinY2,
+				vertice3->rot.x, vertice3->rot.y, vertice3->rot.z, skinX3,skinY3);
 			
 			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
 			// 	vertice1->x, (255-vertice1->z)+260, vertice1->y, vertice2->x, (255-vertice2->z)+260, vertice2->y, vertice3->x, (255-vertice3->z)+260, vertice3->y,

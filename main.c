@@ -99,29 +99,40 @@ int main(int argc, char **argv)
 	int numFrameSel3 = 0;
 	char out[256];
 
-	vetor3d_t pos1 = {  0, 0, 0 };
-	vetor3d_t pos2 = { 70, 0, 0 };
-	vetor3d_t pos3 = {-70, 0, 0 };
+	obj->posicao.x  = 100;
+	obj->posicao.y  = 50;
+	obj->posicao.z  = 200;
 
+	obj2->posicao.x  = 0;
+	obj2->posicao.y  = 0;
+	obj2->posicao.z  = 200;
+
+	obj3->posicao.x  = 50;
+	obj3->posicao.y  = 0;
+	obj3->posicao.z  = 200;
+	
 	while (1)
 	{
 		char *framename = &obj->framenames[numFrameSel * 16];
 
-		grafico_desenha_objeto(obj, pos1, numFrameSel, paleta);
+		grafico_desenha_objeto(obj, numFrameSel, paleta);
 
-		grafico_desenha_objeto(obj2, pos2, numFrameSel2, paleta);
+		grafico_desenha_objeto(obj2, numFrameSel2, paleta);
 		numFrameSel2++;
 		if(numFrameSel2 >= obj2->numframes -1)
 			numFrameSel2 = 0;
 
-		grafico_desenha_objeto(obj3, pos3, numFrameSel3, paleta);
+		grafico_desenha_objeto(obj3, numFrameSel3, paleta);
 		numFrameSel3++;
 		if(numFrameSel3 >= 8)
 			numFrameSel3 = 0;
+		obj3->rotacao.y++;
+		if(obj3->rotacao.y >= 360)
+			obj3->rotacao.y = 0;
 
 		grafico_mostra();
 
-		sprintf(out, "Mostrando frame[%d]: %s", numFrameSel, framename);
+		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)obj3->rotacao.y);
 		msg(out);
 
 		numFrameSel++;
@@ -155,6 +166,10 @@ int main(int argc, char **argv)
 				numAnimSel = obj->totAnims - 1;
 
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
+		} else if (c == 't') {
+			obj->posicao.y--;
+		} else if (c == 'g') {
+			obj->posicao.y++;
 		}
 
 		if (numFrameSel < 0)

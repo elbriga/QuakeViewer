@@ -62,8 +62,13 @@ typedef struct
     triangulo_t *tris;
 
     animationframes_t *framesanims;
+
+    // run
+    vetor3d_t posicao;
+    vetor3d_t rotacao;
 } obj3d_t;
 
 void freeObj3D(obj3d_t *obj);
+void rotacao2DEixoY(ponto *p, int angulo);
 
 #endif

@@ -157,23 +157,41 @@ obj3d_t *readMdl(char *mdlfilename)
 
             strcpy(&ret->framenames[cnt_frames * 16], frame.name);
 
+            vetor3d_t min = { 1000,1000,1000 }, max = { 0,0,0 };
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
 
-                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.x = 255-vertFrame.v[0];
-                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.y = vertFrame.v[1];
-                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.z = 255-vertFrame.v[2];
+                ponto *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
+
+                pnt->pos.x = vertFrame.v[0];
+                pnt->pos.y = vertFrame.v[1];
+                pnt->pos.z = vertFrame.v[2];
+
+                // bounding box
+                if (pnt->pos.x < min.x) min.x = pnt->pos.x;
+                if (pnt->pos.x > max.x) max.x = pnt->pos.x;
+                if (pnt->pos.y < min.y) min.y = pnt->pos.y;
+                if (pnt->pos.y > max.y) max.y = pnt->pos.y;
+                if (pnt->pos.z < min.z) min.z = pnt->pos.z;
+                if (pnt->pos.z > max.z) max.z = pnt->pos.z;
 
                 //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
-
-                /*if (cnt_frames == mostraFrame) {
-                    gfx_ponto(vertFrame.v[0], vertFrame.v[1], 250, 250, 250);
-
-                    gfx_ponto(vertFrame.v[1]+260, 255 - vertFrame.v[2], 250, 250, 250);
-
-                    gfx_ponto(vertFrame.v[0], (255 - vertFrame.v[2])+260, 250, 250, 250);
-                }*/
             }
+
+            // centralizar
+            vetor3d_t med = {
+                (max.x - min.x) / 2,
+                (max.y - min.y) / 2,
+                (max.z - min.z) / 2
+            };
+            for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
+                ponto *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
+
+                pnt->pos.x -= med.x;
+                pnt->pos.y -= med.y;
+                pnt->pos.z -= med.z;
+            }
+
         } else {
             printf("TipoFrame GROUP!\n\n");
             freeObj3D(ret);
