@@ -284,6 +284,8 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 {
 	drawnZBufferTri = 1;
 
+	float ganhoCor = 2;
+
 	// Transforma os params em array
 	int ponto[3][3];
 	ponto[0][0] = x1;
@@ -391,7 +393,8 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 			// grafico_tecla_espera();
 			if (z < zBuffer[(cY * grafico_largura) + cX]) {
 				idx_cor = textura[(int)texY * textW + (int)texX];
-				grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
+
+				grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
 
 				grafico_ponto(cX, cY);
 				zBuffer[(cY * grafico_largura) + cX] = z;
