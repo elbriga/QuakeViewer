@@ -39,8 +39,6 @@ void grafico_limpa()
 
 void grafico_limpa_zbuffer()
 {
-	printf("Limpa zBuffer\n");
-
 	for(int zbz=0; zbz < grafico_altura * grafico_largura; zbz++) {
 		zBuffer[zbz] = 999999.999;
 	}
