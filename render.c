@@ -39,17 +39,17 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 				if (svxt3->onseam) skinX3 += meiaSkin;
 			}
 
-			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->x, vertice1->y, vertice1->z, vertice2->x, vertice2->y, vertice2->z, vertice3->x, vertice3->y, vertice3->z,
-				skinX1,skinY1,                         skinX2,skinY2,                         skinX3,skinY3);
+			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+			// 	vertice1->x, vertice1->y, vertice1->z, vertice2->x, vertice2->y, vertice2->z, vertice3->x, vertice3->y, vertice3->z,
+			// 	skinX1,skinY1,                         skinX2,skinY2,                         skinX3,skinY3);
 			
 			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->y+260, 255-vertice1->z, 255-vertice1->x, vertice2->y+260, 255-vertice2->z, 255-vertice2->x, vertice3->y+260, 255-vertice3->z, 255-vertice3->x,
+				vertice1->y, vertice1->z, vertice1->x, vertice2->y, vertice2->z, vertice2->x, vertice3->y, vertice3->z, vertice3->x,
 				skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
 			
-			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->x, (255-vertice1->z)+260, vertice1->y, vertice2->x, (255-vertice2->z)+260, vertice2->y, vertice3->x, (255-vertice3->z)+260, vertice3->y,
-				skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
+			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+			// 	vertice1->x, (255-vertice1->z)+260, vertice1->y, vertice2->x, (255-vertice2->z)+260, vertice2->y, vertice3->x, (255-vertice3->z)+260, vertice3->y,
+			// 	skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
 		}
 	}
 /*

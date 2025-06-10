@@ -160,9 +160,9 @@ obj3d_t *readMdl(char *mdlfilename)
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
 
-                ret->frames[cnt_frames * header.numverts + cnt_vert].x = vertFrame.v[0];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].x = 255-vertFrame.v[0];
                 ret->frames[cnt_frames * header.numverts + cnt_vert].y = vertFrame.v[1];
-                ret->frames[cnt_frames * header.numverts + cnt_vert].z = vertFrame.v[2];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].z = 255-vertFrame.v[2];
 
                 //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
 

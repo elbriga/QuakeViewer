@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
 	msg("Quake MDL Viewer");
 
-	if (argc < 2 || strlen(argv[1]) < 4) {
+	if (argc < 4 || strlen(argv[1]) < 4) {
 		msg("Uso: mdlViewer ARQUIVO.mdl");
 		exit(1);
 	}
@@ -55,6 +55,18 @@ int main(int argc, char **argv)
 	obj3d_t *obj = readMdl(argv[1]);
 	if (!obj) {
 		msg("Falha ao carregar ARQUIVO.mdl");
+		exit(2);
+	}
+
+	obj3d_t *obj2 = readMdl(argv[2]);
+	if (!obj2) {
+		msg("Falha ao carregar ARQUIVO2.mdl");
+		exit(2);
+	}
+
+	obj3d_t *obj3 = readMdl(argv[3]);
+	if (!obj3) {
+		msg("Falha ao carregar ARQUIVO3.mdl");
 		exit(2);
 	}
 
@@ -80,28 +92,11 @@ int main(int argc, char **argv)
 	}
 
 
-	grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-    	10,10, 300,30, 150,200,
-    	20,20, 100,30, 50,100);
-
-	grafico_limpa_zbuffer();
-	grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-    	10,10,10, 300,30,100, 150,200,50,
-    	20,20,    100,30,     50,100);
-	grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-    	10,100,100, 300,30,50, 150,200,150,
-    	20,20,      100,30,    50,100);
-	
-	grafico_mostra();
-
-	grafico_tecla_espera();
-
-
-
-
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
 	int numFrameSel = 0;
+	int numFrameSel2 = 0;
+	int numFrameSel3 = 0;
 	char out[256];
 
 	while (1)
@@ -109,6 +104,16 @@ int main(int argc, char **argv)
 		char *framename = &obj->framenames[numFrameSel * 16];
 
 		grafico_desenha_objeto(obj, numFrameSel, paleta);
+
+		grafico_desenha_objeto(obj2, numFrameSel2, paleta);
+		numFrameSel2++;
+		if(numFrameSel2 >= obj2->numframes -1)
+			numFrameSel2 = 0;
+
+		grafico_desenha_objeto(obj3, numFrameSel3, paleta);
+		// numFrameSel3++;
+		// if(numFrameSel3 >= obj3->numframes -1)
+		// 	numFrameSel3 = 0;
 
 		grafico_mostra();
 
@@ -158,7 +163,9 @@ int main(int argc, char **argv)
 
 	msg("Free Myke Tyson FREE");
 
+	freeObj3D(obj2);
 	freeObj3D(obj);
+
 	grafico_desliga();
 
 	return 0;
