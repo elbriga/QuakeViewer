@@ -6,7 +6,7 @@
 void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
-	frame_t *frame = &obj->frames[numFrameSel];
+	vetor3d_t *verts = &obj->frames[numFrameSel * obj->numverts];
 
 	for (int scan=0; scan<2; scan++) { // Desenhar primeiro os tris->isFront = 1, depois os = 0
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
@@ -18,9 +18,9 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 				if (!tri->isFront) continue;
 			}
 
-			vetor3d_t *vertice1 = &frame->verts[tri->v[0]];
-			vetor3d_t *vertice2 = &frame->verts[tri->v[1]];
-			vetor3d_t *vertice3 = &frame->verts[tri->v[2]];
+			vetor3d_t *vertice1 = &verts[tri->v[0]];
+			vetor3d_t *vertice2 = &verts[tri->v[1]];
+			vetor3d_t *vertice3 = &verts[tri->v[2]];
 
 			skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
 			skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];

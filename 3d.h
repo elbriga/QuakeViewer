@@ -41,12 +41,6 @@ typedef struct
 
 typedef struct
 {
-    char nome[16];
-    vetor3d_t *verts;
-} frame_t;
-
-typedef struct
-{
 	int frameI;
     int frameF;
 } animationframes_t;
@@ -66,7 +60,8 @@ typedef struct
     char       *skin;
     skinvert_t *skinmap;
 
-    frame_t     *frames;
+    char        *framenames;
+    vetor3d_t   *frames;
     triangulo_t *tris;
 
     animationframes_t *framesanims;

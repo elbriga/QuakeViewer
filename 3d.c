@@ -28,14 +28,8 @@ void freeObj3D(obj3d_t *obj)
 {
     if (!obj) return;
 
-    if (obj->frames) {
-        for (int c=0; c<obj->numframes; c++) {
-            if (obj->frames[c].verts) {
-                free(obj->frames[c].verts);
-            }
-        }
-    }
-
+    free(obj->frames);
+    free(obj->framenames);
     free(obj->framesanims);
     free(obj->skin);
     free(obj->skinmap);

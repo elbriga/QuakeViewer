@@ -105,13 +105,13 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		frame_t *frame = &obj->frames[numFrameSel];
+		char *framename = &obj->framenames[numFrameSel * 16];
 
 		grafico_desenha_objeto(obj, numFrameSel, paleta);
 
 		grafico_mostra();
 
-		sprintf(out, "Mostrando frame[%d]: %s", numFrameSel, frame->nome);
+		sprintf(out, "Mostrando frame[%d]: %s", numFrameSel, framename);
 		msg(out);
 
 		numFrameSel++;

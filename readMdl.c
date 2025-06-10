@@ -132,9 +132,17 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR FRAMES ==========================================
     printf("Carregando %d Frames\n", header.numframes);
 
-    ret->frames = malloc(header.numframes * sizeof(frame_t));
+    ret->frames = malloc(header.numframes * header.numverts * sizeof(vetor3d_t));
     if (!ret->frames) {
         printf("Erro malloc frames\n\n");
+        fclose(fp);
+        freeObj3D(ret);
+        return NULL;
+    }
+
+    ret->framenames = malloc(header.numframes * 16);
+    if (!ret->framenames) {
+        printf("Erro malloc framenames\n\n");
         fclose(fp);
         freeObj3D(ret);
         return NULL;
@@ -153,16 +161,14 @@ obj3d_t *readMdl(char *mdlfilename)
 
             //printf("NOME Frame[%d]: %s\n", cnt_frames, frame.name);
 
-            strcpy(ret->frames[cnt_frames].nome, frame.name);
-
-            ret->frames[cnt_frames].verts = malloc(header.numverts * sizeof(vetor3d_t));
+            strcpy(&ret->framenames[cnt_frames * 16], frame.name);
 
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
 
-                ret->frames[cnt_frames].verts[cnt_vert].x = vertFrame.v[0];
-                ret->frames[cnt_frames].verts[cnt_vert].y = vertFrame.v[1];
-                ret->frames[cnt_frames].verts[cnt_vert].z = vertFrame.v[2];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].x = vertFrame.v[0];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].y = vertFrame.v[1];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].z = vertFrame.v[2];
 
                 //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
 
@@ -186,7 +192,7 @@ obj3d_t *readMdl(char *mdlfilename)
 	int frameInicial, frameFinal;
 	int totAnims = 0;
     for (int nf=0; nf<ret->numframes; nf++) {
-        char *nomeFrame = ret->frames[nf].nome;
+        char *nomeFrame = &ret->framenames[nf * 16];
 
         if (!strlen(basenome)) {
             // Achar a base do nome do frame, sem o numero
