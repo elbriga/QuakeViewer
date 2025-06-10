@@ -288,15 +288,15 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 
 	// Transforma os params em array
 	int ponto[3][3];
-	ponto[0][0] = x1;
-	ponto[0][1] = y1;
-	ponto[0][2] = z1;
-	ponto[1][0] = x2;
-	ponto[1][1] = y2;
-	ponto[1][2] = z2;
-	ponto[2][0] = x3;
-	ponto[2][1] = y3;
-	ponto[2][2] = z3;
+	ponto[0][0] = x1 * 2;
+	ponto[0][1] = y1 * 2;
+	ponto[0][2] = z1 * 2;
+	ponto[1][0] = x2 * 2;
+	ponto[1][1] = y2 * 2;
+	ponto[1][2] = z2 * 2;
+	ponto[2][0] = x3 * 2;
+	ponto[2][1] = y3 * 2;
+	ponto[2][2] = z3 * 2;
 
 	int pontoTex[3][2];
 	pontoTex[0][0] = ts1;
