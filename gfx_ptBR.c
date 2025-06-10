@@ -289,15 +289,15 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 
 	// Transforma os params em array
 	int ponto[3][3];
-	ponto[0][0] = x1 * 2;
-	ponto[0][1] = y1 * 2;
-	ponto[0][2] = z1 * 2;
-	ponto[1][0] = x2 * 2;
-	ponto[1][1] = y2 * 2;
-	ponto[1][2] = z2 * 2;
-	ponto[2][0] = x3 * 2;
-	ponto[2][1] = y3 * 2;
-	ponto[2][2] = z3 * 2;
+	ponto[0][0] = x1;
+	ponto[0][1] = y1;
+	ponto[0][2] = z1;
+	ponto[1][0] = x2;
+	ponto[1][1] = y2;
+	ponto[1][2] = z2;
+	ponto[2][0] = x3;
+	ponto[2][1] = y3;
+	ponto[2][2] = z3;
 
 	int pontoTex[3][2];
 	pontoTex[0][0] = ts1;
@@ -308,7 +308,7 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 	pontoTex[2][1] = tt3;
 
 	// Ordena os pontos pelo Y
-	int maxY = 0;
+	int maxY = -1000000;
 	int pMaxY = 0, pMedY = 0, pMinY = 0;
 	for (int cP = 0; cP < 3; cP++)
 	{
@@ -318,7 +318,7 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 			pMaxY = cP;
 		}
 	}
-	maxY = 0;
+	maxY = -1000000;
 	for (int cP = 0; cP < 3; cP++)
 	{
 		if (cP == pMaxY)
@@ -331,6 +331,10 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 		}
 	}
 	pMinY = 3 - pMaxY - pMedY;
+
+	if (!(ponto[pMaxY][1] - ponto[pMinY][1])) {
+		return;
+	}
 
 	// DESENHA
 	float xI = ponto[pMinY][0];
@@ -350,11 +354,7 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 	float deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
 	float deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMinY][1]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
 
-	float texX = ts1;
-	float texY = tt1;
-
 	// ZBuffer
-	float z;
 	float zI = ponto[pMinY][2];
 	float zF = zI;
 
@@ -366,45 +366,59 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 	{
 		//printf("Y[%d] => texXI: %d - texYI: %d - texXF: %d - texYF: %d\n", cY, (int)texXI, (int)texXF, (int)texYI, (int)texYF);
 
-		int xL1, xL2;
-		if (xF >= xI) {
-			xL1 = (int)xI;
-			xL2 = (int)xF;
-		} else {
-			xL1 = (int)xF;
-			xL2 = (int)xI;
+		if (cY >= grafico_altura) {
+			// Linha saiu para fora da tela > CLIP
+			break;
 		}
 
-		// Textura
-		float deltaTexX = (texXF - texXI) / (float)(xL2 - xL1);
-		float deltaTexY = (texYF - texYI) / (float)(xL2 - xL1);
-		texX = texXI;
-		texY = texYI;
-
-		// zBuffer
-		float deltaZ = (zF - zI) / (float)(xL2 - xL1);
-		z = zI;
-
-		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF,
-		//  partindo das coordenadas texXI,texYI ate texXF, texYF
-		//  partido do Z zI ate o zF
-		for (int cX = xL1; cX <= xL2; cX++)
-		{
-			// printf("z[%f] < zBuf[%f]\n", z, zBuffer[(cY * grafico_largura) + cX]);
-			// grafico_tecla_espera();
-			if (z < zBuffer[(cY * grafico_largura) + cX]) {
-				idx_cor = textura[(int)texY * textW + (int)texX];
-
-				grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
-
-				grafico_ponto(cX, cY);
-				zBuffer[(cY * grafico_largura) + cX] = z;
+		if (cY >= 0) {
+			int xL1, xL2;
+			if (xF >= xI) {
+				xL1 = (int)xI;
+				xL2 = (int)xF;
+			} else {
+				xL1 = (int)xF;
+				xL2 = (int)xI;
 			}
 
-			texX += deltaTexX;
-			texY += deltaTexY;
+			// Textura
+			float deltaTexX = (texXF - texXI) / (float)(xL2 - xL1);
+			float deltaTexY = (texYF - texYI) / (float)(xL2 - xL1);
+			float texX = texXI;
+			float texY = texYI;
 
-			z += deltaZ;
+			// zBuffer
+			float deltaZ = (zF - zI) / (float)(xL2 - xL1);
+			float z = zI;
+
+			// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF,
+			//  partindo das coordenadas texXI,texYI ate texXF, texYF
+			//  partido do Z zI ate o zF
+			for (int cX = xL1; cX <= xL2; cX++)
+			{
+				// printf("z[%f] < zBuf[%f]\n", z, zBuffer[(cY * grafico_largura) + cX]);
+				// grafico_tecla_espera();
+
+				if (cX > 0) {
+					if (cX >= grafico_largura) {
+						// Linha saiu para fora da tela > CLIP
+						break;
+					}
+					if (z < zBuffer[(cY * grafico_largura) + cX]) {
+						idx_cor = textura[(int)texY * textW + (int)texX];
+
+						grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
+
+						grafico_ponto(cX, cY);
+						zBuffer[(cY * grafico_largura) + cX] = z;
+					}
+				}
+
+				texX += deltaTexX;
+				texY += deltaTexY;
+
+				z += deltaZ;
+			}
 		}
 
 		// Se chegamos no ponto do meio mudar os deltas de XF,texXF,texYF
