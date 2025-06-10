@@ -48,7 +48,14 @@ obj3d_t *readMdl(char *mdlfilename)
     printf("NumVerts: %d - numTris: %d - numFrames: %d\n", header.numverts, header.numtris, header.numframes);
     printf("SyncType: %d - flags: %d - Size: %f\n", header.synctype, header.flags, header.size);
 
-    ret = calloc(1, sizeof(obj3d_t));
+    int totMemObj = sizeof(obj3d_t) +
+                    (header.skinwidth * header.skinheight) +
+                    (header.numverts * sizeof(skinvert_t)) +
+                    (header.numtris * sizeof(triangulo_t)) +
+                    (header.numframes * 16) +
+                    (header.numframes * header.numverts * sizeof(vetor3d_t));
+
+    ret = calloc(1, totMemObj);
     if (!ret) {
         fclose(fp);
         printf("Erro malloc!\n\n");
@@ -65,7 +72,7 @@ obj3d_t *readMdl(char *mdlfilename)
 
     // CARREGAR SKINS ==========================================
 
-    ret->skin = malloc(header.skinwidth * header.skinheight);
+    ret->skin = (char *)&ret[1];
 
     printf("Carregando %d Skins [%d x %d\n", header.numskins, header.skinwidth, header.skinheight);
     aliasskintype_t tipoSkin;
@@ -96,7 +103,7 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR VERTS ==========================================
     printf("Carregando %d Verts\n", header.numverts);
 
-    ret->skinmap = malloc(header.numverts * sizeof(skinvert_t));
+    ret->skinmap = (skinvert_t *)&ret->skin[(ret->skinwidth * ret->skinheight)];
 
     stvert_t vert;
     for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
@@ -113,7 +120,7 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR TRIS ==========================================
     printf("Carregando %d Tris\n", header.numtris);
 
-    ret->tris = malloc(header.numtris * sizeof(triangulo_t));
+    ret->tris = (triangulo_t *)&ret->skinmap[header.numverts];
 
     dtriangle_t tri;
     for (int cnt_tris=0; cnt_tris<header.numtris; cnt_tris++) {
@@ -132,21 +139,8 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR FRAMES ==========================================
     printf("Carregando %d Frames\n", header.numframes);
 
-    ret->frames = malloc(header.numframes * header.numverts * sizeof(vetor3d_t));
-    if (!ret->frames) {
-        printf("Erro malloc frames\n\n");
-        fclose(fp);
-        freeObj3D(ret);
-        return NULL;
-    }
-
-    ret->framenames = malloc(header.numframes * 16);
-    if (!ret->framenames) {
-        printf("Erro malloc framenames\n\n");
-        fclose(fp);
-        freeObj3D(ret);
-        return NULL;
-    }
+    ret->framenames = (char *)&ret->tris[header.numtris];
+    ret->frames = (vetor3d_t *)&ret->framenames[header.numframes * 16];
 
     aliasframetype_t tipoFrame;
     trivertx_t vertFrame;

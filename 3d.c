@@ -27,13 +27,7 @@ void rotacao3D(ponto *p, int angulo)
 void freeObj3D(obj3d_t *obj)
 {
     if (!obj) return;
-
-    free(obj->frames);
-    free(obj->framenames);
+    
     free(obj->framesanims);
-    free(obj->skin);
-    free(obj->skinmap);
-    free(obj->frames);
-    free(obj->tris);
     free(obj);
 }
