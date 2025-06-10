@@ -43,7 +43,7 @@ void msg(char *out) {
 
 int main(int argc, char **argv)
 {
-	int janX = 800, janY = 600, totAnims;
+	int janX = 520, janY = 520, totAnims;
 
 	msg("Quake MDL Viewer");
 
@@ -100,6 +100,7 @@ int main(int argc, char **argv)
 
 
 	int numAnimSel = 0;
+	int numAnimSelAuto = 2;
 	int numFrameSel = 0;
 	char out[256];
 
@@ -116,8 +117,14 @@ int main(int argc, char **argv)
 
 		numFrameSel++;
 
-		if (numFrameSel >= obj->framesanims[numAnimSel].frameF) {
-			numFrameSel = obj->framesanims[numAnimSel].frameI;
+		int naSel = (numAnimSel == -1) ? numAnimSelAuto : numAnimSel;
+		if (numFrameSel >= obj->framesanims[naSel].frameF) {
+			if (numAnimSel == -1) {
+				numAnimSelAuto = rand() % obj->totAnims;
+				numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
+			} else {
+				numFrameSel = obj->framesanims[naSel].frameI;
+			}
 		}
 
 		// Wait for the user to press a character.
@@ -129,8 +136,8 @@ int main(int argc, char **argv)
 
 		if (c == '\\') {
 			numAnimSel--;
-			if (numAnimSel < 0)
-				numAnimSel = 0;
+			if (numAnimSel < -1)
+				numAnimSel = -1;
 			
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'z') {
