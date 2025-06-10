@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	msg("Quake MDL Viewer");
 
 	if (argc < 4 || strlen(argv[1]) < 4) {
-		msg("Uso: mdlViewer ARQUIVO.mdl");
+		msg("Uso: mdlViewer ARQUIVO1.mdl ARQUIVO2.mdl ARQUIVO3.mdl");
 		exit(1);
 	}
 
@@ -99,21 +99,25 @@ int main(int argc, char **argv)
 	int numFrameSel3 = 0;
 	char out[256];
 
+	vetor3d_t pos1 = {  0, 0, 0 };
+	vetor3d_t pos2 = { 70, 0, 0 };
+	vetor3d_t pos3 = {-70, 0, 0 };
+
 	while (1)
 	{
 		char *framename = &obj->framenames[numFrameSel * 16];
 
-		grafico_desenha_objeto(obj, numFrameSel, paleta);
+		grafico_desenha_objeto(obj, pos1, numFrameSel, paleta);
 
-		grafico_desenha_objeto(obj2, numFrameSel2, paleta);
+		grafico_desenha_objeto(obj2, pos2, numFrameSel2, paleta);
 		numFrameSel2++;
 		if(numFrameSel2 >= obj2->numframes -1)
 			numFrameSel2 = 0;
 
-		grafico_desenha_objeto(obj3, numFrameSel3, paleta);
-		// numFrameSel3++;
-		// if(numFrameSel3 >= obj3->numframes -1)
-		// 	numFrameSel3 = 0;
+		grafico_desenha_objeto(obj3, pos3, numFrameSel3, paleta);
+		numFrameSel3++;
+		if(numFrameSel3 >= 8)
+			numFrameSel3 = 0;
 
 		grafico_mostra();
 

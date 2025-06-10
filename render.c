@@ -3,7 +3,7 @@
 #include "gfx_ptBR.h"
 #include "3d.h"
 
-void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
+void grafico_desenha_objeto(obj3d_t *obj, vetor3d_t posicao, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
 	ponto *verts = &obj->frames[numFrameSel * obj->numverts];
@@ -44,9 +44,9 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 			// 	skinX1,skinY1,                         skinX2,skinY2,                         skinX3,skinY3);
 			
 			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->pos.y, vertice1->pos.z, vertice1->pos.x, skinX1,skinY1,
-				vertice2->pos.y, vertice2->pos.z, vertice2->pos.x, skinX2,skinY2,
-				vertice3->pos.y, vertice3->pos.z, vertice3->pos.x, skinX3,skinY3);
+				vertice1->pos.y+posicao.x, vertice1->pos.z, vertice1->pos.x, skinX1,skinY1,
+				vertice2->pos.y+posicao.x, vertice2->pos.z, vertice2->pos.x, skinX2,skinY2,
+				vertice3->pos.y+posicao.x, vertice3->pos.z, vertice3->pos.x, skinX3,skinY3);
 			
 			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
 			// 	vertice1->x, (255-vertice1->z)+260, vertice1->y, vertice2->x, (255-vertice2->z)+260, vertice2->y, vertice3->x, (255-vertice3->z)+260, vertice3->y,
