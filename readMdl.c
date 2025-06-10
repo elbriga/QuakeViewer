@@ -48,12 +48,12 @@ obj3d_t *readMdl(char *mdlfilename)
     printf("NumVerts: %d - numTris: %d - numFrames: %d\n", header.numverts, header.numtris, header.numframes);
     printf("SyncType: %d - flags: %d - Size: %f\n", header.synctype, header.flags, header.size);
 
-    int totMemObj = sizeof(obj3d_t) +
-                    (header.skinwidth * header.skinheight) +
-                    (header.numverts * sizeof(skinvert_t)) +
-                    (header.numtris * sizeof(triangulo_t)) +
-                    (header.numframes * 16) +
-                    (header.numframes * header.numverts * sizeof(vetor3d_t));
+    int totMemObj = sizeof(obj3d_t) +                        // ret
+                    (header.skinwidth * header.skinheight) + // ret->skin
+                    (header.numverts * sizeof(skinvert_t)) + // ret->skinmap
+                    (header.numtris * sizeof(triangulo_t)) + // ret->tris
+                    (header.numframes * 16) +                // ret->framenames
+                    (header.numframes * header.numverts * sizeof(ponto)); // ret->frames
 
     ret = calloc(1, totMemObj);
     if (!ret) {
@@ -140,7 +140,7 @@ obj3d_t *readMdl(char *mdlfilename)
     printf("Carregando %d Frames\n", header.numframes);
 
     ret->framenames = (char *)&ret->tris[header.numtris];
-    ret->frames = (vetor3d_t *)&ret->framenames[header.numframes * 16];
+    ret->frames = (ponto *)&ret->framenames[header.numframes * 16];
 
     aliasframetype_t tipoFrame;
     trivertx_t vertFrame;
@@ -160,9 +160,9 @@ obj3d_t *readMdl(char *mdlfilename)
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
 
-                ret->frames[cnt_frames * header.numverts + cnt_vert].x = 255-vertFrame.v[0];
-                ret->frames[cnt_frames * header.numverts + cnt_vert].y = vertFrame.v[1];
-                ret->frames[cnt_frames * header.numverts + cnt_vert].z = 255-vertFrame.v[2];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.x = 255-vertFrame.v[0];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.y = vertFrame.v[1];
+                ret->frames[cnt_frames * header.numverts + cnt_vert].pos.z = 255-vertFrame.v[2];
 
                 //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
 

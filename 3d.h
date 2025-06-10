@@ -3,8 +3,8 @@
 
 typedef struct
 {
-    float x, y;
-} vetor2d;
+    int x, y;
+} vetor2d_t;
 
 typedef struct
 {
@@ -27,10 +27,7 @@ typedef struct
     vetor3d_t pos;
     vetor3d_t rot;
 
-    vetor2d screen;
-    vetor2d rotSscreen;
-
-    cor_t cor;
+    vetor2d_t screen;
 } ponto;
 
 typedef struct
@@ -61,7 +58,7 @@ typedef struct
     skinvert_t *skinmap;
 
     char        *framenames;
-    vetor3d_t   *frames;
+    ponto       *frames;
     triangulo_t *tris;
 
     animationframes_t *framesanims;
