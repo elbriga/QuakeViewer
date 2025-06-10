@@ -163,6 +163,7 @@ int main(int argc, char **argv)
 
 	msg("Free Myke Tyson FREE");
 
+	freeObj3D(obj3);
 	freeObj3D(obj2);
 	freeObj3D(obj);
 
