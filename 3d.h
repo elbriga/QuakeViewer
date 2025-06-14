@@ -68,7 +68,20 @@ typedef struct
     vetor3d_t rotacao;
 } obj3d_t;
 
+typedef struct
+{
+	vetor3d_t pos;
+    vetor3d_t ang;
+} camera_t;
+
 void freeObj3D(obj3d_t *obj);
+
+void obj_reset(obj3d_t *obj, int numFrame);
+void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);
+void obj_save(obj3d_t *obj);
+
+void rotacao2DEixoX(ponto *p, int angulo);
 void rotacao2DEixoY(ponto *p, int angulo);
+void rotacao2DEixoZ(ponto *p, int angulo);
 
 #endif

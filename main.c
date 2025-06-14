@@ -44,6 +44,7 @@ void msg(char *out) {
 int main(int argc, char **argv)
 {
 	int janX = 520, janY = 520, totAnims;
+	camera_t cam;
 
 	msg("Quake MDL Viewer");
 
@@ -91,7 +92,6 @@ int main(int argc, char **argv)
 		exit(33);
 	}
 
-
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
 	int numFrameSel = 0;
@@ -99,36 +99,59 @@ int main(int argc, char **argv)
 	int numFrameSel3 = 0;
 	char out[256];
 
-	obj->posicao.x  = 100;
-	obj->posicao.y  = 50;
-	obj->posicao.z  = 200;
+	obj->posicao.x  = 0;
+	obj->posicao.y  = 0;
+	obj->posicao.z  = 50;
+	obj->rotacao.x = 90;
 
-	obj2->posicao.x  = 0;
+	obj2->posicao.x  = 30;
 	obj2->posicao.y  = 0;
-	obj2->posicao.z  = 200;
+	obj2->posicao.z  = 100;
+	obj2->rotacao.x = 90;
 
-	obj3->posicao.x  = 50;
+	obj3->posicao.x  = -40;
 	obj3->posicao.y  = 0;
-	obj3->posicao.z  = 200;
+	obj3->posicao.z  = 100;
+	obj3->rotacao.x = 90;
+
+	cam.pos.x = 0;
+	cam.pos.y = 20;
+	cam.pos.z = -100;
+
+	cam.ang.x = 0;
+	cam.ang.y = 0;
+	cam.ang.z = 0;
+
+	grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+	grafico_mostra();
+
+	grafico_tecla_espera();
 	
 	while (1)
 	{
 		char *framename = &obj->framenames[numFrameSel * 16];
 
-		grafico_desenha_objeto(obj, numFrameSel, paleta);
+		grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 
-		grafico_desenha_objeto(obj2, numFrameSel2, paleta);
+		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
 		if(numFrameSel2 >= obj2->numframes -1)
 			numFrameSel2 = 0;
 
-		grafico_desenha_objeto(obj3, numFrameSel3, paleta);
+		grafico_desenha_objeto(&cam, obj3, numFrameSel3, paleta);
 		numFrameSel3++;
 		if(numFrameSel3 >= 8)
 			numFrameSel3 = 0;
-		obj3->rotacao.y++;
-		if(obj3->rotacao.y >= 360)
-			obj3->rotacao.y = 0;
+
+		obj->rotacao.y++;
+		if(obj->rotacao.y >= 360)
+			obj->rotacao.y = 0;
+		obj2->rotacao.y--;
+		if(obj2->rotacao.y <= 0)
+			obj2->rotacao.y = 360;
+		obj3->rotacao.z--;
+		if(obj3->rotacao.z <= 0)
+			obj3->rotacao.z = 360;
 
 		grafico_mostra();
 
@@ -166,6 +189,10 @@ int main(int argc, char **argv)
 				numAnimSel = obj->totAnims - 1;
 
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
+		} else if (c == 'y') {
+			obj->posicao.z--;
+		} else if (c == 'h') {
+			obj->posicao.z++;
 		} else if (c == 't') {
 			obj->posicao.y--;
 		} else if (c == 'g') {

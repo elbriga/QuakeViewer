@@ -1,42 +1,18 @@
 #include <stdio.h>
 
-#include "gfx_ptBR.h"
 #include "3d.h"
+#include "gfx_ptBR.h"
+#include "render.h"
 
-void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
+void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
 	ponto *verts = &obj->frames[numFrameSel * obj->numverts];
 
-	// rotacionar
-	if (obj->rotacao.y) {
-		for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
-			rotacao2DEixoY(&verts[cnt_vxt], obj->rotacao.y);
-		}
-	} else {
-		for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
-			verts[cnt_vxt].rot.x = verts[cnt_vxt].pos.x;
-			verts[cnt_vxt].rot.y = verts[cnt_vxt].pos.y;
-			verts[cnt_vxt].rot.z = verts[cnt_vxt].pos.z;
-		}
-	}
+	obj_projecao3D(cam, obj, numFrameSel);
 
-	// posicionar
-	for (int cnt_vxt=0; cnt_vxt<obj->numverts; cnt_vxt++) {
-		verts[cnt_vxt].rot.x += obj->posicao.x;
-		verts[cnt_vxt].rot.y += obj->posicao.y;
-		verts[cnt_vxt].rot.z += obj->posicao.z;
-	}
-
-	for (int scan=0; scan<2; scan++) { // Desenhar primeiro os tris->isFront = 1, depois os = 0
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
 			triangulo_t *tri = &obj->tris[cnt_tri];
-
-			if (!scan) {
-				if (tri->isFront) continue;
-			} else {
-				if (!tri->isFront) continue;
-			}
 
 			ponto *vertice1 = &verts[tri->v[0]];
 			ponto *vertice2 = &verts[tri->v[1]];
@@ -59,52 +35,10 @@ void grafico_desenha_objeto(obj3d_t *obj, int numFrameSel, char paleta[256][3])
 				if (svxt3->onseam) skinX3 += meiaSkin;
 			}
 
-			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-			// 	vertice1->x, vertice1->y, vertice1->z, vertice2->x, vertice2->y, vertice2->z, vertice3->x, vertice3->y, vertice3->z,
-			// 	skinX1,skinY1,                         skinX2,skinY2,                         skinX3,skinY3);
-			
 			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->rot.x, vertice1->rot.y, vertice1->rot.z, skinX1,skinY1,
-				vertice2->rot.x, vertice2->rot.y, vertice2->rot.z, skinX2,skinY2,
-				vertice3->rot.x, vertice3->rot.y, vertice3->rot.z, skinX3,skinY3);
+				vertice1->screen.x+260, vertice1->screen.y+260, vertice1->rot.z, skinX1,skinY1,
+				vertice2->screen.x+260, vertice2->screen.y+260, vertice2->rot.z, skinX2,skinY2,
+				vertice3->screen.x+260, vertice3->screen.y+260, vertice3->rot.z, skinX3,skinY3);
 			
-			// grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-			// 	vertice1->x, (255-vertice1->z)+260, vertice1->y, vertice2->x, (255-vertice2->z)+260, vertice2->y, vertice3->x, (255-vertice3->z)+260, vertice3->y,
-			// 	skinX1,skinY1, skinX2,skinY2, skinX3,skinY3);
 		}
-	}
-/*
-	grafico_cor( 0, 250, 0 );
-	for (int cnt_vert=0; cnt_vert<obj->numverts; cnt_vert++) {
-		vetor3d_t *vertice = &frame->verts[cnt_vert];
-
-		grafico_ponto(vertice->x, vertice->y);
-
-		grafico_ponto(vertice->y + 260, 255 - vertice->z);
-
-		grafico_ponto(vertice->x, (255 - vertice->z) + 260);
-
-		//printf("PONTO X:%f Y:%f Z:%f\n", vertice->x, vertice->y, vertice->z);
-	}
-
-	// SKIN
-	for (int skinY=0; skinY<obj->skinheight; skinY++) {
-		for (int skinX=0; skinX<obj->skinwidth; skinX++) {
-			unsigned char idx_cor = obj->skin[skinY * obj->skinwidth + skinX];
-
-			grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
-			grafico_ponto(skinX + 260, skinY + 260);
-		}
-	}
-	
-	// SKINMAP
-	for (int cnt_vert=0; cnt_vert<obj->numverts; cnt_vert++) {
-		skinvert_t *skinvert = &obj->skinmap[cnt_vert];
-
-		if (skinvert->onseam) grafico_cor( 0,255,0 );
-		else                  grafico_cor( 255,255,255 );
-
-		grafico_ponto(skinvert->s + 260, skinvert->t + 260);
-	}
-*/
 }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "3d.h"
 #include "gfx.h"
 #include "gfx_ptBR.h"
 
@@ -73,6 +74,12 @@ char grafico_tecla()
 char grafico_tecla_espera()
 {
 	return gfx_wait_block();
+}
+
+void grafico_projecao3D(ponto *p)
+{
+    p->screen.x = ((FOV * p->rot.x) / p->rot.z);// + (grafico_largura / 2);
+    p->screen.y = ((FOV * p->rot.y) / p->rot.z);// + (grafico_altura  / 2);
 }
 
 void grafico_triangulo(int x1, int y1, int x2, int y2, int x3, int y3,
@@ -404,12 +411,11 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 						// Linha saiu para fora da tela > CLIP
 						break;
 					}
-					if (z < zBuffer[(cY * grafico_largura) + cX]) {
+					if (z > 50 && z < zBuffer[(cY * grafico_largura) + cX]) {
 						idx_cor = textura[(int)texY * textW + (int)texX];
-
 						grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
-
 						grafico_ponto(cX, cY);
+						
 						zBuffer[(cY * grafico_largura) + cX] = z;
 					}
 				}
