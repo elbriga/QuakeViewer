@@ -7,17 +7,15 @@
 void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
-	ponto *verts = &obj->frames[numFrameSel * obj->numverts];
 
 	obj_projecao3D(cam, obj, numFrameSel);
 
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
 			triangulo_t *tri = &obj->tris[cnt_tri];
 
-			ponto *vertice1 = &verts[tri->v[0]];
-			ponto *vertice2 = &verts[tri->v[1]];
-			ponto *vertice3 = &verts[tri->v[2]];
-
+			ponto *vertice1 = &obj->verts[tri->v[0]];
+			ponto *vertice2 = &obj->verts[tri->v[1]];
+			ponto *vertice3 = &obj->verts[tri->v[2]];
 			switch (obj->tipo)
 			{
 			case OBJ_TIPO_WIRE:
@@ -25,6 +23,14 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 					vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
 					vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
 					vertice3->screen.x, vertice3->screen.y, vertice3->rot.z);
+				break;
+
+			case OBJ_TIPO_FLAT:
+				grafico_triangulo(
+					vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
+					vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
+					vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
+					tri->cor.r, tri->cor.g, tri->cor.b);
 				break;
 
 			case OBJ_TIPO_TEXTURE:

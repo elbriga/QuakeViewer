@@ -106,7 +106,7 @@ void gfx_line( int x1, int y1, int x2, int y2 )
 {
 	//XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
 
-	printf("TODO\n");
+	XDrawLine(db.display, db.back_buffer, db.gc, x1, y1, x2, y2);
 }
 
 /* Change the current drawing color. */

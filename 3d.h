@@ -29,9 +29,7 @@ typedef struct {
 
 typedef struct
 {
-    vetor3d_t pos;
     vetor3d_t rot;
-
     vetor2d_t screen;
 } ponto;
 
@@ -39,6 +37,7 @@ typedef struct
 {
     int v[3];
     char isFront;
+    cor_t cor;
 } triangulo_t;
 
 typedef struct
@@ -64,8 +63,10 @@ typedef struct
     skinvert_t *skinmap;
 
     char        *framenames;
-    ponto       *frames;
+    vetor3d_t   *frames;
     triangulo_t *tris;
+
+    ponto       *verts;
 
     animationframes_t *framesanims;
 
@@ -82,10 +83,11 @@ typedef struct
 
 void freeObj3D(obj3d_t *obj);
 
-void obj_reset(obj3d_t *obj, int numFrame);
 void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);
-void obj_save(obj3d_t *obj);
-
 obj3d_t *obj_plano(int sizeX, int sizeY);
+
+void rotacao2DEixoX(ponto *p, int angulo);
+void rotacao2DEixoY(ponto *p, int angulo);
+void rotacao2DEixoZ(ponto *p, int angulo);
 
 #endif

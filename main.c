@@ -101,32 +101,43 @@ int main(int argc, char **argv)
 	int numFrameSel3 = 0;
 	char out[256];
 
-	obj->posicao.x  = 0;
-	obj->posicao.y  = 0;
-	obj->posicao.z  = 50;
-	obj->rotacao.x = 90;
+	chao->rotacao.y = 55;
 
-	obj2->posicao.x  = 30;
-	obj2->posicao.y  = 0;
-	obj2->posicao.z  = 100;
-	obj2->rotacao.x = 90;
+	obj->posicao.x  = 0;
+	obj->posicao.y  = -45;
+	obj->posicao.z  = 0;
+	obj->rotacao.x = 0;
+
+	obj2->posicao.x  = 40;
+	obj2->posicao.y  = -46;
+	obj2->posicao.z  = 0;
+	obj2->rotacao.x = 0;
 
 	obj3->posicao.x  = -40;
-	obj3->posicao.y  = 0;
-	obj3->posicao.z  = 100;
-	obj3->rotacao.x = 90;
+	obj3->posicao.y  = -27;
+	obj3->posicao.z  = 0;
+	obj3->rotacao.x = 0;
 
 	cam.pos.x = 0;
-	cam.pos.y = 20;
+	cam.pos.y = 30;
 	cam.pos.z = 100;
 
 	cam.ang.x = 0;
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
+	// obj->tipo = OBJ_TIPO_WIRE;
+
+	printf("Init!\n");
+	// grafico_tecla_espera();
+	// printf("FOI!\n");
+
 	grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 
 	grafico_desenha_objeto(&cam, chao, 0, NULL);
+
+	// grafico_tecla_espera();
+	// printf("FOI 2!\n");
 
 	grafico_mostra();
 
@@ -156,13 +167,13 @@ int main(int argc, char **argv)
 		obj2->rotacao.y--;
 		if(obj2->rotacao.y <= 0)
 			obj2->rotacao.y = 360;
-		obj3->rotacao.z--;
-		if(obj3->rotacao.z <= 0)
-			obj3->rotacao.z = 360;
+		// obj3->rotacao.z--;
+		// if(obj3->rotacao.z <= 0)
+		// 	obj3->rotacao.z = 360;
 
 		grafico_mostra();
 
-		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)cam.pos.z);
+		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)obj3->posicao.y);
 		msg(out);
 
 		numFrameSel++;
@@ -197,17 +208,17 @@ int main(int argc, char **argv)
 
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'y') {
-			cam.pos.z--;
-		} else if (c == 'h') {
 			cam.pos.z++;
+		} else if (c == 'h') {
+			cam.pos.z--;
 		} else if (c == 't') {
-			cam.ang.x++;
+			obj3->posicao.y++;
 		} else if (c == 'g') {
-			cam.ang.x--;
+			obj3->posicao.y--;
 		} else if (c == 'u') {
-			cam.ang.y++;
+			cam.pos.y++;
 		} else if (c == 'j') {
-			cam.ang.y--;
+			cam.pos.y--;
 		}
 
 		if (numFrameSel < 0)

@@ -38,8 +38,6 @@ obj3d_t *readMdl(char *mdlfilename)
         return NULL;
     }
 
-    printf("HeaderSize: 0x%X\n\n", (int)sizeof(mdl_t));
-
     printf("Version...: %d\n", header.version);
     printf("Scale.....: %f %f %f\n", header.scale[0], header.scale[1], header.scale[2]);
     printf("ScaleOrg..: %f %f %f\n", header.scale_origin[0], header.scale_origin[1], header.scale_origin[2]);
@@ -53,7 +51,8 @@ obj3d_t *readMdl(char *mdlfilename)
                     (header.numverts * sizeof(skinvert_t)) + // ret->skinmap
                     (header.numtris * sizeof(triangulo_t)) + // ret->tris
                     (header.numframes * 16) +                // ret->framenames
-                    (header.numframes * header.numverts * sizeof(ponto)); // ret->frames
+                    (header.numframes * header.numverts * sizeof(vetor3d_t)) + // ret->frames
+                    (header.numverts * sizeof(ponto));       // ret->verts
 
     ret = calloc(1, totMemObj);
     if (!ret) {
@@ -142,10 +141,12 @@ obj3d_t *readMdl(char *mdlfilename)
     printf("Carregando %d Frames\n", header.numframes);
 
     ret->framenames = (char *)&ret->tris[header.numtris];
-    ret->frames = (ponto *)&ret->framenames[header.numframes * 16];
+    ret->frames = (vetor3d_t *)&ret->framenames[header.numframes * 16];
+    ret->verts  = (ponto *)&ret->frames[header.numframes * header.numverts];
 
     aliasframetype_t tipoFrame;
     trivertx_t vertFrame;
+    ponto p;
     for (int cnt_frames=0; cnt_frames<header.numframes; cnt_frames++) {
         fread(&tipoFrame, 1, 4, fp);
 
@@ -159,23 +160,27 @@ obj3d_t *readMdl(char *mdlfilename)
 
             strcpy(&ret->framenames[cnt_frames * 16], frame.name);
 
-            // vetor3d_t min = { 1000,1000,1000 }, max = { 0,0,0 };
+            vetor3d_t min = { 1000,1000,1000 }, max = { 0,0,0 };
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
+                vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
 
-                ponto *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
+                p.rot.x = ((float)vertFrame.v[0] - 128) * header.scale[0];
+                p.rot.y = ((float)vertFrame.v[1] - 128) * header.scale[1];
+                p.rot.z = ((float)vertFrame.v[2] - 128) * header.scale[2];
+                rotacao2DEixoX(&p, 90);
 
-                pnt->pos.x = ((float)vertFrame.v[0] - 128) * header.scale[0];
-                pnt->pos.y = ((float)vertFrame.v[1] - 128) * header.scale[1];
-                pnt->pos.z = ((float)vertFrame.v[2] - 128) * header.scale[2];
+                pnt->x = p.rot.x;
+                pnt->y = p.rot.y;
+                pnt->z = p.rot.z;
 
                 // bounding box
-                // if (pnt->pos.x < min.x) min.x = pnt->pos.x;
-                // if (pnt->pos.x > max.x) max.x = pnt->pos.x;
-                // if (pnt->pos.y < min.y) min.y = pnt->pos.y;
-                // if (pnt->pos.y > max.y) max.y = pnt->pos.y;
-                // if (pnt->pos.z < min.z) min.z = pnt->pos.z;
-                // if (pnt->pos.z > max.z) max.z = pnt->pos.z;
+                if (pnt->x < min.x) min.x = pnt->x;
+                if (pnt->x > max.x) max.x = pnt->x;
+                if (pnt->y < min.y) min.y = pnt->y;
+                if (pnt->y > max.y) max.y = pnt->y;
+                if (pnt->z < min.z) min.z = pnt->z;
+                if (pnt->z > max.z) max.z = pnt->z;
 
                 //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
             }
@@ -187,11 +192,11 @@ obj3d_t *readMdl(char *mdlfilename)
             //     min.z + (max.z - min.z) / 2
             // };
             // for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
-            //     ponto *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
+            //     vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
 
-            //     pnt->pos.x -= 128;//med.x;
-            //     pnt->pos.y -= 128;//med.y;
-            //     pnt->pos.z -= 128;//med.z;
+            //     pnt->x -= 128;//med.x;
+            //     pnt->y -= -min.y;
+            //     pnt->z -= 128;//med.z;
             // }
 
         } else {

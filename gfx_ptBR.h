@@ -16,7 +16,10 @@ void grafico_ponto( int x, int y );
 
 void grafico_projecao3D(ponto *p);
 
-void grafico_triangulo(int x1, int y1, int x2, int y2, int x3, int y3,
+void grafico_triangulo(
+	int x1, int y1, float z1,
+	int x2, int y2, float z2,
+	int x3, int y3, float z3,
 	int r, int g, int b);
 void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
     int x1, int y1, int x2, int y2, int x3, int y3,
