@@ -53,6 +53,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	obj3d_t *chao = obj_plano(10, 10);
+
 	obj3d_t *obj = readMdl(argv[1]);
 	if (!obj) {
 		msg("Falha ao carregar ARQUIVO.mdl");
@@ -116,21 +118,26 @@ int main(int argc, char **argv)
 
 	cam.pos.x = 0;
 	cam.pos.y = 20;
-	cam.pos.z = -100;
+	cam.pos.z = 100;
 
 	cam.ang.x = 0;
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
 	grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+
+	grafico_desenha_objeto(&cam, chao, 0, NULL);
+
 	grafico_mostra();
 
 	grafico_tecla_espera();
 	
 	while (1)
 	{
-		char *framename = &obj->framenames[numFrameSel * 16];
+		grafico_desenha_objeto(&cam, chao, 0, NULL);
 
+
+		char *framename = &obj->framenames[numFrameSel * 16];
 		grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
@@ -155,7 +162,7 @@ int main(int argc, char **argv)
 
 		grafico_mostra();
 
-		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)obj3->rotacao.y);
+		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)cam.pos.z);
 		msg(out);
 
 		numFrameSel++;
@@ -190,13 +197,17 @@ int main(int argc, char **argv)
 
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'y') {
-			obj->posicao.z--;
+			cam.pos.z--;
 		} else if (c == 'h') {
-			obj->posicao.z++;
+			cam.pos.z++;
 		} else if (c == 't') {
-			obj->posicao.y--;
+			cam.ang.x++;
 		} else if (c == 'g') {
-			obj->posicao.y++;
+			cam.ang.x--;
+		} else if (c == 'u') {
+			cam.ang.y++;
+		} else if (c == 'j') {
+			cam.ang.y--;
 		}
 
 		if (numFrameSel < 0)
@@ -212,6 +223,8 @@ int main(int argc, char **argv)
 	freeObj3D(obj3);
 	freeObj3D(obj2);
 	freeObj3D(obj);
+
+	freeObj3D(chao);
 
 	grafico_desliga();
 

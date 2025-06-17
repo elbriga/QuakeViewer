@@ -78,8 +78,8 @@ char grafico_tecla_espera()
 
 void grafico_projecao3D(ponto *p)
 {
-    p->screen.x = ((FOV * p->rot.x) / p->rot.z);// + (grafico_largura / 2);
-    p->screen.y = ((FOV * p->rot.y) / p->rot.z);// + (grafico_altura  / 2);
+    p->screen.x = ((FOV * p->rot.x) / p->rot.z) + (grafico_largura / 2);
+    p->screen.y = ((FOV * p->rot.y) / p->rot.z) + (grafico_altura  / 2);
 }
 
 void grafico_triangulo(int x1, int y1, int x2, int y2, int x3, int y3,
@@ -285,6 +285,18 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	}
 }
 
+void grafico_triangulo_wireZ(
+	int x1,int y1,int z1,
+	int x2,int y2,int z2,
+	int x3,int y3,int z3)
+{
+	grafico_cor(255,255,255);
+
+	grafico_ponto(x1, y1);
+	grafico_ponto(x2, y2);
+	grafico_ponto(x3, y3);
+}
+
 void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char paleta[256][3],
     int x1,int y1,int z1, int ts1,int tt1,
 	int x2,int y2,int z2, int ts2,int tt2,
@@ -401,9 +413,10 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 			// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF,
 			//  partindo das coordenadas texXI,texYI ate texXF, texYF
 			//  partido do Z zI ate o zF
+			int zBufferBase = cY * grafico_largura;
 			for (int cX = xL1; cX <= xL2; cX++)
 			{
-				// printf("z[%f] < zBuf[%f]\n", z, zBuffer[(cY * grafico_largura) + cX]);
+				// printf("z[%f] < zBuf[%f]\n", z, zBuffer[zBufferBase + cX]);
 				// grafico_tecla_espera();
 
 				if (cX > 0) {
@@ -411,12 +424,12 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 						// Linha saiu para fora da tela > CLIP
 						break;
 					}
-					if (z > 50 && z < zBuffer[(cY * grafico_largura) + cX]) {
+					if (z > 50 && z < zBuffer[zBufferBase + cX]) {
 						idx_cor = textura[(int)texY * textW + (int)texX];
 						grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
 						grafico_ponto(cX, cY);
 						
-						zBuffer[(cY * grafico_largura) + cX] = z;
+						zBuffer[zBufferBase + cX] = z;
 					}
 				}
 

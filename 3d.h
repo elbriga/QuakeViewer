@@ -1,6 +1,11 @@
 #ifndef gfx3D_H
 #define gfx3D_H
 
+#define OBJ_TIPO_WIRE    1
+#define OBJ_TIPO_FLAT    2
+#define OBJ_TIPO_GOURAD  4
+#define OBJ_TIPO_TEXTURE 8
+
 typedef struct
 {
     int x, y;
@@ -46,6 +51,7 @@ typedef struct
 {
     char nome[64];
 
+    int tipo;
     int numverts;
     int numtris;
     int numframes;
@@ -80,8 +86,6 @@ void obj_reset(obj3d_t *obj, int numFrame);
 void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);
 void obj_save(obj3d_t *obj);
 
-void rotacao2DEixoX(ponto *p, int angulo);
-void rotacao2DEixoY(ponto *p, int angulo);
-void rotacao2DEixoZ(ponto *p, int angulo);
+obj3d_t *obj_plano(int sizeX, int sizeY);
 
 #endif
