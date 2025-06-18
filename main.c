@@ -43,7 +43,7 @@ void msg(char *out) {
 
 int main(int argc, char **argv)
 {
-	int janX = 520, janY = 520, totAnims;
+	int janX = 720, janY = 720, totAnims;
 	camera_t cam;
 
 	msg("Quake MDL Viewer");

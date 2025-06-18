@@ -36,6 +36,7 @@ typedef struct
 typedef struct
 {
     int v[3];
+    vetor3d_t normal;
     char isFront;
     cor_t cor;
 } triangulo_t;
@@ -70,6 +71,8 @@ typedef struct
 
     animationframes_t *framesanims;
 
+    vetor3d_t *trisnormals;
+
     // run
     vetor3d_t posicao;
     vetor3d_t rotacao;
@@ -83,11 +86,13 @@ typedef struct
 
 void freeObj3D(obj3d_t *obj);
 
+void obj_calculate_face_normals(obj3d_t *obj);
+
 void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);
 obj3d_t *obj_plano(int sizeX, int sizeY);
 
-void rotacao2DEixoX(ponto *p, int angulo);
-void rotacao2DEixoY(ponto *p, int angulo);
-void rotacao2DEixoZ(ponto *p, int angulo);
+void rotacao2DEixoX(vetor3d_t *p, int angulo);
+void rotacao2DEixoY(vetor3d_t *p, int angulo);
+void rotacao2DEixoZ(vetor3d_t *p, int angulo);
 
 #endif

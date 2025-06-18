@@ -18,31 +18,31 @@ double to_radians(double deg)
   return deg * M_PI / 180.0;
 }
 
-void rotacao2DEixoX(ponto *p, int angulo)
+void rotacao2DEixoX(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
-    float valY = p->rot.y;
+    float valY = p->y;
 
-    p->rot.y = cos(anguloRad) * valY - sin(anguloRad) * p->rot.z;
-    p->rot.z = sin(anguloRad) * valY + cos(anguloRad) * p->rot.z;
+    p->y = cos(anguloRad) * valY - sin(anguloRad) * p->z;
+    p->z = sin(anguloRad) * valY + cos(anguloRad) * p->z;
 }
 
-void rotacao2DEixoY(ponto *p, int angulo)
+void rotacao2DEixoY(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
-    float valX = p->rot.x;
+    float valX = p->x;
 
-    p->rot.x = cos(anguloRad) * valX - sin(anguloRad) * p->rot.z;
-    p->rot.z = sin(anguloRad) * valX + cos(anguloRad) * p->rot.z;
+    p->x = cos(anguloRad) * valX - sin(anguloRad) * p->z;
+    p->z = sin(anguloRad) * valX + cos(anguloRad) * p->z;
 }
 
-void rotacao2DEixoZ(ponto *p, int angulo)
+void rotacao2DEixoZ(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
-    float valX = p->rot.x;
+    float valX = p->x;
 
-    p->rot.x = cos(anguloRad) * valX - sin(anguloRad) * p->rot.y;
-    p->rot.y = sin(anguloRad) * valX + cos(anguloRad) * p->rot.y;
+    p->x = cos(anguloRad) * valX - sin(anguloRad) * p->y;
+    p->y = sin(anguloRad) * valX + cos(anguloRad) * p->y;
 }
 
 void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
@@ -59,9 +59,9 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
         pnt->rot.z = base->z;
 
         // Rotacao do objeto - coordenadas de objeto
-        rotacao2DEixoX(pnt, obj->rotacao.x);
-        rotacao2DEixoY(pnt, obj->rotacao.y);
-        rotacao2DEixoZ(pnt, obj->rotacao.z);
+        rotacao2DEixoX(&pnt->rot, obj->rotacao.x);
+        rotacao2DEixoY(&pnt->rot, obj->rotacao.y);
+        rotacao2DEixoZ(&pnt->rot, obj->rotacao.z);
 
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
         pnt->rot.x += obj->posicao.x + cam->pos.x;
@@ -69,12 +69,39 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
         pnt->rot.z += obj->posicao.z + cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(pnt, cam->ang.x);
-        rotacao2DEixoY(pnt, cam->ang.y);
-        rotacao2DEixoZ(pnt, cam->ang.z);
+        rotacao2DEixoX(&pnt->rot, cam->ang.x);
+        rotacao2DEixoY(&pnt->rot, cam->ang.y);
+        rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
         // Projecao para 2D
         grafico_projecao3D(pnt);
+    }
+
+    // Projetar as normais das faces
+    offset = numFrame * obj->numtris;
+    for (int f=0; f < obj->numtris; f++) {
+        vetor3d_t *base  = &obj->trisnormals[offset + f];
+        triangulo_t *tri = &obj->tris[f];
+
+        // Reset - Coordenadas de Objeto
+        tri->normal.x = base->x;
+        tri->normal.y = base->y;
+        tri->normal.z = base->z;
+
+        // Rotacao do objeto - coordenadas de objeto
+        rotacao2DEixoX(&tri->normal, obj->rotacao.x);
+        rotacao2DEixoY(&tri->normal, obj->rotacao.y);
+        rotacao2DEixoZ(&tri->normal, obj->rotacao.z);
+
+        // Coordenadas de Mundo - posicao do objeto e posicao da camera
+        tri->normal.x += obj->posicao.x + cam->pos.x;
+        tri->normal.y += obj->posicao.y + cam->pos.y;
+        tri->normal.z += obj->posicao.z + cam->pos.z;
+
+        // Rotacao de Camera - coordenadas de camera
+        rotacao2DEixoX(&tri->normal, cam->ang.x);
+        rotacao2DEixoY(&tri->normal, cam->ang.y);
+        rotacao2DEixoZ(&tri->normal, cam->ang.z);
     }
 }
 
@@ -82,6 +109,55 @@ void obj_projecao3D_allFrames(camera_t *cam, obj3d_t *obj)
 {
     for (int numFrame=0; numFrame < obj->numframes; numFrame++) {
         obj_projecao3D(cam, obj, numFrame);
+    }
+}
+
+void normalize(vetor3d_t *normal)
+{
+    // TODO
+}
+
+vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
+{
+    vetor3d_t result;
+
+    result.x = a.y * b.z - a.z * b.y;
+    result.y = a.z * b.x - a.x * b.z;
+    result.z = a.x * b.y - a.y * b.x;
+
+    return result;
+}
+
+void obj_calculate_face_normals(obj3d_t *obj)
+{
+    obj->trisnormals = malloc(obj->numframes * obj->numtris * sizeof(vetor3d_t));
+    if (!obj->trisnormals) {
+        // TODO
+        return;
+    }
+
+    for (int numFrame=0; numFrame < obj->numframes; numFrame++) {
+        int offsetFrameVert = numFrame * obj->numverts;
+        int offsetFrameTri  = numFrame * obj->numtris;
+
+        for (int numTri=0; numTri < obj->numtris; numTri++) {
+            triangulo_t *tri = &obj->tris[numTri];
+
+            vetor3d_t *v1 = &obj->frames[offsetFrameVert + tri->v[0]];
+            vetor3d_t *v2 = &obj->frames[offsetFrameVert + tri->v[1]];
+            vetor3d_t *v3 = &obj->frames[offsetFrameVert + tri->v[2]];
+
+            vetor3d_t a = { v3->x - v1->x, v3->y - v1->y, v3->z - v1->z };
+            vetor3d_t b = { v2->x - v1->x, v2->y - v1->y, v2->z - v1->z };
+
+            vetor3d_t normal = cross_product(a, b);
+            normalize(&normal);
+
+            vetor3d_t *normalObj = &obj->trisnormals[offsetFrameTri + numTri];
+            normalObj->x = normal.x;
+            normalObj->y = normal.y;
+            normalObj->z = normal.z;
+        }
     }
 }
 
@@ -154,12 +230,18 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
         }
     }
 
+    // Normals
+    obj_calculate_face_normals(ret);
+
     return ret;
 }
 
 void freeObj3D(obj3d_t *obj)
 {
     if (!obj) return;
+    
+    if(obj->trisnormals)
+        free(obj->trisnormals);
     
     if(obj->framesanims)
         free(obj->framesanims);

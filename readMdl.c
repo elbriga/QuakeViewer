@@ -168,7 +168,7 @@ obj3d_t *readMdl(char *mdlfilename)
                 p.rot.x = ((float)vertFrame.v[0] - 128) * header.scale[0];
                 p.rot.y = ((float)vertFrame.v[1] - 128) * header.scale[1];
                 p.rot.z = ((float)vertFrame.v[2] - 128) * header.scale[2];
-                rotacao2DEixoX(&p, 90);
+                rotacao2DEixoX(&p.rot, 90);
 
                 pnt->x = p.rot.x;
                 pnt->y = p.rot.y;
@@ -264,6 +264,9 @@ obj3d_t *readMdl(char *mdlfilename)
     }
 
     fclose(fp);
+
+    // Normals
+    obj_calculate_face_normals(ret);
 
     printf("Modelo carregado!\n\n\n");
 
