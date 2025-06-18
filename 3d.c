@@ -102,6 +102,8 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
         rotacao2DEixoX(&tri->normal, cam->ang.x);
         rotacao2DEixoY(&tri->normal, cam->ang.y);
         rotacao2DEixoZ(&tri->normal, cam->ang.z);
+
+        normalize(&tri->normal);
     }
 }
 
@@ -126,6 +128,11 @@ vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
     result.z = a.x * b.y - a.y * b.x;
 
     return result;
+}
+
+float dot_product(vetor3d_t a, vetor3d_t b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 void obj_calculate_face_normals(obj3d_t *obj)
@@ -202,7 +209,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
             vetor3d_t *p = &ret->frames[X + Y * sizeX];
 
             p->x = PX;
-            p->y = 0;
+            p->y = (rand() % 10) - 5;
             p->z = PZ;
 
             PX += 10;

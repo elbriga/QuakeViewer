@@ -13,6 +13,11 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 		for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++) {
 			triangulo_t *tri = &obj->tris[cnt_tri];
 
+			// Backface culling
+			if (tri->normal.z < 0) {
+				continue;
+			}
+
 			ponto *vertice1 = &obj->verts[tri->v[0]];
 			ponto *vertice2 = &obj->verts[tri->v[1]];
 			ponto *vertice3 = &obj->verts[tri->v[2]];

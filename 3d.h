@@ -86,6 +86,9 @@ typedef struct
 
 void freeObj3D(obj3d_t *obj);
 
+float dot_product(vetor3d_t a, vetor3d_t b);
+void normalize(vetor3d_t *normal);
+
 void obj_calculate_face_normals(obj3d_t *obj);
 
 void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);

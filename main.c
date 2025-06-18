@@ -170,6 +170,9 @@ int main(int argc, char **argv)
 		// obj3->rotacao.z--;
 		// if(obj3->rotacao.z <= 0)
 		// 	obj3->rotacao.z = 360;
+		chao->rotacao.y--;
+		if(chao->rotacao.y <= 0)
+			chao->rotacao.y = 360;
 
 		grafico_mostra();
 
