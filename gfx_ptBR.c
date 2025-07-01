@@ -66,6 +66,15 @@ void grafico_ponto( int x, int y )
 	gfx_point(x, y);
 }
 
+void grafico_xis( int x, int y )
+{
+	gfx_point(x,   y-1);
+	gfx_point(x-1, y);
+	gfx_point(x,   y);
+	gfx_point(x+1, y);
+	gfx_point(x,   y+1);
+}
+
 void grafico_linha( int x0, int y0, int x1, int y1 )
 {
     // int dx = abs(x1 - x0);

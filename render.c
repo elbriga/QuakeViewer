@@ -73,5 +73,22 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 {
 	mapa_projecao3D(cam, mapa);
-	
+
+	grafico_cor(255,255,255);
+
+	triangulo_t *tri = mapa->tris;
+	for (int i=0; i < mapa->numtris; i++, tri++) {
+		// Backface culling
+		if (tri->normal.z < 0) {
+			continue;
+		}
+
+		ponto_t *vertice1 = &mapa->verts[tri->v[0]];
+		ponto_t *vertice2 = &mapa->verts[tri->v[1]];
+		ponto_t *vertice3 = &mapa->verts[tri->v[2]];
+
+		grafico_xis( vertice1->screen.x, vertice1->screen.y );
+		grafico_xis( vertice2->screen.x, vertice2->screen.y );
+		grafico_xis( vertice3->screen.x, vertice3->screen.y );
+	}
 }

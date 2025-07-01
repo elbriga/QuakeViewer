@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 	
 	while (1)
 	{
-		grafico_desenha_mapa(&cam, mapa);
+		grafico_desenha_mapa(&cam, mapa, paleta);
 
 		grafico_desenha_objeto(&cam, chao, 0, NULL);
 
