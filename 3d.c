@@ -59,6 +59,14 @@ void camera_step(camera_t *cam, int step)
     cam->pos.z -= cos(anguloRad) * step;
 }
 
+void camera_strafe(camera_t *cam, int step)
+{
+    double anguloRad = to_radians(cam->ang.y);
+
+    cam->pos.x -= cos(anguloRad) * step;
+    cam->pos.z += sin(anguloRad) * step;
+}
+
 void rotacao2DEixoX(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);

@@ -217,7 +217,10 @@ int main(int argc, char **argv)
 		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
 		else if (c == 84) camera_step( &cam, -2); // BAIXO
 
-		else if (c == 'd') _debug = 40;
+		else if (c == 'a') camera_strafe(&cam,  2);
+		else if (c == 'd') camera_strafe(&cam, -2);
+
+		else if (c == 'z') _debug = 40;
 
 		else if (c == '\\') {
 			numAnimSel--;

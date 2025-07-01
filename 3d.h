@@ -140,5 +140,6 @@ void rotacao2DEixoZ(vetor3d_t *p, int angulo);
 
 void camera_pitch(camera_t *cam, int step);
 void camera_step(camera_t *cam, int step);
+void camera_strafe(camera_t *cam, int step);
 
 #endif
