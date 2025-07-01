@@ -77,17 +77,32 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 
 	triangulo_t *tri = mapa->tris;
 	for (int i=0; i < mapa->numtris; i++, tri++) {
+		if (i != 100) continue;
+
 		// Backface culling
-		if (tri->normal.z < 0) {
-			continue;
-		}
+		// if (tri->normal.z < 0) {
+		// 	continue;
+		// }
 
 		ponto_t *vertice1 = &mapa->verts[tri->v[0]];
 		ponto_t *vertice2 = &mapa->verts[tri->v[1]];
 		ponto_t *vertice3 = &mapa->verts[tri->v[2]];
 
-		grafico_xis( vertice1->screen.x, vertice1->screen.y );
-		grafico_xis( vertice2->screen.x, vertice2->screen.y );
-		grafico_xis( vertice3->screen.x, vertice3->screen.y );
+		if (vertice1->rot.z > 10) grafico_xis( vertice1->screen.x, vertice1->screen.y );
+		if (vertice2->rot.z > 10) grafico_xis( vertice2->screen.x, vertice2->screen.y );
+		if (vertice3->rot.z > 10) grafico_xis( vertice3->screen.x, vertice3->screen.y );
+
+		grafico_triangulo(
+				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
+				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
+				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
+				tri->cor.r, tri->cor.g, tri->cor.b);
+
+printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}, v2{%d,%d,%d}, v3{%d,%d,%d}\n",
+	tri->normal.x, tri->normal.y, tri->normal.z,
+	(int)vertice1->rot.x, (int)vertice1->rot.y, (int)vertice1->rot.z,
+	(int)vertice2->rot.x, (int)vertice2->rot.y, (int)vertice2->rot.z,
+	(int)vertice3->rot.x, (int)vertice3->rot.y, (int)vertice3->rot.z
+);
 	}
 }
