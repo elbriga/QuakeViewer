@@ -279,6 +279,8 @@ mapa_t *readBsp(char *fileName)
     }
     printf("ents: %s\n\n", mapa->entities);
 
+    free(buffer);
+
     return mapa;
 
     /*for (int l=0; l < HEADER_LUMPS; l++) {
