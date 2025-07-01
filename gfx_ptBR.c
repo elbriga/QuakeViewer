@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 
 #include "3d.h"
 #include "gfx.h"
@@ -40,8 +41,10 @@ void grafico_limpa()
 
 void grafico_limpa_zbuffer()
 {
-	for(int zbz=0; zbz < grafico_altura * grafico_largura; zbz++) {
-		zBuffer[zbz] = 999999.999;
+	float *zbuf = &zBuffer[0];
+
+	for(int zbz=0; zbz < grafico_altura * grafico_largura; zbz++, zbuf++) {
+		*zbuf = FLT_MAX;
 	}
 }
 
@@ -116,6 +119,8 @@ void grafico_triangulo(
 	int x3, int y3, float z3,
 	int r, int g, int b)
 {
+	drawnZBufferTri = 1;
+	
 	// Transforma os params em array
 	int ponto[3][2];
 	ponto[0][0] = x1;
@@ -189,7 +194,7 @@ void grafico_triangulo(
 		int zBufferBase = cY * grafico_largura;
 		for (int cX = xL1; cX <= xL2; cX++)
 		{
-			if (z > 50 && z < zBuffer[zBufferBase + cX]) {
+			if (z > 10 && z < zBuffer[zBufferBase + cX]) {
 				grafico_ponto(cX, cY);
 				zBuffer[zBufferBase + cX] = z;
 			}
@@ -347,6 +352,8 @@ void grafico_triangulo_wireZ(
 	int x2,int y2,int z2,
 	int x3,int y3,int z3)
 {
+	drawnZBufferTri = 1;
+
 	grafico_cor(255,255,255);
 
 	// if (z1 > 50) grafico_ponto(x1, y1);
