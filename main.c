@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 		exit(33);
 	}
 
-	mapa_t *mapa = readBsp("data/maps/e2m1.bsp", paleta);
+	mapa_t *mapa = readBsp("data/maps/e2m1.bsp");
 	if (!mapa) {
 		msg("Erro ao carregar mapa");
 		exit(34);

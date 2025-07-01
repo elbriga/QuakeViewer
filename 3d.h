@@ -121,15 +121,15 @@ typedef struct
     vetor3d_t   *base;
     edge_t      *edges;
 
-    plano_t     *planes;
-    triangulo_t *tris;
+    plano_t       *planes;
+    triangulo_t   *tris;
     texture_t     *textures;
     textureinfo_t *texinfo;
 
-    ponto_t       *verts;
+    char *entities;
+    int   entitieslen;
 
-    vetor3d_t posicao;
-    vetor3d_t rotacao;
+    ponto_t *verts;
 } mapa_t;
 
 typedef struct

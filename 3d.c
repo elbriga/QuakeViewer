@@ -352,6 +352,9 @@ void freeMapa3D(mapa_t *mapa)
 
     if(mapa->verts)
         free(mapa->verts);
+
+    if(mapa->entities)
+        free(mapa->entities);
     
     free(mapa);
 }

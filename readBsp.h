@@ -3,6 +3,6 @@
 
 #include "3d.h"
 
-mapa_t *readBsp(char *fileName, char paleta[256][3]);
+mapa_t *readBsp(char *fileName);
 
 #endif

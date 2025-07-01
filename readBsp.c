@@ -5,7 +5,7 @@
 
 #include "3d.h"
 #include "bspfile.h"
-#include "gfx_ptBR.h"
+// #include "gfx_ptBR.h"
 
 void *readFile(char *fileName)
 {
@@ -121,9 +121,12 @@ int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
 int loadEntities (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     char *ents = (char *)(buffer + l->fileofs);
+    
+    mapa->entitieslen = strlen(ents);
+    mapa->entities = (char *) malloc(mapa->entitieslen);
+    if (!mapa->entities) return 1;
 
-    printf("ents: %s\n\n", ents);
-    grafico_tecla_espera();
+    memcpy(mapa->entities, ents, mapa->entitieslen);
 
     return 0;
 }
@@ -142,7 +145,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 	ins = (dsface_t *)(buffer + l->fileofs);
     tri = (triangulo_t *)mapa->tris;
     for (i=0; i < mapa->numtris; i++, ins++, tri++) {
-        printf("face[%d] > numEdges: %d\n", i, ins->numedges);
+        // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
 
         edge = (edge_t *)&mapa->edges[ins->firstedge];
         for (int v=0; v < 3; v++, edge++) {
@@ -154,7 +157,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         tri->cor.g = 255;
         tri->cor.b = 255;
     }
-    grafico_tecla_espera();
+    // grafico_tecla_espera();
 
     return 0;
 }
@@ -170,7 +173,7 @@ int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
     memcpy(mapa->texinfo, tex, l->filelen);
 }
 
-int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer, char paleta[256][3])
+int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     dmiptexlump_t   *m = (dmiptexlump_t *)(buffer + l->fileofs);
     miptex_t        *mt;
@@ -182,7 +185,7 @@ int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer, char paleta[256][3])
         return 1;
     }
 
-    printf("Texture:\nNumMipTex: %d\n", m->nummiptex);
+    // printf("Texture:\nNumMipTex: %d\n", m->nummiptex);
 
     mapa->numtextures = m->nummiptex;
     mapa->textures = (texture_t *) calloc(mapa->numtextures, sizeof(texture_t));
@@ -206,7 +209,7 @@ int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer, char paleta[256][3])
     return 0;
 }
 
-mapa_t *readBsp(char *fileName, char paleta[256][3])
+mapa_t *readBsp(char *fileName)
 {
     mapa_t      *mapa;
     void        *buffer;
@@ -254,7 +257,7 @@ mapa_t *readBsp(char *fileName, char paleta[256][3])
         return NULL;
     }
 
-    loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer, paleta);
+    loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
     if (!mapa->numtextures || !mapa->textures) {
         printf("readBsp: erro loadTextures!\n\n");
         freeMapa3D(mapa);
@@ -267,8 +270,14 @@ mapa_t *readBsp(char *fileName, char paleta[256][3])
         freeMapa3D(mapa);
         return NULL;
     }
-    
+
     loadEntities(mapa, &header->lumps[LUMP_ENTITIES], buffer);
+    if (!mapa->entitieslen || !mapa->entities) {
+        printf("readBsp: erro loadEntities!\n\n");
+        freeMapa3D(mapa);
+        return NULL;
+    }
+    printf("ents: %s\n\n", mapa->entities);
 
     return mapa;
 
