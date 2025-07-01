@@ -55,7 +55,7 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 				if (svxt3->onseam) skinX3 += meiaSkin;
 			}
 
-			grafico_triangulo_textura_zbuffer(obj->skin, obj->skinwidth, obj->skinheight, paleta,
+			grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
 				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z, skinX1,skinY1,
 				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, skinX2,skinY2,
 				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, skinX3,skinY3);
@@ -92,17 +92,16 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		if (vertice2->rot.z > 10) grafico_xis( vertice2->screen.x, vertice2->screen.y );
 		if (vertice3->rot.z > 10) grafico_xis( vertice3->screen.x, vertice3->screen.y );
 
-		grafico_triangulo(
-				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
-				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
-				tri->cor.r, tri->cor.g, tri->cor.b);
-
 printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d]\n",
 	tri->normal.x, tri->normal.y, tri->normal.z,
 	(int)vertice1->rot.x, (int)vertice1->rot.y, (int)vertice1->rot.z, (int)vertice1->screen.x, (int)vertice1->screen.y,
 	(int)vertice2->rot.x, (int)vertice2->rot.y, (int)vertice2->rot.z, (int)vertice2->screen.x, (int)vertice2->screen.y,
 	(int)vertice3->rot.x, (int)vertice3->rot.y, (int)vertice3->rot.z, (int)vertice3->screen.x, (int)vertice3->screen.y
 );
+		grafico_triangulo(
+				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
+				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
+				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
+				tri->cor.r, tri->cor.g, tri->cor.b);
 	}
 }

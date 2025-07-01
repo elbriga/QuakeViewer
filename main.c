@@ -19,6 +19,8 @@
 char paleta[256][3];
 float oldTS = 0;
 
+int _debug = 0;
+
 void msg(char *out) {
     struct timeval tv;
     struct tm *timeinfo;
@@ -153,6 +155,7 @@ int main(int argc, char **argv)
 	while (1)
 	{
 		grafico_desenha_mapa(&cam, mapa, paleta);
+		_debug = 0;
 
 		// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
@@ -187,7 +190,7 @@ int main(int argc, char **argv)
 		sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
 			(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z, (int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z,
 			numFrameSel, framename, (int)obj3->posicao.y);
-		msg(out);
+		//msg(out);
 
 		numFrameSel++;
 
@@ -209,12 +212,14 @@ int main(int argc, char **argv)
 		if (c == 'q')
 			break;
 		
-		if (c == 81) camera_pitch(&cam, -2); // ESQUERDA
-		if (c == 82) camera_step( &cam,  2); // CIMA
-		if (c == 83) camera_pitch(&cam,  2); // DIREITA
-		if (c == 84) camera_step( &cam, -2); // BAIXO
+		else if (c == 81) camera_pitch(&cam, -2); // ESQUERDA
+		else if (c == 82) camera_step( &cam,  2); // CIMA
+		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
+		else if (c == 84) camera_step( &cam, -2); // BAIXO
 
-		if (c == '\\') {
+		else if (c == 'd') _debug = 40;
+
+		else if (c == '\\') {
 			numAnimSel--;
 			if (numAnimSel < -1)
 				numAnimSel = -1;

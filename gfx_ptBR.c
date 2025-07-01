@@ -48,15 +48,10 @@ void grafico_limpa_zbuffer()
 	}
 }
 
-char drawnZBufferTri = 0;
 void grafico_mostra()
 {
 	gfx_flush();
-
-	if (drawnZBufferTri) {
-		grafico_limpa_zbuffer();
-		drawnZBufferTri = 0;
-	}
+	grafico_limpa_zbuffer();
 }
 
 void grafico_cor( int r, int g, int b )
@@ -113,14 +108,13 @@ void grafico_projecao3D(ponto_t *p)
     p->screen.y = ((FOV * p->rot.y) / p->rot.z) + (grafico_altura  / 2);
 }
 
+extern int _debug;
 void grafico_triangulo(
 	int x1, int y1, float z1,
 	int x2, int y2, float z2,
 	int x3, int y3, float z3,
 	int r, int g, int b)
 {
-	drawnZBufferTri = 1;
-	
 	// Transforma os params em array
 	int ponto[3][2];
 	ponto[0][0] = x1;
@@ -175,31 +169,15 @@ void grafico_triangulo(
 
 	grafico_cor( r,g,b );
 
+	int xL1, xL2;
+	float zL1, zL2;
+	float deltaZ, z;
+	int zBufferBase, cX;
 	for (int cY = ponto[pMinY][1]; cY <= ponto[pMaxY][1]; cY++)
 	{
-		int xL1, xL2;
-		if (xF >= xI) {
-			xL1 = (int)xI;
-			xL2 = (int)xF;
-		} else {
-			xL1 = (int)xF;
-			xL2 = (int)xI;
-		}
-
-		// zBuffer
-		float deltaZ = (zF - zI) / (float)(xL2 - xL1);
-		float z = zI;
-
-		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
-		int zBufferBase = cY * grafico_largura;
-		for (int cX = xL1; cX <= xL2; cX++)
-		{
-			if (z > 10 && z < zBuffer[zBufferBase + cX]) {
-				grafico_ponto(cX, cY);
-				zBuffer[zBufferBase + cX] = z;
-			}
-
-			z += deltaZ;
+		if (cY >= grafico_altura) {
+			// Linha saiu para fora da tela > CLIP
+			break;
 		}
 
 		// If came to middle point, change the deltaXF
@@ -213,6 +191,50 @@ void grafico_triangulo(
 			deltaZF = (float)(pontoZ[pMedY] - pontoZ[pMaxY]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
 		}
 
+		if (xF >= xI) {
+			xL1 = (int)xI;
+			xL2 = (int)xF;
+			zL1 = zI;
+			zL2 = zF;
+		} else {
+			xL1 = (int)xF;
+			xL2 = (int)xI;
+			zL1 = zF;
+			zL2 = zI;
+		}
+
+		// zBuffer
+		deltaZ = (zL2 - zL1) / (float)(xL2 - xL1);
+		z = zI;
+
+		if (_debug-- > 0) {
+			printf("cY: %d >>> <%d a %d>\n", cY, xL1, xL2);
+
+			if (!_debug) {
+				printf("====================================\n");
+				grafico_tecla_espera();
+			}
+		}
+
+		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
+		zBufferBase = cY * grafico_largura;
+		for (cX = xL1; cX <= xL2; cX++)
+		{
+			if (cX >= 0) {
+				if (cX >= grafico_largura) {
+					// Linha saiu para fora da tela > CLIP
+					break;
+				}
+
+				if (z > 10 && z < zBuffer[zBufferBase + cX]) {
+					grafico_ponto(cX, cY);
+					zBuffer[zBufferBase + cX] = z;
+				}
+			}
+
+			z += deltaZ;
+		}
+
 		xI += deltaXI;
 		xF += deltaXF;
 
@@ -222,138 +244,11 @@ void grafico_triangulo(
 	}
 }
 
-void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
-    int x1, int y1, int x2, int y2, int x3, int y3,
-    int ts1, int tt1, int ts2, int tt2, int ts3, int tt3)
-{
-	// Transforma os params em array
-	int ponto[3][2];
-	ponto[0][0] = x1;
-	ponto[0][1] = y1;
-	ponto[1][0] = x2;
-	ponto[1][1] = y2;
-	ponto[2][0] = x3;
-	ponto[2][1] = y3;
-
-	int pontoTex[3][2];
-	pontoTex[0][0] = ts1;
-	pontoTex[0][1] = tt1;
-	pontoTex[1][0] = ts2;
-	pontoTex[1][1] = tt2;
-	pontoTex[2][0] = ts3;
-	pontoTex[2][1] = tt3;
-
-	// Ordena os pontos pelo Y
-	int maxY = 0;
-	int pMaxY = 0, pMedY = 0, pMinY = 0;
-	for (int cP = 0; cP < 3; cP++)
-	{
-		if (ponto[cP][1] >= maxY)
-		{
-			maxY = ponto[cP][1];
-			pMaxY = cP;
-		}
-	}
-	maxY = 0;
-	for (int cP = 0; cP < 3; cP++)
-	{
-		if (cP == pMaxY)
-			continue;
-
-		if (ponto[cP][1] >= maxY)
-		{
-			maxY = ponto[cP][1];
-			pMedY = cP;
-		}
-	}
-	pMinY = 3 - pMaxY - pMedY;
-
-	// DESENHA
-	float xI = ponto[pMinY][0];
-	float xF = xI;
-
-	float deltaXI = (float)(ponto[pMaxY][0] - ponto[pMinY][0]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
-	float deltaXF = (float)(ponto[pMedY][0] - ponto[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
-
-	// Textura
-	float texXI = pontoTex[pMinY][0];
-	float texYI = pontoTex[pMinY][1];
-	float texXF = texXI;
-	float texYF = texYI;
-
-	float deltaTexXI = (float)(pontoTex[pMaxY][0] - pontoTex[pMinY][0]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
-	float deltaTexYI = (float)(pontoTex[pMaxY][1] - pontoTex[pMinY][1]) / (float)(ponto[pMaxY][1] - ponto[pMinY][1]);
-	float deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMinY][0]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
-	float deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMinY][1]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
-
-	float texX = ts1;
-	float texY = tt1;
-
-	unsigned char idx_cor;
-	for (int cY = ponto[pMinY][1]; cY <= ponto[pMaxY][1]; cY++)
-	{
-		//printf("Y[%d] => texXI: %d - texYI: %d - texXF: %d - texYF: %d\n", cY, (int)texXI, (int)texXF, (int)texYI, (int)texYF);
-
-		int xL1, xL2;
-		if (xF >= xI)
-		{
-			xL1 = (int)xI;
-			xL2 = (int)xF;
-		}
-		else
-		{
-			xL1 = (int)xF;
-			xL2 = (int)xI;
-		}
-
-		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF,
-		//  partindo das coordenadas texXI,texYI ate texXF, texYF
-		float deltaTexX = (texXF - texXI) / (float)(xL2 - xL1);
-		float deltaTexY = (texYF - texYI) / (float)(xL2 - xL1);
-
-		texX = texXI;
-		texY = texYI;
-		for (int cX = xL1; cX <= xL2; cX++)
-		{
-			idx_cor = textura[(int)texY * textW + (int)texX];
-			grafico_cor( paleta[idx_cor][0], paleta[idx_cor][1], paleta[idx_cor][2] );
-
-			grafico_ponto(cX, cY);
-
-			texX += deltaTexX;
-			texY += deltaTexY;
-		}
-
-		// Se chegamos no ponto do meio mudar os deltas de XF,texXF,texYF
-		if (cY == ponto[pMedY][1])
-		{
-			xF = ponto[pMedY][0];
-			deltaXF = (float)(ponto[pMedY][0] - ponto[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-
-			texXF = pontoTex[pMedY][0];
-			deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-
-			texYF = pontoTex[pMedY][1];
-			deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMaxY][1]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-		}
-
-		xI += deltaXI;
-		xF += deltaXF;
-
-		texXI += deltaTexXI;
-		texYI += deltaTexYI;
-		texXF += deltaTexXF;
-		texYF += deltaTexYF;
-	}
-}
-
 void grafico_triangulo_wireZ(
 	int x1,int y1,int z1,
 	int x2,int y2,int z2,
 	int x3,int y3,int z3)
 {
-	drawnZBufferTri = 1;
-
 	grafico_cor(255,255,255);
 
 	// if (z1 > 50) grafico_ponto(x1, y1);
@@ -365,13 +260,11 @@ void grafico_triangulo_wireZ(
 	grafico_linha(x3, y3, x1, y1);
 }
 
-void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char paleta[256][3],
+void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
     int x1,int y1,int z1, int ts1,int tt1,
 	int x2,int y2,int z2, int ts2,int tt2,
 	int x3,int y3,int z3, int ts3,int tt3)
 {
-	drawnZBufferTri = 1;
-
 	float ganhoCor = 2;
 
 	// Transforma os params em array
@@ -458,6 +351,25 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 			break;
 		}
 
+		// Se chegamos no ponto do meio mudar os deltas de XF,texXF,texYF
+		if (cY == ponto[pMedY][1])
+		{
+			// Triangulo
+			xF = ponto[pMedY][0];
+			deltaXF = (float)(ponto[pMedY][0] - ponto[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+
+			// Textura
+			texXF = pontoTex[pMedY][0];
+			deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+
+			texYF = pontoTex[pMedY][1];
+			deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMaxY][1]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+
+			// ZBuffer
+			zF = ponto[pMedY][2];
+			deltaZF = (float)(ponto[pMedY][2] - ponto[pMaxY][2]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
+		}
+
 		if (cY >= 0) {
 			int xL1, xL2;
 			if (xF >= xI) {
@@ -487,7 +399,7 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 				// printf("z[%f] < zBuf[%f]\n", z, zBuffer[zBufferBase + cX]);
 				// grafico_tecla_espera();
 
-				if (cX > 0) {
+				if (cX >= 0) {
 					if (cX >= grafico_largura) {
 						// Linha saiu para fora da tela > CLIP
 						break;
@@ -506,25 +418,6 @@ void grafico_triangulo_textura_zbuffer(char *textura, int textW, int textH, char
 
 				z += deltaZ;
 			}
-		}
-
-		// Se chegamos no ponto do meio mudar os deltas de XF,texXF,texYF
-		if (cY == ponto[pMedY][1])
-		{
-			// Triangulo
-			xF = ponto[pMedY][0];
-			deltaXF = (float)(ponto[pMedY][0] - ponto[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-
-			// Textura
-			texXF = pontoTex[pMedY][0];
-			deltaTexXF = (float)(pontoTex[pMedY][0] - pontoTex[pMaxY][0]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-
-			texYF = pontoTex[pMedY][1];
-			deltaTexYF = (float)(pontoTex[pMedY][1] - pontoTex[pMaxY][1]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
-
-			// ZBuffer
-			zF = ponto[pMedY][2];
-			deltaZF = (float)(ponto[pMedY][2] - ponto[pMaxY][2]) / (float)(ponto[pMedY][1] - ponto[pMaxY][1]);
 		}
 
 		// Triangulo
