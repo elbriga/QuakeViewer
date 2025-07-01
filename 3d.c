@@ -20,7 +20,14 @@ double to_radians(double deg)
 
 void normalize(vetor3d_t *normal)
 {
-    // TODO
+    float len = normal->x * normal->x +
+                normal->y * normal->y +
+                normal->z * normal->z;
+    len = 1.0 / len;
+
+    normal->x *= len;
+    normal->y *= len;
+    normal->z *= len;
 }
 
 vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
@@ -37,6 +44,19 @@ vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
 float dot_product(vetor3d_t a, vetor3d_t b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+void camera_pitch(camera_t *cam, int step)
+{
+    cam->ang.y = (int)(cam->ang.y + step) % 360;
+}
+
+void camera_step(camera_t *cam, int step)
+{
+    double anguloRad = to_radians(cam->ang.y);
+
+    cam->pos.x -= sin(anguloRad) * step;
+    cam->pos.z -= cos(anguloRad) * step;
 }
 
 void rotacao2DEixoX(vetor3d_t *p, int angulo)
@@ -203,7 +223,7 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         rotacao2DEixoY(&tri->normal, cam->ang.y);
         rotacao2DEixoZ(&tri->normal, cam->ang.z);
 
-        normalize(&tri->normal);
+        //normalize(&tri->normal);
     }
 }
 

@@ -125,12 +125,12 @@ int main(int argc, char **argv)
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
-	cam.pos.x = 0;
-	cam.pos.y = 30;
-	cam.pos.z = 100;
+	cam.pos.x = 85;
+	cam.pos.y = 0;
+	cam.pos.z = 77;
 
 	cam.ang.x = 0;
-	cam.ang.y = 0;
+	cam.ang.y = -90;
 	cam.ang.z = 0;
 
 	// obj->tipo = OBJ_TIPO_WIRE;
@@ -154,12 +154,10 @@ int main(int argc, char **argv)
 	{
 		grafico_desenha_mapa(&cam, mapa, paleta);
 
-		grafico_desenha_objeto(&cam, chao, 0, NULL);
+		// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
-
-		char *framename = &obj->framenames[numFrameSel * 16];
-		grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
-
+//		grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+/*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
 		if(numFrameSel2 >= obj2->numframes -1)
@@ -182,10 +180,13 @@ int main(int argc, char **argv)
 		chao->rotacao.y--;
 		if(chao->rotacao.y <= 0)
 			chao->rotacao.y = 360;
-
+*/
 		grafico_mostra();
 
-		sprintf(out, "Mostrando frame[%d]: %s > [%d]", numFrameSel, framename, (int)obj3->posicao.y);
+		char *framename = &obj->framenames[numFrameSel * 16];
+		sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
+			(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z, (int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z,
+			numFrameSel, framename, (int)obj3->posicao.y);
 		msg(out);
 
 		numFrameSel++;
@@ -202,10 +203,16 @@ int main(int argc, char **argv)
 
 		// Wait for the user to press a character.
 		char c = grafico_tecla();
+		// printf("c = %d\n", c);
 
 		// Quit if it is the letter q.
 		if (c == 'q')
 			break;
+		
+		if (c == 81) camera_pitch(&cam, -2); // ESQUERDA
+		if (c == 82) camera_step( &cam,  2); // CIMA
+		if (c == 83) camera_pitch(&cam,  2); // DIREITA
+		if (c == 84) camera_step( &cam, -2); // BAIXO
 
 		if (c == '\\') {
 			numAnimSel--;
