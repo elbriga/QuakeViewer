@@ -42,23 +42,9 @@ int loadVertexes (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dvertex_t   *in;
 	vetor3d_t   *base;
-    ponto_t     *vert;
 	int         i;
 
 	mapa->numverts = l->filelen / sizeof(dvertex_t);
-
-    float minX = FLT_MAX, maxX = -FLT_MAX;
-    float minY = FLT_MAX, maxY = -FLT_MAX;
-    float minZ = FLT_MAX, maxZ = -FLT_MAX;
-	in = (dvertex_t *)(buffer + l->fileofs);
-	for (i=0 ; i < mapa->numverts ; i++, in++)	{
-        if (in->point[0] < minX) minX = in->point[0];
-        if (in->point[0] > maxX) maxX = in->point[0];
-        if (in->point[1] < minY) minY = in->point[1];
-        if (in->point[1] > maxY) maxY = in->point[1];
-        if (in->point[2] < minZ) minZ = in->point[2];
-        if (in->point[2] > maxZ) maxZ = in->point[2];
-	}
 
     mapa->base = (vetor3d_t *) malloc(mapa->numverts * sizeof(vetor3d_t));
     if (!mapa->base) return 1;
@@ -67,26 +53,13 @@ int loadVertexes (mapa_t *mapa, lump_t *l, byte *buffer)
     if (!mapa->verts) return 2;
 
     base = mapa->base;
-    vert = mapa->verts;
-
 	in = (dvertex_t *)(buffer + l->fileofs);
-	for (i=0 ; i<mapa->numverts ; i++, in++, base++, vert++) {
-        float x = map(in->point[0], minX, maxX, 0, 700) + 10;
-        float y = map(in->point[1], minY, maxY, 0, 700) + 10;
-        float z = map(in->point[2], minZ, maxZ, 50, 255);
-
+	for (i=0 ; i<mapa->numverts ; i++, in++, base++) {
         base->x = in->point[0];
         base->y = in->point[1];
         base->z = in->point[2];
 
-        vert->rot.x = x;
-        vert->rot.y = y;
-        vert->rot.z = z;
-
-        vert->screen.x = x;
-        vert->screen.y = y;
-
-        //printf("Vertex [%d] = [%f,%f,%f] > [%f,%f,%f]\n", i, in->point[0], in->point[1], in->point[2], x, y, z);
+        rotacao2DEixoX(base, 90);
 	}
 
     return 0;
@@ -175,6 +148,9 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         }
 
         tri->planenum = ins->planenum;
+        tri->cor.r = 255;
+        tri->cor.g = 255;
+        tri->cor.b = 255;
     }
     grafico_tecla_espera();
 
