@@ -13,8 +13,9 @@ void grafico_mostra();
 
 void grafico_cor( int r, int g, int b );
 void grafico_ponto( int x, int y );
+void grafico_linha( int x0, int y0, int x1, int y1 );
 
-void grafico_projecao3D(ponto *p);
+void grafico_projecao3D(ponto_t *p);
 
 void grafico_triangulo(
 	int x1, int y1, float z1,

@@ -18,6 +18,27 @@ double to_radians(double deg)
   return deg * M_PI / 180.0;
 }
 
+void normalize(vetor3d_t *normal)
+{
+    // TODO
+}
+
+vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
+{
+    vetor3d_t result;
+
+    result.x = a.y * b.z - a.z * b.y;
+    result.y = a.z * b.x - a.x * b.z;
+    result.z = a.x * b.y - a.y * b.x;
+
+    return result;
+}
+
+float dot_product(vetor3d_t a, vetor3d_t b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 void rotacao2DEixoX(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
@@ -51,7 +72,7 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
 
     for (int v=0; v<obj->numverts; v++) {
         vetor3d_t *base = &obj->frames[offset + v];
-        ponto     *pnt  = &obj->verts[v];
+        ponto_t     *pnt  = &obj->verts[v];
 
         // Reset - Coordenadas de Objeto
         pnt->rot.x = base->x;
@@ -114,27 +135,6 @@ void obj_projecao3D_allFrames(camera_t *cam, obj3d_t *obj)
     }
 }
 
-void normalize(vetor3d_t *normal)
-{
-    // TODO
-}
-
-vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
-{
-    vetor3d_t result;
-
-    result.x = a.y * b.z - a.z * b.y;
-    result.y = a.z * b.x - a.x * b.z;
-    result.z = a.x * b.y - a.y * b.x;
-
-    return result;
-}
-
-float dot_product(vetor3d_t a, vetor3d_t b)
-{
-    return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
 void obj_calculate_face_normals(obj3d_t *obj)
 {
     obj->trisnormals = malloc(obj->numframes * obj->numtris * sizeof(vetor3d_t));
@@ -168,6 +168,45 @@ void obj_calculate_face_normals(obj3d_t *obj)
     }
 }
 
+void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
+{
+    vetor3d_t *base = mapa->base;
+    ponto_t   *pnt  = mapa->verts;
+
+    for (int v=0; v < mapa->numverts; v++, base++, pnt++) {
+        // Reset - Coordenadas de Objeto
+        pnt->rot.x = base->x + cam->pos.x;
+        pnt->rot.y = base->y + cam->pos.y;
+        pnt->rot.z = base->z + cam->pos.z;
+
+        // Rotacao de Camera - coordenadas de camera
+        rotacao2DEixoX(&pnt->rot, cam->ang.x);
+        rotacao2DEixoY(&pnt->rot, cam->ang.y);
+        rotacao2DEixoZ(&pnt->rot, cam->ang.z);
+
+        // Projecao para 2D
+        grafico_projecao3D(pnt);
+    }
+
+    // Projetar as normais das faces
+    triangulo_t *tri = mapa->tris;
+    for (int f=0; f < mapa->numtris; f++, tri++) {
+        plane_t *plane = &mapa->planes[tri->planenum];
+
+        // Reset - Coordenadas de Objeto
+        tri->normal.x = plane->normal[0] + cam->pos.x;
+        tri->normal.y = plane->normal[1] + cam->pos.y;
+        tri->normal.z = plane->normal[2] + cam->pos.z;
+
+        // Rotacao de Camera - coordenadas de camera
+        rotacao2DEixoX(&tri->normal, cam->ang.x);
+        rotacao2DEixoY(&tri->normal, cam->ang.y);
+        rotacao2DEixoZ(&tri->normal, cam->ang.z);
+
+        normalize(&tri->normal);
+    }
+}
+
 obj3d_t *obj_plano(int sizeX, int sizeY)
 {
     obj3d_t *ret;
@@ -179,7 +218,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
                     (numtris * sizeof(triangulo_t)) + // ret->tris
                     (16) +                            // ret->framenames
                     (numverts * sizeof(vetor3d_t)) +  // ret->frames
-                    (numverts * sizeof(ponto));       // ret->verts
+                    (numverts * sizeof(ponto_t));       // ret->verts
 
     ret = calloc(1, totMemObj);
     if (!ret) {
@@ -196,7 +235,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
     ret->tris       = (triangulo_t *) &ret[1];
     ret->framenames = (char *)        &ret->tris[numtris];
     ret->frames     = (vetor3d_t *)   &ret->framenames[16];
-    ret->verts      = (ponto *)       &ret->frames[numverts];
+    ret->verts      = (ponto_t *)       &ret->frames[numverts];
     ret->framesanims= NULL;
 
     strcpy(ret->framenames, "Plano01");
@@ -209,7 +248,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
             vetor3d_t *p = &ret->frames[X + Y * sizeX];
 
             p->x = PX;
-            p->y = (rand() % 10) - 5;
+            p->y = 0;
             p->z = PZ;
 
             PX += 10;
@@ -254,4 +293,26 @@ void freeObj3D(obj3d_t *obj)
         free(obj->framesanims);
     
     free(obj);
+}
+
+void freeMapa3D(mapa_t *mapa)
+{
+    if (!mapa) return;
+    
+    if(mapa->base)
+        free(mapa->base);
+    
+    if(mapa->edges)
+        free(mapa->edges);
+
+    if(mapa->planes)
+        free(mapa->planes);
+    
+    if(mapa->tris)
+        free(mapa->tris);
+
+    if(mapa->verts)
+        free(mapa->verts);
+    
+    free(mapa);
 }

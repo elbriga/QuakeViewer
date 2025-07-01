@@ -52,7 +52,7 @@ obj3d_t *readMdl(char *mdlfilename)
                     (header.numtris * sizeof(triangulo_t)) + // ret->tris
                     (header.numframes * 16) +                // ret->framenames
                     (header.numframes * header.numverts * sizeof(vetor3d_t)) + // ret->frames
-                    (header.numverts * sizeof(ponto));       // ret->verts
+                    (header.numverts * sizeof(ponto_t));     // ret->verts
 
     ret = calloc(1, totMemObj);
     if (!ret) {
@@ -142,11 +142,11 @@ obj3d_t *readMdl(char *mdlfilename)
 
     ret->framenames = (char *)&ret->tris[header.numtris];
     ret->frames = (vetor3d_t *)&ret->framenames[header.numframes * 16];
-    ret->verts  = (ponto *)&ret->frames[header.numframes * header.numverts];
+    ret->verts  = (ponto_t *)&ret->frames[header.numframes * header.numverts];
 
     aliasframetype_t tipoFrame;
     trivertx_t vertFrame;
-    ponto p;
+    ponto_t p;
     for (int cnt_frames=0; cnt_frames<header.numframes; cnt_frames++) {
         fread(&tipoFrame, 1, 4, fp);
 
@@ -165,9 +165,9 @@ obj3d_t *readMdl(char *mdlfilename)
                 fread(&vertFrame, 1, sizeof(trivertx_t), fp);
                 vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
 
-                p.rot.x = ((float)vertFrame.v[0] - 128) * header.scale[0];
-                p.rot.y = ((float)vertFrame.v[1] - 128) * header.scale[1];
-                p.rot.z = ((float)vertFrame.v[2] - 128) * header.scale[2];
+                p.rot.x = (float)vertFrame.v[0] * header.scale[0] + header.scale_origin[0];
+                p.rot.y = (float)vertFrame.v[1] * header.scale[1] + header.scale_origin[1];
+                p.rot.z = (float)vertFrame.v[2] * header.scale[2] + header.scale_origin[2];
                 rotacao2DEixoX(&p.rot, 90);
 
                 pnt->x = p.rot.x;
@@ -220,6 +220,7 @@ obj3d_t *readMdl(char *mdlfilename)
             for (char n=0; n<16; n++) {
                 if (nomeFrame[n] >= '0' && nomeFrame[n] <= '9') {
                     basenome[n] = 0;
+                    break;
                 }
             }
 

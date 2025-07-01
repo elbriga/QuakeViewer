@@ -10,6 +10,7 @@
 
 #include "gfx_ptBR.h"
 
+#include "readBsp.h"
 #include "readMdl.h"
 #include "3d.h"
 
@@ -94,6 +95,12 @@ int main(int argc, char **argv)
 		exit(33);
 	}
 
+	mapa_t *mapa = readBsp("data/maps/e2m1.bsp", paleta);
+	if (!mapa) {
+		msg("Erro ao carregar mapa");
+		exit(34);
+	}
+
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
 	int numFrameSel = 0;
@@ -101,20 +108,20 @@ int main(int argc, char **argv)
 	int numFrameSel3 = 0;
 	char out[256];
 
-	chao->rotacao.y = 55;
+	chao->posicao.y = 27;
 
 	obj->posicao.x  = 0;
-	obj->posicao.y  = -45;
+	obj->posicao.y  = 0;
 	obj->posicao.z  = 0;
 	obj->rotacao.x = 0;
 
 	obj2->posicao.x  = 40;
-	obj2->posicao.y  = -46;
+	obj2->posicao.y  = 0;
 	obj2->posicao.z  = 0;
 	obj2->rotacao.x = 0;
 
 	obj3->posicao.x  = -40;
-	obj3->posicao.y  = -27;
+	obj3->posicao.y  = 0;
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
@@ -145,6 +152,8 @@ int main(int argc, char **argv)
 	
 	while (1)
 	{
+		grafico_desenha_mapa(&cam, mapa);
+
 		grafico_desenha_objeto(&cam, chao, 0, NULL);
 
 
@@ -233,6 +242,8 @@ int main(int argc, char **argv)
 	}
 
 	msg("Free Myke Tyson FREE");
+
+	freeMapa3D(mapa);
 
 	freeObj3D(obj3);
 	freeObj3D(obj2);

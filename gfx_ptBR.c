@@ -95,7 +95,7 @@ char grafico_tecla_espera()
 	return gfx_wait_block();
 }
 
-void grafico_projecao3D(ponto *p)
+void grafico_projecao3D(ponto_t *p)
 {
     p->screen.x = ((FOV * p->rot.x) / p->rot.z) + (grafico_largura / 2);
     p->screen.y = ((FOV * p->rot.y) / p->rot.z) + (grafico_altura  / 2);

@@ -18,9 +18,9 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 				continue;
 			}
 
-			ponto *vertice1 = &obj->verts[tri->v[0]];
-			ponto *vertice2 = &obj->verts[tri->v[1]];
-			ponto *vertice3 = &obj->verts[tri->v[2]];
+			ponto_t *vertice1 = &obj->verts[tri->v[0]];
+			ponto_t *vertice2 = &obj->verts[tri->v[1]];
+			ponto_t *vertice3 = &obj->verts[tri->v[2]];
 			switch (obj->tipo)
 			{
 			case OBJ_TIPO_WIRE:
@@ -68,4 +68,10 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 			}
 			
 		}
+}
+
+void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
+{
+	mapa_projecao3D(cam, mapa);
+	
 }
