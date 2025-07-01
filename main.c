@@ -44,6 +44,33 @@ void msg(char *out) {
 	printf("[%s.%03ld] [%f / %f] > [%s]\n", buffDataHora, tv.tv_usec / 1000, tempoDesdeUltimaMsg, 1.0/tempoDesdeUltimaMsg, out);
 }
 
+void mostraTexturas(mapa_t *mapa)
+{
+	texture_t *tex = mapa->textures;
+	char      *pixels;
+	int        ofs = 10;
+
+    for (int i=0; i < mapa->numtextures; i++, tex++) {
+        printf("Texture[%d]: %s\n", i, tex->name);
+
+        pixels = (char *)(tex->data);
+        for (int y=0; y < tex->height; y++) {
+            int yOfs = y * tex->width;
+            for (int x=0; x < tex->width; x++) {
+                byte cor = pixels[x + yOfs];
+
+                grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
+                grafico_ponto(x+ofs, y+ofs);
+            }
+        }
+
+        ofs += 5;
+    }
+
+    grafico_mostra();
+    grafico_tecla_espera();
+}
+
 int main(int argc, char **argv)
 {
 	int janX = 720, janY = 720, totAnims;
@@ -102,6 +129,7 @@ int main(int argc, char **argv)
 		msg("Erro ao carregar mapa");
 		exit(34);
 	}
+	mostraTexturas(mapa);
 
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
@@ -159,7 +187,7 @@ int main(int argc, char **argv)
 
 		// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
-//		grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+		// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;

@@ -20,9 +20,9 @@ double to_radians(double deg)
 
 void normalize(vetor3d_t *normal)
 {
-    float len = normal->x * normal->x +
-                normal->y * normal->y +
-                normal->z * normal->z;
+    float len = sqrt(normal->x * normal->x +
+                     normal->y * normal->y +
+                     normal->z * normal->z);
     len = 1.0 / len;
 
     normal->x *= len;
@@ -200,6 +200,7 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
 {
     vetor3d_t *base = mapa->base;
     ponto_t   *pnt  = mapa->verts;
+    plano_t   *plano;
 
     for (int v=0; v < mapa->numverts; v++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
@@ -219,19 +220,19 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
     // Projetar as normais das faces
     triangulo_t *tri = mapa->tris;
     for (int f=0; f < mapa->numtris; f++, tri++) {
-        plane_t *plane = &mapa->planes[tri->planenum];
+        plano = &mapa->planes[tri->planenum];
 
         // Reset - Coordenadas de Objeto
-        tri->normal.x = plane->normal[0] + cam->pos.x;
-        tri->normal.y = plane->normal[1] + cam->pos.y;
-        tri->normal.z = plane->normal[2] + cam->pos.z;
+        tri->normal.x = plano->normal.x + cam->pos.x;
+        tri->normal.y = plano->normal.y + cam->pos.y;
+        tri->normal.z = plano->normal.z + cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&tri->normal, cam->ang.x);
         rotacao2DEixoY(&tri->normal, cam->ang.y);
         rotacao2DEixoZ(&tri->normal, cam->ang.z);
 
-        //normalize(&tri->normal);
+        normalize(&tri->normal);
     }
 }
 
@@ -326,6 +327,13 @@ void freeObj3D(obj3d_t *obj)
 void freeMapa3D(mapa_t *mapa)
 {
     if (!mapa) return;
+
+    if (mapa->numtextures && mapa->textures) {
+        texture_t *tex = mapa->textures;
+        for (int i=0; i < mapa->numtextures; i++, tex++)
+            if (tex->data) free(tex->data);
+        free(mapa->textures);
+    }
     
     if(mapa->base)
         free(mapa->base);
@@ -338,6 +346,9 @@ void freeMapa3D(mapa_t *mapa)
     
     if(mapa->tris)
         free(mapa->tris);
+    
+    if(mapa->texinfo)
+        free(mapa->texinfo);
 
     if(mapa->verts)
         free(mapa->verts);

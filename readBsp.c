@@ -95,22 +95,24 @@ int loadEdges (mapa_t *mapa, lump_t *l, byte *buffer)
 int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     dplane_t *in = (dplane_t *)(buffer + l->fileofs);
-    plane_t  *plane;
+    plano_t  *plano;
     int      i;
     
     mapa->numplanes = l->filelen / sizeof(dplane_t);
 
-    mapa->planes = (plane_t *) malloc(mapa->numplanes * sizeof(plane_t));
+    mapa->planes = (plano_t *) malloc(mapa->numplanes * sizeof(plano_t));
     if (!mapa->planes) return 1;
 
-    plane = mapa->planes;
-    for (i=0 ; i < mapa->numplanes ; i++, in++, plane++) {
-        plane->normal[0] = in->normal[0];
-        plane->normal[1] = in->normal[1];
-        plane->normal[2] = in->normal[2];
+    plano = mapa->planes;
+    for (i=0 ; i < mapa->numplanes ; i++, in++, plano++) {
+        plano->normal.x = in->normal[0];
+        plano->normal.y = in->normal[1];
+        plano->normal.z = in->normal[2];
 
-        plane->dist = in->dist;
-        plane->type = in->type;
+        rotacao2DEixoX(&plano->normal, 90);
+
+        plano->dist = in->dist;
+        plano->type = in->type;
     }
 
     return 0;
@@ -157,11 +159,23 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    texinfo_t *tex = (texinfo_t *)(buffer + l->fileofs);
+
+    mapa->numtexinfo = l->filelen / sizeof(texinfo_t);
+    mapa->texinfo = (textureinfo_t *) malloc(mapa->numtexinfo * sizeof(textureinfo_t));
+    if (!mapa->texinfo) return 1;
+
+    memcpy(mapa->texinfo, tex, l->filelen);
+}
+
 int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer, char paleta[256][3])
 {
     dmiptexlump_t   *m = (dmiptexlump_t *)(buffer + l->fileofs);
     miptex_t        *mt;
-    int ofs = 0;
+    texture_t       *tex;
+    char            *pixels;
 
     if (!l->filelen) {
         printf("Sem Texturas!\n");
@@ -169,28 +183,25 @@ int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer, char paleta[256][3])
     }
 
     printf("Texture:\nNumMipTex: %d\n", m->nummiptex);
-    for (int i=0; i < m->nummiptex; i++) {
+
+    mapa->numtextures = m->nummiptex;
+    mapa->textures = (texture_t *) calloc(mapa->numtextures, sizeof(texture_t));
+    if (!mapa->textures) return 1;
+
+    tex = mapa->textures;
+    for (int i=0; i < m->nummiptex; i++, tex++) {
         mt = (miptex_t *)((byte *)m + m->dataofs[i]);
-        printf("Texture[%d]: %s\n", i, mt->name);
 
-        //grafico_limpa();
+        strncpy(tex->name, mt->name, 16);
+        tex->width  = mt->width;
+        tex->height = mt->height;
 
-        char *pixels = (char *)(mt + 1);
-        for (int y=0; y < mt->height; y++) {
-            int yOfs = y * mt->width;
-            for (int x=0; x < mt->width; x++) {
-                byte cor = pixels[x + yOfs];
+        tex->data = malloc(tex->width * tex->height);
+        // TODO check
 
-                grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
-                grafico_ponto(x+ofs, y+ofs);
-            }
-        }
-
-        ofs += 5;
+        pixels = (char *)(mt + 1);
+        memcpy(tex->data, pixels, tex->width * tex->height);
     }
-
-    grafico_mostra();
-    grafico_tecla_espera();
 
     return 0;
 }
@@ -243,9 +254,21 @@ mapa_t *readBsp(char *fileName, char paleta[256][3])
         return NULL;
     }
 
-    loadEntities(mapa, &header->lumps[LUMP_ENTITIES], buffer);
-
     loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer, paleta);
+    if (!mapa->numtextures || !mapa->textures) {
+        printf("readBsp: erro loadTextures!\n\n");
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
+    loadTexInfo(mapa, &header->lumps[LUMP_TEXINFO], buffer);
+    if (!mapa->numtexinfo || !mapa->texinfo) {
+        printf("readBsp: erro loadTexInfo!\n\n");
+        freeMapa3D(mapa);
+        return NULL;
+    }
+    
+    loadEntities(mapa, &header->lumps[LUMP_ENTITIES], buffer);
 
     return mapa;
 

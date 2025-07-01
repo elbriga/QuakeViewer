@@ -19,10 +19,10 @@ typedef struct
 
 typedef struct
 {
-    float	normal[3];
-	float	dist;
-	int		type;
-} plane_t;
+    vetor3d_t	normal;
+	float	    dist;
+	int		    type;
+} plano_t;
 
 typedef struct
 {
@@ -54,6 +54,20 @@ typedef struct
     cor_t cor;
     int planenum;
 } triangulo_t;
+
+typedef struct
+{
+	char		name[16];
+	unsigned	width, height;
+    char        *data;
+} texture_t;
+
+typedef struct
+{
+	float		vecs[2][4];		// [s/t][xyz offset]
+	int			miptex;
+	int			flags;
+} textureinfo_t;
 
 typedef struct
 {
@@ -101,12 +115,16 @@ typedef struct
     int numedges;
     int numplanes;
     int numtris;
+    int numtextures;
+    int numtexinfo;
 
     vetor3d_t   *base;
     edge_t      *edges;
 
-    plane_t     *planes;
+    plano_t     *planes;
     triangulo_t *tris;
+    texture_t     *textures;
+    textureinfo_t *texinfo;
 
     ponto_t       *verts;
 
