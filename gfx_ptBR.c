@@ -342,6 +342,8 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	float deltaZF = (float)(ponto[pMedY][2] - ponto[pMinY][2]) / (float)(ponto[pMedY][1] - ponto[pMinY][1]);
 
 	unsigned char idx_cor;
+	int xL1, xL2;
+	int zL1, zL2;
 	for (int cY = ponto[pMinY][1]; cY <= ponto[pMaxY][1]; cY++)
 	{
 		//printf("Y[%d] => texXI: %d - texYI: %d - texXF: %d - texYF: %d\n", cY, (int)texXI, (int)texXF, (int)texYI, (int)texYF);
@@ -371,13 +373,16 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 		}
 
 		if (cY >= 0) {
-			int xL1, xL2;
 			if (xF >= xI) {
 				xL1 = (int)xI;
 				xL2 = (int)xF;
+				zL1 = (int)zI;
+				zL2 = (int)zF;
 			} else {
 				xL1 = (int)xF;
 				xL2 = (int)xI;
+				zL1 = (int)zF;
+				zL2 = (int)zI;
 			}
 
 			// Textura
@@ -387,7 +392,7 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 			float texY = texYI;
 
 			// zBuffer
-			float deltaZ = (zF - zI) / (float)(xL2 - xL1);
+			float deltaZ = (zL2 - zL1) / (float)(xL2 - xL1);
 			float z = zI;
 
 			// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF,
@@ -404,8 +409,8 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 						// Linha saiu para fora da tela > CLIP
 						break;
 					}
-					if (z > 50 && z < zBuffer[zBufferBase + cX]) {
-						idx_cor = textura[(int)texY * textW + (int)texX];
+					if (z > 5 && z < zBuffer[zBufferBase + cX]) {
+						idx_cor = textura[((int)texY % textH) * textW + ((int)texX % textW)];
 						grafico_cor( paleta[idx_cor][0] * ganhoCor, paleta[idx_cor][1] * ganhoCor, paleta[idx_cor][2] * ganhoCor );
 						grafico_ponto(cX, cY);
 						

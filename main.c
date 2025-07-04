@@ -214,11 +214,11 @@ int main(int argc, char **argv)
 */
 		grafico_mostra();
 
-		char *framename = &obj->framenames[numFrameSel * 16];
-		sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
-			(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z, (int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z,
-			numFrameSel, framename, (int)obj3->posicao.y);
-		//msg(out);
+		// char *framename = &obj->framenames[numFrameSel * 16];
+		// sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
+		// 	(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z, (int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z,
+		// 	numFrameSel, framename, (int)obj3->posicao.y);
+		//  msg(out);
 
 		numFrameSel++;
 
@@ -232,7 +232,12 @@ int main(int argc, char **argv)
 			}
 		}
 
-		// Wait for the user to press a character.
+        printf("cam{%d,%d,%d a:%d,%d,%d} ",
+			(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
+			(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
+
+		printf(" >>>\n");
+
 		char c = grafico_tecla();
 		// printf("c = %d\n", c);
 

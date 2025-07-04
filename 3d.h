@@ -53,6 +53,7 @@ typedef struct
     char isFront;
     cor_t cor;
     int planenum;
+    int texinfo;
 } triangulo_t;
 
 typedef struct
@@ -64,7 +65,12 @@ typedef struct
 
 typedef struct
 {
-	float		vecs[2][4];		// [s/t][xyz offset]
+    vetor3d_t   vetorS;
+    float       distS;
+    
+    vetor3d_t   vetorT;
+    float       distT;
+
 	int			miptex;
 	int			flags;
 } textureinfo_t;
@@ -113,6 +119,7 @@ typedef struct
     int tipo;
     int numverts;
     int numedges;
+    int numledges;
     int numplanes;
     int numtris;
     int numtextures;
@@ -120,6 +127,7 @@ typedef struct
 
     vetor3d_t   *base;
     edge_t      *edges;
+    int         *ledges;
 
     plano_t       *planes;
     triangulo_t   *tris;

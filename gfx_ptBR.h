@@ -24,8 +24,9 @@ void grafico_triangulo(
 	int x3, int y3, float z3,
 	int r, int g, int b);
 void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
-    int x1,int y1,int z1, int x2,int y2,int z2, int x3,int y3,int z3,
-    int ts1, int tt1,     int ts2, int tt2,     int ts3, int tt3);
+    int x1,int y1,int z1, int ts1,int tt1,
+	int x2,int y2,int z2, int ts2,int tt2,
+	int x3,int y3,int z3, int ts3,int tt3);
 void grafico_triangulo_wireZ(int x1,int y1,int z1, int x2,int y2,int z2, int x3,int y3,int z3);
 
 char grafico_tecla();

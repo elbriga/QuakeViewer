@@ -71,18 +71,25 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 
 void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 {
+	textureinfo_t *texinfo;
+	texture_t     *tex;
+	int s1,t1, s2,t2, s3,t3;
+	float texScale = (1.0f/32.0f);
+
 	mapa_projecao3D(cam, mapa);
 
 	grafico_cor(255,255,255);
 
 	triangulo_t *tri = mapa->tris;
 	for (int i=0; i < mapa->numtris; i++, tri++) {
-		if (i != 100) continue;
 
 		// Backface culling
 		// if (tri->normal.z < 0) {
 		// 	continue;
 		// }
+
+        texinfo = &mapa->texinfo[tri->texinfo];
+        tex = &mapa->textures[texinfo->miptex];
 
 		ponto_t *vertice1 = &mapa->verts[tri->v[0]];
 		ponto_t *vertice2 = &mapa->verts[tri->v[1]];
@@ -92,16 +99,30 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		if (vertice2->rot.z > 10) grafico_xis( vertice2->screen.x, vertice2->screen.y );
 		if (vertice3->rot.z > 10) grafico_xis( vertice3->screen.x, vertice3->screen.y );
 
-printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d]\n",
-	tri->normal.x, tri->normal.y, tri->normal.z,
-	(int)vertice1->rot.x, (int)vertice1->rot.y, (int)vertice1->rot.z, (int)vertice1->screen.x, (int)vertice1->screen.y,
-	(int)vertice2->rot.x, (int)vertice2->rot.y, (int)vertice2->rot.z, (int)vertice2->screen.x, (int)vertice2->screen.y,
-	(int)vertice3->rot.x, (int)vertice3->rot.y, (int)vertice3->rot.z, (int)vertice3->screen.x, (int)vertice3->screen.y
-);
-		grafico_triangulo(
-				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
-				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
-				tri->cor.r, tri->cor.g, tri->cor.b);
+//dbg
+if (i < 90 || i > 110) continue;
+
+		vetor3d_t *vBase1 = &mapa->base[tri->v[0]];
+		vetor3d_t *vBase2 = &mapa->base[tri->v[1]];
+		vetor3d_t *vBase3 = &mapa->base[tri->v[2]];
+		s1 = (int)((dot_product(*vBase1, texinfo->vetorS) + texinfo->distS) * texScale);
+		t1 = (int)((dot_product(*vBase1, texinfo->vetorT) + texinfo->distT) * texScale);
+		s2 = (int)((dot_product(*vBase2, texinfo->vetorS) + texinfo->distS) * texScale);
+		t2 = (int)((dot_product(*vBase2, texinfo->vetorT) + texinfo->distT) * texScale);
+		s3 = (int)((dot_product(*vBase3, texinfo->vetorS) + texinfo->distS) * texScale);
+		t3 = (int)((dot_product(*vBase3, texinfo->vetorT) + texinfo->distT) * texScale);
+
+// printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
+// 	tri->normal.x, tri->normal.y, tri->normal.z,
+// 	(int)vertice1->rot.x, (int)vertice1->rot.y, (int)vertice1->rot.z, (int)vertice1->screen.x, (int)vertice1->screen.y,
+// 	(int)vertice2->rot.x, (int)vertice2->rot.y, (int)vertice2->rot.z, (int)vertice2->screen.x, (int)vertice2->screen.y,
+// 	(int)vertice3->rot.x, (int)vertice3->rot.y, (int)vertice3->rot.z, (int)vertice3->screen.x, (int)vertice3->screen.y
+// );
+printf("vS{%.3f,%.3f,%.3f}+%.3f ", texinfo->vetorS.x, texinfo->vetorS.y, texinfo->vetorS.z, texinfo->distS);
+printf("vT{%.3f,%.3f,%.3f}+%.3f ", texinfo->vetorT.x, texinfo->vetorT.y, texinfo->vetorT.z, texinfo->distT);
+		grafico_triangulo_textura(tex->data, tex->width, tex->height, paleta,
+				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z, s1, t1,
+				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, s2, t2,
+				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, s3, t3);
 	}
 }
