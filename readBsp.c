@@ -92,6 +92,25 @@ int loadEdges (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadSurfEdges (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    int *in = (int *)(buffer + l->fileofs), *out;
+    
+    mapa->numledges = l->filelen / sizeof(int);
+
+    mapa->ledges = (int *) malloc(mapa->numledges * sizeof(int));
+    if (!mapa->ledges) return 1;
+
+    memcpy(mapa->ledges, in, l->filelen);
+
+    out = mapa->ledges;
+    for (int i=0; i < mapa->numledges; i++, out++) {
+        printf(">>> %d\n", *out);
+    }
+
+    return 0;
+}
+
 int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     dplane_t *in = (dplane_t *)(buffer + l->fileofs);
@@ -136,7 +155,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 	dsface_t	*ins;
     triangulo_t *tri;
     edge_t      *edge;
-    int         i;
+    int         i, *ledge;
 
     mapa->numtris = l->filelen / sizeof(dsface_t);
     mapa->tris    = (triangulo_t *) malloc(mapa->numtris * sizeof(triangulo_t));
@@ -147,15 +166,23 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     for (i=0; i < mapa->numtris; i++, ins++, tri++) {
         // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
 
-        edge = (edge_t *)&mapa->edges[ins->firstedge];
-        for (int v=0; v < 3; v++, edge++) {
-            tri->v[v] = edge->v[0];
+        ledge = (int *)&mapa->ledges[ins->firstedge];
+        for (int v=0; v < 3; v++, ledge++) {
+            if (*ledge < 0) {
+                edge = (edge_t *)&mapa->edges[-*ledge];
+                tri->v[v] = edge->v[1];
+            } else {
+                edge = (edge_t *)&mapa->edges[*ledge];
+                tri->v[v] = edge->v[0];
+            }
         }
 
-        tri->planenum = ins->planenum;
         tri->cor.r = 255;
         tri->cor.g = 255;
         tri->cor.b = 255;
+
+        tri->planenum = ins->planenum;
+        tri->texinfo  = ins->texinfo;
     }
     // grafico_tecla_espera();
 
@@ -164,13 +191,31 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 
 int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
 {
-    texinfo_t *tex = (texinfo_t *)(buffer + l->fileofs);
+    texinfo_t     *in = (texinfo_t *)(buffer + l->fileofs);
+    textureinfo_t *out;
 
     mapa->numtexinfo = l->filelen / sizeof(texinfo_t);
     mapa->texinfo = (textureinfo_t *) malloc(mapa->numtexinfo * sizeof(textureinfo_t));
     if (!mapa->texinfo) return 1;
 
-    memcpy(mapa->texinfo, tex, l->filelen);
+    out = mapa->texinfo;
+    for (int i=0 ; i < mapa->numtexinfo ; i++, in++, out++) {
+        out->vetorS.x = in->vecs[0][0];
+        out->vetorS.y = in->vecs[0][1];
+        out->vetorS.z = in->vecs[0][2];
+        out->distS    = in->vecs[0][3];
+
+        out->vetorT.x = in->vecs[1][0];
+        out->vetorT.y = in->vecs[1][1];
+        out->vetorT.z = in->vecs[1][2];
+        out->distT    = in->vecs[1][3];
+
+        // rotacao2DEixoX(&out->vetorS, 90);
+        // rotacao2DEixoX(&out->vetorT, 90);
+
+        out->miptex = in->miptex;
+        out->flags  = in->flags;
+    }
 }
 
 int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
@@ -246,6 +291,13 @@ mapa_t *readBsp(char *fileName)
     loadEdges(mapa, &header->lumps[LUMP_EDGES], buffer);
     if (!mapa->numedges || !mapa->edges) {
         printf("readBsp: erro loadEdges!\n\n");
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
+    loadSurfEdges(mapa, &header->lumps[LUMP_SURFEDGES], buffer);
+    if (!mapa->numledges || !mapa->ledges) {
+        printf("readBsp: erro loadSurfEdges!\n\n");
         freeMapa3D(mapa);
         return NULL;
     }

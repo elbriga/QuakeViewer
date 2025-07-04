@@ -340,6 +340,9 @@ void freeMapa3D(mapa_t *mapa)
     
     if(mapa->edges)
         free(mapa->edges);
+    
+    if(mapa->ledges)
+        free(mapa->ledges);
 
     if(mapa->planes)
         free(mapa->planes);
