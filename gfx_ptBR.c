@@ -260,6 +260,17 @@ void grafico_triangulo_wireZ(
 	grafico_linha(x3, y3, x1, y1);
 }
 
+void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t *tex)
+{
+	ponto_t *v = verticesPoligono;
+
+	grafico_cor(200, 255, 200);
+	
+	for (int i=0; i < numVerts; i++, v++) {
+		grafico_xis(v->screen.x, v->screen.y);
+	}
+}
+
 void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
     int x1,int y1,int z1, int ts1,int tt1,
 	int x2,int y2,int z2, int ts2,int tt2,

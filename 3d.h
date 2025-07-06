@@ -39,6 +39,7 @@ typedef struct
 {
     vetor3d_t rot;
     vetor2d_t screen;
+    vetor2d_t tex;
 } ponto_t;
 
 typedef struct

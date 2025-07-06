@@ -155,12 +155,12 @@ int main(int argc, char **argv)
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
-	cam.pos.x = 85;
-	cam.pos.y = 0;
-	cam.pos.z = 77;
+	cam.pos.x = -2180;
+	cam.pos.y = 160;
+	cam.pos.z = 400;
 
 	cam.ang.x = 0;
-	cam.ang.y = -90;
+	cam.ang.y = 90;
 	cam.ang.z = 0;
 
 	// obj->tipo = OBJ_TIPO_WIRE;
@@ -172,6 +172,33 @@ int main(int argc, char **argv)
 	grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 
 	grafico_desenha_objeto(&cam, chao, 0, NULL);
+
+	ponto_t verticesPoligono[4] = {
+				{
+					.rot = {10.0f, 10.0f, 10.0f},
+					.screen = {10.0f, 10.0f},
+					.tex = {0.0f, 0.0f}
+				},
+				{
+					.rot = {150.0f, 25.0f, 10.0f},
+					.screen = {150.0f, 25.0f},
+					.tex = {1.0f, 0.0f}
+				},
+				{
+					.rot = {5.0f, 300.0f, 10.0f},
+					.screen = {5.0f, 300.0f},
+					.tex = {0.0f, 1.0f}
+				},
+				{
+					.rot = {100.0f, 350.0f, 10.0f},
+					.screen = {100.0f, 350.0f},
+					.tex = {1.0f, 1.0f}
+				}
+			};
+			
+	grafico_desenha_poligono(verticesPoligono, 4, &mapa->textures[13]);
+
+
 
 	// grafico_tecla_espera();
 	// printf("FOI 2!\n");
@@ -250,8 +277,8 @@ int main(int argc, char **argv)
 		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
 		else if (c == 84) camera_step( &cam, -2); // BAIXO
 
-		else if (c == 'a') camera_strafe(&cam,  2);
-		else if (c == 'd') camera_strafe(&cam, -2);
+		else if (c == 'a') camera_strafe(&cam, -2);
+		else if (c == 'd') camera_strafe(&cam,  2);
 
 		else if (c == 'z') _debug = 40;
 
