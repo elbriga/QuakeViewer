@@ -1,5 +1,5 @@
 .vscode
 *.o
-mdlViewer
 data/models
 data/maps
+QuakeViewer

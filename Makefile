@@ -6,11 +6,11 @@ OBJ =  3d.o  doublebuffer_pixmap.o  gfx.o  gfx_ptBR.o  readMdl.o  readBsp.o  ren
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-mdlViewer: $(OBJ)
+QuakeViewer: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -f *.o mdlViewer
+	rm -f *.o QuakeViewer
 
