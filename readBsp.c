@@ -157,6 +157,10 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     edge_t      *edge;
     int         i, *ledge;
 
+    if (!mapa->ledges) {
+        return 2;
+    }
+
     mapa->numtris = l->filelen / sizeof(dsface_t);
     mapa->tris    = (triangulo_t *) malloc(mapa->numtris * sizeof(triangulo_t));
     if (!mapa->tris) return 1;
@@ -210,8 +214,8 @@ int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
         out->vetorT.z = in->vecs[1][2];
         out->distT    = in->vecs[1][3];
 
-        // rotacao2DEixoX(&out->vetorS, 90);
-        // rotacao2DEixoX(&out->vetorT, 90);
+        rotacao2DEixoX(&out->vetorS, 90);
+        rotacao2DEixoX(&out->vetorT, 90);
 
         out->miptex = in->miptex;
         out->flags  = in->flags;
