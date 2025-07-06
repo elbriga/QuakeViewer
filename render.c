@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "3d.h"
 #include "gfx_ptBR.h"
@@ -100,29 +101,30 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		if (vertice3->rot.z > 10) grafico_xis( vertice3->screen.x, vertice3->screen.y );
 
 //dbg
-if (i < 90 || i > 110) continue;
+if (i > 5) continue;
 
 		vetor3d_t *vBase1 = &mapa->base[tri->v[0]];
 		vetor3d_t *vBase2 = &mapa->base[tri->v[1]];
 		vetor3d_t *vBase3 = &mapa->base[tri->v[2]];
-		s1 = (int)((dot_product(*vBase1, texinfo->vetorS) + texinfo->distS) * texScale);
-		t1 = (int)((dot_product(*vBase1, texinfo->vetorT) + texinfo->distT) * texScale);
-		s2 = (int)((dot_product(*vBase2, texinfo->vetorS) + texinfo->distS) * texScale);
-		t2 = (int)((dot_product(*vBase2, texinfo->vetorT) + texinfo->distT) * texScale);
-		s3 = (int)((dot_product(*vBase3, texinfo->vetorS) + texinfo->distS) * texScale);
-		t3 = (int)((dot_product(*vBase3, texinfo->vetorT) + texinfo->distT) * texScale);
+		s1 = abs(dot_product(*vBase1, texinfo->vetorS) + texinfo->distS);
+		t1 = abs(dot_product(*vBase1, texinfo->vetorT) + texinfo->distT);
+		s2 = abs(dot_product(*vBase2, texinfo->vetorS) + texinfo->distS);
+		t2 = abs(dot_product(*vBase2, texinfo->vetorT) + texinfo->distT);
+		s3 = abs(dot_product(*vBase3, texinfo->vetorS) + texinfo->distS);
+		t3 = abs(dot_product(*vBase3, texinfo->vetorT) + texinfo->distT);
 
-// printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
-// 	tri->normal.x, tri->normal.y, tri->normal.z,
-// 	(int)vertice1->rot.x, (int)vertice1->rot.y, (int)vertice1->rot.z, (int)vertice1->screen.x, (int)vertice1->screen.y,
-// 	(int)vertice2->rot.x, (int)vertice2->rot.y, (int)vertice2->rot.z, (int)vertice2->screen.x, (int)vertice2->screen.y,
-// 	(int)vertice3->rot.x, (int)vertice3->rot.y, (int)vertice3->rot.z, (int)vertice3->screen.x, (int)vertice3->screen.y
-// );
-printf("vS{%.3f,%.3f,%.3f}+%.3f ", texinfo->vetorS.x, texinfo->vetorS.y, texinfo->vetorS.z, texinfo->distS);
-printf("vT{%.3f,%.3f,%.3f}+%.3f ", texinfo->vetorT.x, texinfo->vetorT.y, texinfo->vetorT.z, texinfo->distT);
+printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
+	tri->normal.x, tri->normal.y, tri->normal.z,
+	(int)vBase1->x, (int)vBase1->y, (int)vBase1->z, s1,t1,
+	(int)vBase2->x, (int)vBase2->y, (int)vBase2->z, s2,t2,
+	(int)vBase3->x, (int)vBase3->y, (int)vBase3->z, s3,t3
+);
+printf("vS{%.3f,%.3f,%.3f} ", texinfo->vetorS.x, texinfo->vetorS.y, texinfo->vetorS.z);
+printf("vT{%.3f,%.3f,%.3f} ", texinfo->vetorT.x, texinfo->vetorT.y, texinfo->vetorT.z);
 		grafico_triangulo_textura(tex->data, tex->width, tex->height, paleta,
 				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z, s1, t1,
 				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, s2, t2,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, s3, t3);
+				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, s3, t3
+			);
 	}
 }
