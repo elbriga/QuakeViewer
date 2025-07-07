@@ -261,11 +261,11 @@ void grafico_triangulo_wireZ(
 	grafico_linha(x3, y3, x1, y1);
 }
 
-void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]) {
+void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]) {
     int minY = INT_MAX, maxY = INT_MIN;
 
     for (int i = 0; i < numVerts; i++) {
-        int y = verticesPoligono[i].screen.y;
+        int y = verticesPoligono[i]->screen.y;
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
     }
@@ -284,8 +284,8 @@ void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t
         int count = 0;
 
         for (int i = 0; i < numVerts; i++) {
-            ponto_t p1 = verticesPoligono[i];
-            ponto_t p2 = verticesPoligono[(i + 1) % numVerts];
+            ponto_t p1 = *verticesPoligono[i];
+            ponto_t p2 = *verticesPoligono[(i + 1) % numVerts];
 
             int y1 = p1.screen.y;
             int y2 = p2.screen.y;

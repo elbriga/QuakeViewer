@@ -218,21 +218,21 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
     }
 
     // Projetar as normais das faces
-    triangulo_t *tri = mapa->tris;
-    for (int f=0; f < mapa->numtris; f++, tri++) {
-        plano = &mapa->planes[tri->planenum];
+    face_t *face = mapa->faces;
+    for (int f=0; f < mapa->numfaces; f++, face++) {
+        plano = &mapa->planes[face->planenum];
 
         // Reset - Coordenadas de Objeto
-        tri->normal.x = plano->normal.x + cam->pos.x;
-        tri->normal.y = plano->normal.y + cam->pos.y;
-        tri->normal.z = plano->normal.z + cam->pos.z;
+        face->normal.x = plano->normal.x + cam->pos.x;
+        face->normal.y = plano->normal.y + cam->pos.y;
+        face->normal.z = plano->normal.z + cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&tri->normal, cam->ang.x);
-        rotacao2DEixoY(&tri->normal, cam->ang.y);
-        rotacao2DEixoZ(&tri->normal, cam->ang.z);
+        rotacao2DEixoX(&face->normal, cam->ang.x);
+        rotacao2DEixoY(&face->normal, cam->ang.y);
+        rotacao2DEixoZ(&face->normal, cam->ang.z);
 
-        normalize(&tri->normal);
+        normalize(&face->normal);
     }
 }
 
@@ -347,8 +347,8 @@ void freeMapa3D(mapa_t *mapa)
     if(mapa->planes)
         free(mapa->planes);
     
-    if(mapa->tris)
-        free(mapa->tris);
+    if(mapa->faces)
+        free(mapa->faces);
     
     if(mapa->texinfo)
         free(mapa->texinfo);

@@ -29,7 +29,7 @@ void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[
 	int x3,int y3,int z3, int ts3,int tt3);
 void grafico_triangulo_wireZ(int x1,int y1,int z1, int x2,int y2,int z2, int x3,int y3,int z3);
 
-void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]);
+void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]);
 
 char grafico_tecla();
 char grafico_tecla_espera();

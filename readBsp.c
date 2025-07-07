@@ -153,40 +153,27 @@ int loadEntities (mapa_t *mapa, lump_t *l, byte *buffer)
 int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dsface_t	*ins;
-    triangulo_t *tri;
-    edge_t      *edge;
-    int         i, *ledge;
+    face_t      *face;
 
     if (!mapa->ledges) {
         return 2;
     }
 
-    mapa->numtris = l->filelen / sizeof(dsface_t);
-    mapa->tris    = (triangulo_t *) malloc(mapa->numtris * sizeof(triangulo_t));
-    if (!mapa->tris) return 1;
+    mapa->numfaces = l->filelen / sizeof(dsface_t);
+    mapa->faces    = (face_t *) malloc(mapa->numfaces * sizeof(face_t));
+    if (!mapa->faces) return 1;
 
-	ins = (dsface_t *)(buffer + l->fileofs);
-    tri = (triangulo_t *)mapa->tris;
-    for (i=0; i < mapa->numtris; i++, ins++, tri++) {
+	ins  = (dsface_t *)(buffer + l->fileofs);
+    face = (face_t *)mapa->faces;
+    for (int i=0; i < mapa->numfaces; i++, ins++, face++) {
         // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
+        
+        face->planenum = ins->planenum;
+        face->side     = ins->side;
 
-        ledge = (int *)&mapa->ledges[ins->firstedge];
-        for (int v=0; v < 3; v++, ledge++) {
-            if (*ledge < 0) {
-                edge = (edge_t *)&mapa->edges[-*ledge];
-                tri->v[v] = edge->v[1];
-            } else {
-                edge = (edge_t *)&mapa->edges[*ledge];
-                tri->v[v] = edge->v[0];
-            }
-        }
-
-        tri->cor.r = 255;
-        tri->cor.g = 255;
-        tri->cor.b = 255;
-
-        tri->planenum = ins->planenum;
-        tri->texinfo  = ins->texinfo;
+        face->firstedge = ins->firstedge;
+        face->numedges  = ins->numedges;
+        face->texinfo   = ins->texinfo;
     }
     // grafico_tecla_espera();
 
@@ -307,7 +294,7 @@ mapa_t *readBsp(char *fileName)
     }
 
     loadFaces(mapa, &header->lumps[LUMP_FACES], buffer);
-    if (!mapa->numtris || !mapa->tris) {
+    if (!mapa->numfaces || !mapa->faces) {
         printf("readBsp: erro loadFaces!\n\n");
         freeMapa3D(mapa);
         return NULL;

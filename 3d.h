@@ -59,6 +59,18 @@ typedef struct
 
 typedef struct
 {
+    short		planenum;
+	short		side;
+
+	int			firstedge;
+	short		numedges;
+	short		texinfo;
+
+    vetor3d_t   normal;
+} face_t;
+
+typedef struct
+{
 	char		name[16];
 	unsigned	width, height;
     char        *data;
@@ -122,16 +134,17 @@ typedef struct
     int numedges;
     int numledges;
     int numplanes;
-    int numtris;
+    int numfaces;
     int numtextures;
     int numtexinfo;
 
     vetor3d_t   *base;
+
     edge_t      *edges;
     int         *ledges;
 
     plano_t       *planes;
-    triangulo_t   *tris;
+    face_t        *faces;
     texture_t     *textures;
     textureinfo_t *texinfo;
 

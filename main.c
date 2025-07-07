@@ -195,8 +195,15 @@ int main(int argc, char **argv)
 					.tex = {0.0f, 1.0f}
 				}
 			};
+	
+	ponto_t *pts[16] = {
+		&verticesPoligono[1],
+		&verticesPoligono[2],
+		&verticesPoligono[3],
+		&verticesPoligono[0]
+	};
 			
-	grafico_desenha_poligono(verticesPoligono, 4, &mapa->textures[3], paleta);
+	grafico_desenha_poligono(pts, 4, &mapa->textures[3], paleta);
 
 
 
@@ -276,6 +283,9 @@ int main(int argc, char **argv)
 		else if (c == 82) camera_step( &cam,  2); // CIMA
 		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
 		else if (c == 84) camera_step( &cam, -2); // BAIXO
+
+		else if (c == 'w') camera_step(&cam,  20);
+		else if (c == 's') camera_step(&cam, -20);
 
 		else if (c == 'a') camera_strafe(&cam, -2);
 		else if (c == 'd') camera_strafe(&cam,  2);
