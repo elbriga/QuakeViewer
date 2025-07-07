@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <limits.h>
 
 #include "3d.h"
 #include "gfx.h"
@@ -260,16 +261,122 @@ void grafico_triangulo_wireZ(
 	grafico_linha(x3, y3, x1, y1);
 }
 
-void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t *tex)
-{
-	ponto_t *v = verticesPoligono;
+void grafico_desenha_poligono(ponto_t *verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]) {
+    int minY = INT_MAX, maxY = INT_MIN;
 
-	grafico_cor(200, 255, 200);
-	
-	for (int i=0; i < numVerts; i++, v++) {
-		grafico_xis(v->screen.x, v->screen.y);
-	}
+    for (int i = 0; i < numVerts; i++) {
+        int y = verticesPoligono[i].screen.y;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+
+    // Clamp para dentro da tela
+    if (minY < 0) minY = 0;
+    if (maxY >= grafico_altura) maxY = grafico_altura - 1;
+
+    for (int y = minY; y <= maxY; y++) {
+        struct {
+            int x;
+            float u_over_z, v_over_z, one_over_z;
+            float z_view; // profundidade real do ponto
+        } intersecoes[64];
+
+        int count = 0;
+
+        for (int i = 0; i < numVerts; i++) {
+            ponto_t p1 = verticesPoligono[i];
+            ponto_t p2 = verticesPoligono[(i + 1) % numVerts];
+
+            int y1 = p1.screen.y;
+            int y2 = p2.screen.y;
+
+            if (y1 == y2) continue;
+
+            if ((y >= y1 && y < y2) || (y >= y2 && y < y1)) {
+                float t = (float)(y - y1) / (float)(y2 - y1);
+                int x = p1.screen.x + (int)((p2.screen.x - p1.screen.x) * t);
+
+                float z1 = p1.rot.z, z2 = p2.rot.z;
+                float one_over_z1 = 1.0f / z1, one_over_z2 = 1.0f / z2;
+                float u_over_z1 = p1.tex.x / z1, u_over_z2 = p2.tex.x / z2;
+                float v_over_z1 = p1.tex.y / z1, v_over_z2 = p2.tex.y / z2;
+
+                float one_over_z = one_over_z1 + (one_over_z2 - one_over_z1) * t;
+                float u_over_z   = u_over_z1   + (u_over_z2   - u_over_z1)   * t;
+                float v_over_z   = v_over_z1   + (v_over_z2   - v_over_z1)   * t;
+                float z_view     = z1 + (z2 - z1) * t;
+
+                intersecoes[count].x = x;
+                intersecoes[count].u_over_z = u_over_z;
+                intersecoes[count].v_over_z = v_over_z;
+                intersecoes[count].one_over_z = one_over_z;
+                intersecoes[count].z_view = z_view;
+                count++;
+            }
+        }
+
+        // Ordenar interseções por x
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
+                if (intersecoes[j].x > intersecoes[j + 1].x) {
+                    typeof(intersecoes[0]) temp = intersecoes[j];
+                    intersecoes[j] = intersecoes[j + 1];
+                    intersecoes[j + 1] = temp;
+                }
+            }
+        }
+
+		int zBufferBase = y * grafico_largura;
+        for (int i = 0; i < count; i += 2) {
+            if (i + 1 >= count) break;
+
+            int x0 = intersecoes[i].x;
+            int x1 = intersecoes[i + 1].x;
+
+            if (x0 == x1) continue;
+            if (x0 < 0) x0 = 0;
+            if (x1 >= grafico_largura) x1 = grafico_largura - 1;
+
+            float u0 = intersecoes[i].u_over_z;
+            float v0 = intersecoes[i].v_over_z;
+            float w0 = intersecoes[i].one_over_z;
+            float z0 = intersecoes[i].z_view;
+
+            float u1 = intersecoes[i + 1].u_over_z;
+            float v1 = intersecoes[i + 1].v_over_z;
+            float w1 = intersecoes[i + 1].one_over_z;
+            float z1 = intersecoes[i + 1].z_view;
+
+            int dx = x1 - x0;
+            if (dx == 0) dx = 1;
+
+            for (int x = x0; x <= x1; x++) {
+                float t = (float)(x - x0) / dx;
+
+                float u_over_z = u0 + (u1 - u0) * t;
+                float v_over_z = v0 + (v1 - v0) * t;
+                float one_over_z = w0 + (w1 - w0) * t;
+                float z = z0 + (z1 - z0) * t;
+
+                int u = (int)((float)(u_over_z / one_over_z) * tex->width ) % tex->width;
+                int v = (int)((float)(v_over_z / one_over_z) * tex->height) % tex->height;
+
+                // Teste de profundidade (Z-buffer)
+                if (x >= 0 && x < grafico_largura && y >= 0 && y < grafico_altura) {
+                    if (z < zBuffer[zBufferBase + x]) {
+						unsigned char cor = tex->data[u + v * tex->width];
+                        // int r, g, b;
+                        // texture_sample(tex, u, v, &r, &g, &b);
+                        grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
+                        grafico_ponto(x, y);
+                        zBuffer[zBufferBase + x] = z;
+                    }
+                }
+            }
+        }
+    }
 }
+
 
 void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
     int x1,int y1,int z1, int ts1,int tt1,

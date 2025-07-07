@@ -185,18 +185,18 @@ int main(int argc, char **argv)
 					.tex = {1.0f, 0.0f}
 				},
 				{
-					.rot = {5.0f, 300.0f, 10.0f},
-					.screen = {5.0f, 300.0f},
-					.tex = {0.0f, 1.0f}
-				},
-				{
 					.rot = {100.0f, 350.0f, 10.0f},
 					.screen = {100.0f, 350.0f},
 					.tex = {1.0f, 1.0f}
+				},
+				{
+					.rot = {5.0f, 300.0f, 10.0f},
+					.screen = {5.0f, 300.0f},
+					.tex = {0.0f, 1.0f}
 				}
 			};
 			
-	grafico_desenha_poligono(verticesPoligono, 4, &mapa->textures[13]);
+	grafico_desenha_poligono(verticesPoligono, 4, &mapa->textures[3], paleta);
 
 
 
