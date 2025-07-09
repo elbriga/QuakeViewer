@@ -13,6 +13,44 @@
 float *zBuffer = NULL;
 int grafico_altura, grafico_largura;
 
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+void mostraMapa2D(mapa_t *mapa)
+{
+	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
+	ponto_t   *v = mapa->verts;
+	edge_t    *e = mapa->edges;
+
+	for (int i=0; i < mapa->numverts; i++, b++, v++) {
+		v->rot.x = b->x;
+		v->rot.y = b->y;
+		v->rot.z = b->z;
+
+		v->screen.x = map(b->x, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
+		v->screen.y = map(b->y, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura  - 10);
+	}
+
+	grafico_cor(200,200,200);
+	for (int i=0; i < mapa->numedges; i++, e++) {
+		ponto_t *p1 = &mapa->verts[e->v[0]];
+		ponto_t *p2 = &mapa->verts[e->v[1]];
+
+		grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+	}
+
+	grafico_cor(255,200,200);
+	int px = map(player_start.x, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
+	int py = map(player_start.y, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura  - 10);
+
+	grafico_xis( px, py );
+
+    grafico_mostra();
+    grafico_tecla_espera();
+}
+
 int grafico_init( int width, int height, const char *title )
 {
 	grafico_largura = width;
