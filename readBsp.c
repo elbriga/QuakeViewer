@@ -33,11 +33,6 @@ void *readFile(char *fileName)
     return buffer;
 }
 
-float map(float x, float in_min, float in_max, float out_min, float out_max)
-{
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
 int loadVertexes (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dvertex_t   *in;
@@ -52,6 +47,14 @@ int loadVertexes (mapa_t *mapa, lump_t *l, byte *buffer)
     mapa->verts = (ponto_t *) malloc(mapa->numverts * sizeof(ponto_t));
     if (!mapa->verts) return 2;
 
+    mapa->bbMin.x = FLT_MAX;
+    mapa->bbMin.y = FLT_MAX;
+    mapa->bbMin.z = FLT_MAX;
+
+    mapa->bbMax.x = -FLT_MAX;
+    mapa->bbMax.y = -FLT_MAX;
+    mapa->bbMax.z = -FLT_MAX;
+
     base = mapa->base;
 	in = (dvertex_t *)(buffer + l->fileofs);
 	for (i=0 ; i<mapa->numverts ; i++, in++, base++) {
@@ -59,7 +62,15 @@ int loadVertexes (mapa_t *mapa, lump_t *l, byte *buffer)
         base->y = in->point[1];
         base->z = in->point[2];
 
-        rotacao2DEixoX(base, 90);
+        if (base->x < mapa->bbMin.x) mapa->bbMin.x = base->x;
+        if (base->y < mapa->bbMin.y) mapa->bbMin.y = base->y;
+        if (base->z < mapa->bbMin.z) mapa->bbMin.z = base->z;
+
+        if (base->x > mapa->bbMax.x) mapa->bbMax.x = base->x;
+        if (base->y > mapa->bbMax.y) mapa->bbMax.y = base->y;
+        if (base->z > mapa->bbMax.z) mapa->bbMax.z = base->z;
+
+        //rotacao2DEixoX(base, 90);
 	}
 
     return 0;
@@ -103,10 +114,10 @@ int loadSurfEdges (mapa_t *mapa, lump_t *l, byte *buffer)
 
     memcpy(mapa->ledges, in, l->filelen);
 
-    out = mapa->ledges;
-    for (int i=0; i < mapa->numledges; i++, out++) {
-        printf(">>> %d\n", *out);
-    }
+    // out = mapa->ledges;
+    // for (int i=0; i < mapa->numledges; i++, out++) {
+    //     printf(">>> %d\n", *out);
+    // }
 
     return 0;
 }
@@ -128,7 +139,7 @@ int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
         plano->normal.y = in->normal[1];
         plano->normal.z = in->normal[2];
 
-        rotacao2DEixoX(&plano->normal, 90);
+        //rotacao2DEixoX(&plano->normal, 90);
 
         plano->dist = in->dist;
         plano->type = in->type;
@@ -167,7 +178,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     face = (face_t *)mapa->faces;
     for (int i=0; i < mapa->numfaces; i++, ins++, face++) {
         // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
-        
+
         face->planenum = ins->planenum;
         face->side     = ins->side;
 
@@ -201,8 +212,8 @@ int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
         out->vetorT.z = in->vecs[1][2];
         out->distT    = in->vecs[1][3];
 
-        rotacao2DEixoX(&out->vetorS, 90);
-        rotacao2DEixoX(&out->vetorT, 90);
+        // rotacao2DEixoX(&out->vetorS, 90);
+        // rotacao2DEixoX(&out->vetorT, 90);
 
         out->miptex = in->miptex;
         out->flags  = in->flags;
@@ -330,20 +341,12 @@ mapa_t *readBsp(char *fileName)
         printf("Lump [%d] -> ofs:%d - size:%d\n", l, header->lumps[l].fileofs, header->lumps[l].filelen);
 
         switch (l) {
-            case LUMP_ENTITIES:     break;
-            case LUMP_PLANES:       break;
-            case LUMP_TEXTURES:     break;
-            case LUMP_VERTEXES:     break;
             case LUMP_VISIBILITY:   break;
             case LUMP_NODES:        break;
-            case LUMP_TEXINFO:      break;
-            case LUMP_FACES:        break;
             case LUMP_LIGHTING:     break;
             case LUMP_CLIPNODES:    break;
             case LUMP_LEAFS:        break;
             case LUMP_MARKSURFACES: break;
-            case LUMP_EDGES:        break;
-            case LUMP_SURFEDGES:    break;
             case LUMP_MODELS:       break;
         }
     }*/
