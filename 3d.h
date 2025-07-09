@@ -96,6 +96,20 @@ typedef struct
 
 typedef struct
 {
+	int			contents;
+	int			visofs;				// -1 = no visibility info
+
+	short		mins[3];			// for frustum culling
+	short		maxs[3];
+
+	unsigned short		firstmarksurface;
+	unsigned short		nummarksurfaces;
+
+    unsigned char *compressed_vis;
+} leaf_t;
+
+typedef struct
+{
     char nome[64];
 
     int tipo;
@@ -137,6 +151,7 @@ typedef struct
     int numfaces;
     int numtextures;
     int numtexinfo;
+    int numleafs;
 
     int numTextureTrigger;
 
@@ -151,6 +166,7 @@ typedef struct
     face_t        *faces;
     texture_t     *textures;
     textureinfo_t *texinfo;
+    leaf_t        *leafs;
 
     char *entities;
     int   entitieslen;

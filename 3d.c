@@ -361,6 +361,9 @@ void freeMapa3D(mapa_t *mapa)
     if(mapa->entities)
         free(mapa->entities);
 
+    if(mapa->leafs)
+        free(mapa->leafs);
+    
     if(mapa->visibility)
         free(mapa->visibility);
     

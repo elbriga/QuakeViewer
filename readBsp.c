@@ -235,6 +235,31 @@ int loadVisibility (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    // loadVisibility antes
+    if (!mapa->visibility) return 10;
+
+    dsleaf_t *in = (dsleaf_t *)(buffer + l->fileofs);
+    leaf_t *out;
+
+    mapa->numleafs = l->filelen / sizeof(dsleaf_t);
+    mapa->leafs = (leaf_t *) malloc(mapa->numleafs * sizeof(leaf_t));
+    if (!mapa->leafs) return 1;
+
+    out = mapa->leafs;
+    for (int i=0; i < mapa->numleafs; i++, in++, out++) {
+        memcpy(out, in, sizeof(leaf_t));
+
+        if (out->visofs == -1)
+			out->compressed_vis = NULL;
+		else
+			out->compressed_vis = mapa->visibility + out->visofs;
+    }
+
+    return 0;
+}
+
 int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     dmiptexlump_t   *m = (dmiptexlump_t *)(buffer + l->fileofs);
@@ -262,7 +287,9 @@ int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
         tex->height = mt->height;
 
         tex->data = malloc(tex->width * tex->height);
-        // TODO check
+        if (!tex->data) {
+            return 1000 + i;
+        }
 
         pixels = (char *)(mt + 1);
         memcpy(tex->data, pixels, tex->width * tex->height);
@@ -280,6 +307,7 @@ mapa_t *readBsp(char *fileName)
     mapa_t      *mapa;
     void        *buffer;
     dheader_t   *header;
+    int          err;
 
     buffer = readFile(fileName);
 
@@ -296,70 +324,77 @@ mapa_t *readBsp(char *fileName)
     mapa->tipo = OBJ_TIPO_MAPA;
     mapa->numTextureTrigger = -1;
 
-    loadVertexes(mapa, &header->lumps[LUMP_VERTEXES], buffer);
-    if (!mapa->numverts || !mapa->base || !mapa->verts) {
-        printf("readBsp: erro loadVertexes!\n\n");
+    err = loadVertexes(mapa, &header->lumps[LUMP_VERTEXES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadVertexes!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadPlanes(mapa, &header->lumps[LUMP_PLANES], buffer);
-    if (!mapa->numplanes || !mapa->planes) {
-        printf("readBsp: erro loadPlanes!\n\n");
+    err = loadPlanes(mapa, &header->lumps[LUMP_PLANES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadPlanes!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadEdges(mapa, &header->lumps[LUMP_EDGES], buffer);
-    if (!mapa->numedges || !mapa->edges) {
-        printf("readBsp: erro loadEdges!\n\n");
+    err = loadEdges(mapa, &header->lumps[LUMP_EDGES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadEdges!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadSurfEdges(mapa, &header->lumps[LUMP_SURFEDGES], buffer);
-    if (!mapa->numledges || !mapa->ledges) {
-        printf("readBsp: erro loadSurfEdges!\n\n");
+    err = loadSurfEdges(mapa, &header->lumps[LUMP_SURFEDGES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadSurfEdges!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadFaces(mapa, &header->lumps[LUMP_FACES], buffer);
-    if (!mapa->numfaces || !mapa->faces) {
-        printf("readBsp: erro loadFaces!\n\n");
+    err = loadFaces(mapa, &header->lumps[LUMP_FACES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadFaces!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
-    if (!mapa->numtextures || !mapa->textures) {
-        printf("readBsp: erro loadTextures!\n\n");
+    err = loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadTextures!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadTexInfo(mapa, &header->lumps[LUMP_TEXINFO], buffer);
-    if (!mapa->numtexinfo || !mapa->texinfo) {
-        printf("readBsp: erro loadTexInfo!\n\n");
+    err = loadTexInfo(mapa, &header->lumps[LUMP_TEXINFO], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadTexInfo!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
 
-    loadEntities(mapa, &header->lumps[LUMP_ENTITIES], buffer);
-    if (!mapa->entitieslen || !mapa->entities) {
-        printf("readBsp: erro loadEntities!\n\n");
+    err = loadEntities(mapa, &header->lumps[LUMP_ENTITIES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadEntities!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
     printf("ents: %s\n\n", mapa->entities);
 
-    loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
-    if (!mapa->visibilitylen || !mapa->visibility) {
-        printf("readBsp: erro loadVisibility!\n\n");
+    err = loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadVisibility!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
     printf("VIS: %s\n\n", mapa->visibility);
+
+    err = loadLeafs(mapa, &header->lumps[LUMP_LEAFS], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadLeafs!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
 
     free(buffer);
 
@@ -369,7 +404,6 @@ mapa_t *readBsp(char *fileName)
         printf("Lump [%d] -> ofs:%d - size:%d\n", l, header->lumps[l].fileofs, header->lumps[l].filelen);
 
         switch (l) {
-            case LUMP_VISIBILITY:   break;
             case LUMP_NODES:        break;
             case LUMP_LIGHTING:     break;
             case LUMP_CLIPNODES:    break;
