@@ -71,10 +71,62 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 }
 
 #define MAX_VERTS_POR_POLIGONO 16
+#define NEAR_Z 0.1f
+
+int mapa_clip_near_face(
+    ponto_t *in[MAX_VERTS_POR_POLIGONO],
+    int in_count,
+    ponto_t out[MAX_VERTS_POR_POLIGONO * 2]
+) {
+    int out_count = 0;
+
+    for (int i = 0; i < in_count; i++) {
+        ponto_t *cur = in[i];
+        ponto_t *prev = in[(i - 1 + in_count) % in_count];
+
+        float d_cur = cur->rot.z - NEAR_Z;
+        float d_prev = prev->rot.z - NEAR_Z;
+
+        int inside_cur = d_cur >= 0;
+        int inside_prev = d_prev >= 0;
+
+        if (inside_cur) {
+            if (!inside_prev) {
+                float t = d_prev / (d_prev - d_cur);
+                ponto_t p;
+                p.rot.x = prev->rot.x + t * (cur->rot.x - prev->rot.x);
+                p.rot.y = prev->rot.y + t * (cur->rot.y - prev->rot.y);
+                p.rot.z = NEAR_Z;
+
+                p.tex.x = prev->tex.x + t * (cur->tex.x - prev->tex.x);
+                p.tex.y = prev->tex.y + t * (cur->tex.y - prev->tex.y);
+
+                out[out_count++] = p;
+            }
+            out[out_count++] = *cur;
+        } else if (inside_prev) {
+            float t = d_prev / (d_prev - d_cur);
+            ponto_t p;
+            p.rot.x = prev->rot.x + t * (cur->rot.x - prev->rot.x);
+            p.rot.y = prev->rot.y + t * (cur->rot.y - prev->rot.y);
+            p.rot.z = NEAR_Z;
+
+            p.tex.x = prev->tex.x + t * (cur->tex.x - prev->tex.x);
+            p.tex.y = prev->tex.y + t * (cur->tex.y - prev->tex.y);
+
+            out[out_count++] = p;
+        }
+    }
+
+    return out_count;
+}
 
 void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 {
-	ponto_t			*verts[MAX_VERTS_POR_POLIGONO];
+	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
+	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
+    ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
+
 	textureinfo_t	*texinfo;
 	texture_t		*tex;
 	edge_t			*edge;
@@ -84,14 +136,16 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 	int s1,t1, s2,t2, s3,t3;
 	mapa_projecao3D(cam, mapa);
 
-	grafico_cor(255,255,255);
 
 	face_t *face = mapa->faces;
+	char zOK;
 	for (int i=0; i < mapa->numfaces; i++, face++) {
 		if (face->numedges > MAX_VERTS_POR_POLIGONO) {
 			printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
 			continue;
 		}
+
+		zOK = 0;
 
 		// Backface culling
 		// if (tri->normal.z < 0) {
@@ -102,6 +156,7 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
         tex = &mapa->textures[texinfo->miptex];
 
 		ledge = (int *)&mapa->ledges[face->firstedge];
+		grafico_cor(255,255,255);
 		for (int v=0; v < face->numedges; v++, ledge++) {
 			if (*ledge < 0) {
                 edge = (edge_t *)&mapa->edges[-*ledge];
@@ -114,6 +169,7 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 
 			if (verts[v]->rot.z > 10) {
 				grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
+				zOK = 1;
 			}
 
 			vBase = &mapa->base[vxtNum];
@@ -121,21 +177,21 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 			verts[v]->tex.y = (dot_product(*vBase, texinfo->vetorT) + texinfo->distT) / tex->height;
 		}
 //dbg
-//if (i > 5) continue;
+// if (i != 100) continue;
 
-		grafico_desenha_poligono(verts, face->numedges, tex, paleta);
+		// Faz o clipping contra o plano NEAR
+        int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
+        if (clipped_count < 3) continue;
 
+		// Projeta os vértices válidos
+        for (int v = 0; v < clipped_count; v++) {
+            grafico_projecao3D(&clipped[v]);
+            clipped_ptrs[v] = &clipped[v];
+        }
 
-// 		vetor3d_t *vBase1 = &mapa->base[tri->v[0]];
-// 		vetor3d_t *vBase2 = &mapa->base[tri->v[1]];
-// 		vetor3d_t *vBase3 = &mapa->base[tri->v[2]];
-// 		s1 = abs(dot_product(*vBase1, texinfo->vetorS) + texinfo->distS);
-// 		t1 = abs(dot_product(*vBase1, texinfo->vetorT) + texinfo->distT);
-// 		s2 = abs(dot_product(*vBase2, texinfo->vetorS) + texinfo->distS);
-// 		t2 = abs(dot_product(*vBase2, texinfo->vetorT) + texinfo->distT);
-// 		s3 = abs(dot_product(*vBase3, texinfo->vetorS) + texinfo->distS);
-// 		t3 = abs(dot_product(*vBase3, texinfo->vetorT) + texinfo->distT);
-
+		if (zOK) {
+			grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
+		}
 // printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
 // 	tri->normal.x, tri->normal.y, tri->normal.z,
 // 	(int)vBase1->x, (int)vBase1->y, (int)vBase1->z, s1,t1,
