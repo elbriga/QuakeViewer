@@ -129,7 +129,9 @@ int main(int argc, char **argv)
 		msg("Erro ao carregar mapa");
 		exit(34);
 	}
+	printf("ENTs:\n%s\n", mapa->entities);
 	mostraTexturas(mapa);
+	mostraMapa2D(mapa);
 
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
@@ -155,12 +157,12 @@ int main(int argc, char **argv)
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
-	cam.pos.x = -2180;
-	cam.pos.y = 160;
-	cam.pos.z = 400;
+	cam.pos.x = 0;
+	cam.pos.y = 0;
+	cam.pos.z = 0;
 
-	cam.ang.x = 0;
-	cam.ang.y = 90;
+	cam.ang.x = 90;
+	cam.ang.y = 0;
 	cam.ang.z = 0;
 
 	// obj->tipo = OBJ_TIPO_WIRE;
@@ -169,9 +171,9 @@ int main(int argc, char **argv)
 	// grafico_tecla_espera();
 	// printf("FOI!\n");
 
-	grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+	// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 
-	grafico_desenha_objeto(&cam, chao, 0, NULL);
+	// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
 	ponto_t verticesPoligono[4] = {
 				{
@@ -214,14 +216,18 @@ int main(int argc, char **argv)
 
 	grafico_tecla_espera();
 	
+	int cntRender = 0;
 	while (1)
 	{
-		grafico_desenha_mapa(&cam, mapa, paleta);
-		_debug = 0;
+		if (cntRender++ > 10) {
+			cntRender = 0;
 
-		// grafico_desenha_objeto(&cam, chao, 0, NULL);
+			grafico_desenha_mapa(&cam, mapa, paleta);
+			_debug = 0;
 
-		// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+			// grafico_desenha_objeto(&cam, chao, 0, NULL);
+
+			// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
@@ -246,7 +252,7 @@ int main(int argc, char **argv)
 		if(chao->rotacao.y <= 0)
 			chao->rotacao.y = 360;
 */
-		grafico_mostra();
+			grafico_mostra();
 
 		// char *framename = &obj->framenames[numFrameSel * 16];
 		// sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
@@ -254,23 +260,24 @@ int main(int argc, char **argv)
 		// 	numFrameSel, framename, (int)obj3->posicao.y);
 		//  msg(out);
 
-		numFrameSel++;
+			numFrameSel++;
 
-		int naSel = (numAnimSel == -1) ? numAnimSelAuto : numAnimSel;
-		if (numFrameSel >= obj->framesanims[naSel].frameF) {
-			if (numAnimSel == -1) {
-				numAnimSelAuto = rand() % obj->totAnims;
-				numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
-			} else {
-				numFrameSel = obj->framesanims[naSel].frameI;
+			int naSel = (numAnimSel == -1) ? numAnimSelAuto : numAnimSel;
+			if (numFrameSel >= obj->framesanims[naSel].frameF) {
+				if (numAnimSel == -1) {
+					numAnimSelAuto = rand() % obj->totAnims;
+					numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
+				} else {
+					numFrameSel = obj->framesanims[naSel].frameI;
+				}
 			}
+
+			printf("cam{%d,%d,%d a:%d,%d,%d} ",
+				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
+				(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
+
+			printf(" >>>\n");
 		}
-
-        printf("cam{%d,%d,%d a:%d,%d,%d} ",
-			(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
-			(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
-
-		printf(" >>>\n");
 
 		char c = grafico_tecla();
 		// printf("c = %d\n", c);
@@ -305,17 +312,17 @@ int main(int argc, char **argv)
 
 			numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'y') {
-			cam.pos.z++;
+			cam.pos.z += 10;
 		} else if (c == 'h') {
-			cam.pos.z--;
+			cam.pos.z -= 10;
 		} else if (c == 't') {
 			obj3->posicao.y++;
 		} else if (c == 'g') {
 			obj3->posicao.y--;
 		} else if (c == 'u') {
-			cam.pos.y++;
+			cam.ang.x += 5;
 		} else if (c == 'j') {
-			cam.pos.y--;
+			cam.ang.x -= 5;
 		}
 
 		if (numFrameSel < 0)
@@ -323,7 +330,7 @@ int main(int argc, char **argv)
 		if (numFrameSel >= obj->numframes)
 			numFrameSel = obj->numframes - 1;
 		
-		//usleep(20000);
+		usleep(20000);
 	}
 
 	msg("Free Myke Tyson FREE");

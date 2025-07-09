@@ -56,7 +56,7 @@ void camera_step(camera_t *cam, int step)
     double anguloRad = to_radians(cam->ang.y);
 
     cam->pos.x -= sin(anguloRad) * step;
-    cam->pos.z -= cos(anguloRad) * step;
+    cam->pos.y -= cos(anguloRad) * step;
 }
 
 void camera_strafe(camera_t *cam, int step)
@@ -64,7 +64,7 @@ void camera_strafe(camera_t *cam, int step)
     double anguloRad = to_radians(cam->ang.y);
 
     cam->pos.x -= cos(anguloRad) * step;
-    cam->pos.z += sin(anguloRad) * step;
+    cam->pos.y += sin(anguloRad) * step;
 }
 
 void rotacao2DEixoX(vetor3d_t *p, int angulo)
@@ -214,6 +214,7 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
         // Projecao para 2D
+        // TODO projetar apenas depois do near clipping
         grafico_projecao3D(pnt);
     }
 

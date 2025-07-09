@@ -138,6 +138,8 @@ typedef struct
     int numtextures;
     int numtexinfo;
 
+    vetor3d_t bbMin, bbMax;
+
     vetor3d_t   *base;
 
     edge_t      *edges;
