@@ -18,13 +18,14 @@ double to_radians(double deg)
   return deg * M_PI / 180.0;
 }
 
+float vector_length(vetor3d_t *v)
+{
+    return sqrt(v->x*v->x + v->y*v->y + v->z*v->z);
+}
+
 void normalize(vetor3d_t *normal)
 {
-    float len = sqrt(normal->x * normal->x +
-                     normal->y * normal->y +
-                     normal->z * normal->z);
-    len = 1.0 / len;
-
+    float len = 1.0 / vector_length(normal);
     normal->x *= len;
     normal->y *= len;
     normal->z *= len;
@@ -359,6 +360,9 @@ void freeMapa3D(mapa_t *mapa)
 
     if(mapa->entities)
         free(mapa->entities);
+
+    if(mapa->visibility)
+        free(mapa->visibility);
     
     free(mapa);
 }

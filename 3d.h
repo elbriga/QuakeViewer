@@ -138,6 +138,8 @@ typedef struct
     int numtextures;
     int numtexinfo;
 
+    int numTextureTrigger;
+
     vetor3d_t bbMin, bbMax;
 
     vetor3d_t   *base;
@@ -153,6 +155,9 @@ typedef struct
     char *entities;
     int   entitieslen;
 
+    char *visibility;
+    int   visibilitylen;
+
     ponto_t *verts;
 } mapa_t;
 
@@ -165,6 +170,7 @@ typedef struct
 void freeObj3D(obj3d_t *obj);
 void freeMapa3D(mapa_t *mapa);
 
+float vector_length(vetor3d_t *v);
 float dot_product(vetor3d_t a, vetor3d_t b);
 void normalize(vetor3d_t *normal);
 

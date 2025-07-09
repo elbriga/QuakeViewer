@@ -218,6 +218,21 @@ int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
         out->miptex = in->miptex;
         out->flags  = in->flags;
     }
+
+    return 0;
+}
+
+int loadVisibility (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    char *in = (char *)(buffer + l->fileofs);
+
+    mapa->visibilitylen = l->filelen;
+    mapa->visibility = (char *) malloc(mapa->visibilitylen);
+    if (!mapa->visibility) return 1;
+
+    memcpy(mapa->visibility, in, mapa->visibilitylen);
+
+    return 0;
 }
 
 int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
@@ -251,6 +266,10 @@ int loadTextures (mapa_t *mapa, lump_t *l, byte *buffer)
 
         pixels = (char *)(mt + 1);
         memcpy(tex->data, pixels, tex->width * tex->height);
+
+        if (!strcmp(tex->name, "trigger")) {
+            mapa->numTextureTrigger = i;
+        }
     }
 
     return 0;
@@ -275,6 +294,7 @@ mapa_t *readBsp(char *fileName)
 
     strncpy(mapa->nome, fileName, 64);
     mapa->tipo = OBJ_TIPO_MAPA;
+    mapa->numTextureTrigger = -1;
 
     loadVertexes(mapa, &header->lumps[LUMP_VERTEXES], buffer);
     if (!mapa->numverts || !mapa->base || !mapa->verts) {
@@ -332,6 +352,14 @@ mapa_t *readBsp(char *fileName)
         return NULL;
     }
     printf("ents: %s\n\n", mapa->entities);
+
+    loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
+    if (!mapa->visibilitylen || !mapa->visibility) {
+        printf("readBsp: erro loadVisibility!\n\n");
+        freeMapa3D(mapa);
+        return NULL;
+    }
+    printf("VIS: %s\n\n", mapa->visibility);
 
     free(buffer);
 
