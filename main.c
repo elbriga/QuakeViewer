@@ -165,6 +165,12 @@ int main(int argc, char **argv)
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
+	FILE *camPosIn = fopen("cam.dat", "rb");
+	if (camPosIn) {
+		fread(&cam, 1, sizeof(camera_t), camPosIn);
+		fclose(camPosIn);
+	}
+
 	// obj->tipo = OBJ_TIPO_WIRE;
 
 	printf("Init!\n");
@@ -344,6 +350,12 @@ int main(int argc, char **argv)
 	freeObj3D(chao);
 
 	grafico_desliga();
+
+	FILE *camPosOut = fopen("cam.dat", "wb");
+	if (camPosOut) {
+		fwrite(&cam, 1, sizeof(camera_t), camPosOut);
+		fclose(camPosOut);
+	}
 
 	return 0;
 }
