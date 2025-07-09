@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "3d.h"
 #include "gfx_ptBR.h"
@@ -132,20 +133,17 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 	edge_t			*edge;
     int				*ledge, vxtNum, s, t;
 	vetor3d_t		*vBase;
+	float            dist;
 
-	int s1,t1, s2,t2, s3,t3;
 	mapa_projecao3D(cam, mapa);
 
 
 	face_t *face = mapa->faces;
-	char zOK;
 	for (int i=0; i < mapa->numfaces; i++, face++) {
 		if (face->numedges > MAX_VERTS_POR_POLIGONO) {
 			printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
 			continue;
 		}
-
-		zOK = 0;
 
 		// Backface culling
 		// if (tri->normal.z < 0) {
@@ -153,10 +151,13 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		// }
 
         texinfo = &mapa->texinfo[face->texinfo];
+		if (texinfo->miptex == mapa->numTextureTrigger) continue;
+
         tex = &mapa->textures[texinfo->miptex];
 
 		ledge = (int *)&mapa->ledges[face->firstedge];
 		grafico_cor(255,255,255);
+		dist = 0.0;
 		for (int v=0; v < face->numedges; v++, ledge++) {
 			if (*ledge < 0) {
                 edge = (edge_t *)&mapa->edges[-*ledge];
@@ -167,10 +168,16 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
             }
 			verts[v] = &mapa->verts[vxtNum];
 
-			if (verts[v]->rot.z > 10) {
-				grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
-				zOK = 1;
+			if (v == 0) {
+				dist = vector_length(&verts[0]->rot);
+				if (dist > 300.0) {
+					break;
+				}
 			}
+
+			// if (verts[v]->rot.z > 10) {
+			// 	grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
+			// }
 
 			vBase = &mapa->base[vxtNum];
 			verts[v]->tex.x = (dot_product(*vBase, texinfo->vetorS) + texinfo->distS) / tex->width;
@@ -178,6 +185,8 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		}
 //dbg
 // if (i != 100) continue;
+
+		if (dist > 300.0) continue;
 
 		// Faz o clipping contra o plano NEAR
         int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
@@ -189,9 +198,8 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
             clipped_ptrs[v] = &clipped[v];
         }
 
-		if (zOK) {
-			grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
-		}
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
+
 // printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
 // 	tri->normal.x, tri->normal.y, tri->normal.z,
 // 	(int)vBase1->x, (int)vBase1->y, (int)vBase1->z, s1,t1,
