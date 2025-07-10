@@ -205,9 +205,9 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
 
     for (int v=0; v < mapa->numverts; v++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
-        pnt->rot.x = base->x + cam->pos.x;
-        pnt->rot.y = base->y + cam->pos.y;
-        pnt->rot.z = base->z + cam->pos.z;
+        pnt->rot.x = base->x - cam->pos.x;
+        pnt->rot.y = base->y - cam->pos.y;
+        pnt->rot.z = base->z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&pnt->rot, cam->ang.x);
@@ -225,9 +225,9 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         plano = &mapa->planes[face->planenum];
 
         // Reset - Coordenadas de Objeto
-        face->normal.x = plano->normal.x + cam->pos.x;
-        face->normal.y = plano->normal.y + cam->pos.y;
-        face->normal.z = plano->normal.z + cam->pos.z;
+        face->normal.x = plano->normal.x - cam->pos.x;
+        face->normal.y = plano->normal.y - cam->pos.y;
+        face->normal.z = plano->normal.z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&face->normal, cam->ang.x);
