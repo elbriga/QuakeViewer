@@ -18,19 +18,29 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+int map_scaleX(int v, mapa_t *mapa)
+{
+	return map(v, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
+}
+int map_scaleY(int v, mapa_t *mapa)
+{
+	return map(v, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura - 10);
+}
+
 void mostraMapa2D(mapa_t *mapa)
 {
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
 	edge_t    *e = mapa->edges;
+	leaf_t    *l = mapa->leafs;
 
 	for (int i=0; i < mapa->numverts; i++, b++, v++) {
 		v->rot.x = b->x;
 		v->rot.y = b->y;
 		v->rot.z = b->z;
 
-		v->screen.x = map(b->x, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
-		v->screen.y = map(b->y, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura  - 10);
+		v->screen.x = map_scaleX(b->x, mapa);
+		v->screen.y = map_scaleY(b->y, mapa);
 	}
 
 	grafico_cor(200,200,200);
@@ -42,10 +52,20 @@ void mostraMapa2D(mapa_t *mapa)
 	}
 
 	grafico_cor(255,200,200);
-	int px = map(player_start.x, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
-	int py = map(player_start.y, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura  - 10);
 
-	grafico_xis( px, py );
+	for (int i=0; i < mapa->numleafs; i++, l++) {
+		int xi = map_scaleX(l->mins[0], mapa);
+		int xf = map_scaleX(l->maxs[0], mapa);
+		int yi = map_scaleY(l->mins[1], mapa);
+		int yf = map_scaleY(l->maxs[1], mapa);
+
+		grafico_linha( xi,yi, xf,yi );
+		grafico_linha( xf,yi, xf,yf );
+		grafico_linha( xf,yf, xi,yf );
+		grafico_linha( xi,yf, xi,yi );
+	}
+
+	grafico_xis( map_scaleX(player_start.x, mapa), map_scaleY(player_start.y, mapa) );
 
     grafico_mostra();
     grafico_tecla_espera();
