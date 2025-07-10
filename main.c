@@ -15,6 +15,7 @@
 #include "3d.h"
 
 #include "render.h"
+#include "mapa.h"
 
 char paleta[256][3];
 float oldTS = 0;
@@ -223,6 +224,7 @@ int main(int argc, char **argv)
 	grafico_tecla_espera();
 	
 	int cntRender = 0;
+	int leaf = -1;
 	while (1)
 	{
 		if (cntRender++ > 10) {
@@ -277,6 +279,9 @@ int main(int argc, char **argv)
 					numFrameSel = obj->framesanims[naSel].frameI;
 				}
 			}
+
+			leaf = discover_leaf(&cam.pos, mapa);
+			printf("L:%d ", leaf);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,

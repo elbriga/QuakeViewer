@@ -407,7 +407,6 @@ mapa_t *readBsp(char *fileName)
             case LUMP_NODES:        break;
             case LUMP_LIGHTING:     break;
             case LUMP_CLIPNODES:    break;
-            case LUMP_LEAFS:        break;
             case LUMP_MARKSURFACES: break;
             case LUMP_MODELS:       break;
         }
