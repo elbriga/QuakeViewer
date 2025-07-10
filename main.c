@@ -132,7 +132,6 @@ int main(int argc, char **argv)
 	}
 	printf("ENTs:\n%s\n", mapa->entities);
 	mostraTexturas(mapa);
-	mostraMapa2D(mapa);
 
 	int numAnimSel = 0;
 	int numAnimSelAuto = 2;
@@ -165,6 +164,8 @@ int main(int argc, char **argv)
 	cam.ang.x = 90;
 	cam.ang.y = 0;
 	cam.ang.z = 0;
+
+	mostraMapa2D(mapa, &cam);
 
 	FILE *camPosIn = fopen("cam.dat", "rb");
 	if (camPosIn) {
@@ -231,6 +232,9 @@ int main(int argc, char **argv)
 			cntRender = 0;
 
 			grafico_desenha_mapa(&cam, mapa, paleta);
+
+			mostraMapa2D(mapa, &cam);
+
 			_debug = 0;
 
 			// grafico_desenha_objeto(&cam, chao, 0, NULL);
@@ -341,7 +345,7 @@ int main(int argc, char **argv)
 		if (numFrameSel >= obj->numframes)
 			numFrameSel = obj->numframes - 1;
 		
-		usleep(20000);
+		usleep(2000);
 	}
 
 	msg("Free Myke Tyson FREE");

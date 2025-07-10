@@ -5,6 +5,7 @@
 #include <string.h>
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 
 #include "3d.h"
 #include "gfx.h"
@@ -20,14 +21,14 @@ float map(float x, float in_min, float in_max, float out_min, float out_max)
 
 int map_scaleX(int v, mapa_t *mapa)
 {
-	return map(v, mapa->bbMin.x, mapa->bbMax.x, 10, grafico_largura - 10);
+	return map(v, mapa->bbMin.x, mapa->bbMax.x, grafico_largura/2+10, grafico_largura - 10);
 }
 int map_scaleY(int v, mapa_t *mapa)
 {
-	return map(v, mapa->bbMin.y, mapa->bbMax.y, 10, grafico_altura - 10);
+	return map(v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+10, grafico_altura - 10);
 }
 
-void mostraMapa2D(mapa_t *mapa)
+void mostraMapa2D(mapa_t *mapa, camera_t *cam)
 {
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
@@ -48,27 +49,42 @@ void mostraMapa2D(mapa_t *mapa)
 		ponto_t *p1 = &mapa->verts[e->v[0]];
 		ponto_t *p2 = &mapa->verts[e->v[1]];
 
+		if (i != 10) continue;
+
 		grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+
+		vetor3d_t *vxt = &mapa->base[e->v[0]];
+		printf("LL%d,%d > ", (int)vxt->x, (int)vxt->y);
 	}
+
+	grafico_cor(100,255,100);
+	int camMX = map_scaleX(cam->pos.x, mapa);
+	int camMY = map_scaleY(cam->pos.y, mapa);
+	float camLenArrow = 10.0;
+	float camAng = to_radians(cam->ang.y);
+	int camAX = camMX - sin(camAng) * camLenArrow;
+	int camAY = camMY - cos(camAng) * camLenArrow;
+	grafico_xis( camMX, camMY );
+	grafico_xis( camAX, camAY );
+	grafico_linha(camMX, camMY, camAX, camAY);
+
+	// for (int i=0; i < mapa->numleafs; i++, l++) {
+	// 	int xi = map_scaleX(l->mins[0], mapa);
+	// 	int xf = map_scaleX(l->maxs[0], mapa);
+	// 	int yi = map_scaleY(l->mins[1], mapa);
+	// 	int yf = map_scaleY(l->maxs[1], mapa);
+
+	// 	grafico_linha( xi,yi, xf,yi );
+	// 	grafico_linha( xf,yi, xf,yf );
+	// 	grafico_linha( xf,yf, xi,yf );
+	// 	grafico_linha( xi,yf, xi,yi );
+	// }
 
 	grafico_cor(255,200,200);
-
-	for (int i=0; i < mapa->numleafs; i++, l++) {
-		int xi = map_scaleX(l->mins[0], mapa);
-		int xf = map_scaleX(l->maxs[0], mapa);
-		int yi = map_scaleY(l->mins[1], mapa);
-		int yf = map_scaleY(l->maxs[1], mapa);
-
-		grafico_linha( xi,yi, xf,yi );
-		grafico_linha( xf,yi, xf,yf );
-		grafico_linha( xf,yf, xi,yf );
-		grafico_linha( xi,yf, xi,yi );
-	}
-
 	grafico_xis( map_scaleX(player_start.x, mapa), map_scaleY(player_start.y, mapa) );
 
-    grafico_mostra();
-    grafico_tecla_espera();
+    // grafico_mostra();
+    // grafico_tecla_espera();
 }
 
 int grafico_init( int width, int height, const char *title )

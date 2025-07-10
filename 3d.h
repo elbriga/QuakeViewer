@@ -198,6 +198,7 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa);
 
 obj3d_t *obj_plano(int sizeX, int sizeY);
 
+double to_radians(double deg);
 void rotacao2DEixoX(vetor3d_t *p, int angulo);
 void rotacao2DEixoY(vetor3d_t *p, int angulo);
 void rotacao2DEixoZ(vetor3d_t *p, int angulo);

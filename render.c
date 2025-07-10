@@ -73,6 +73,7 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 
 #define MAX_VERTS_POR_POLIGONO 16
 #define NEAR_Z 0.1f
+#define FAR_CLIP 500.0
 
 int mapa_clip_near_face(
     ponto_t *in[MAX_VERTS_POR_POLIGONO],
@@ -141,7 +142,7 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 	face_t *face = mapa->faces;
 	for (int i=0; i < mapa->numfaces; i++, face++) {
 		if (face->numedges > MAX_VERTS_POR_POLIGONO) {
-			printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
+			//printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
 			continue;
 		}
 
@@ -170,7 +171,7 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 
 			if (v == 0) {
 				dist = vector_length(&verts[0]->rot);
-				if (dist > 300.0) {
+				if (dist > FAR_CLIP) {
 					break;
 				}
 			}
@@ -186,7 +187,7 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 //dbg
 // if (i != 100) continue;
 
-		if (dist > 300.0) continue;
+		if (dist > FAR_CLIP) continue;
 
 		// Faz o clipping contra o plano NEAR
         int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
