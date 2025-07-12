@@ -235,6 +235,63 @@ int loadVisibility (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadNodes (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    dsnode_t *in = (dsnode_t *)(buffer + l->fileofs);
+    node_t   *out;
+
+    if (!mapa->planes) return 20;
+    if (!mapa->leafs)  return 30;
+    
+    mapa->numnodes = l->filelen / sizeof(node_t);
+
+    mapa->nodes = (node_t *) malloc(mapa->numnodes * sizeof(node_t));
+    if (!mapa->nodes) return 1;
+
+    out = mapa->nodes;
+    for (int i=0; i < mapa->numnodes; i++, in++, out++) {
+        out->contents = 0;
+        out->visofs   = 0;
+
+        out->min.x = in->mins[0];
+        out->min.y = in->mins[1];
+        out->min.z = in->mins[2];
+
+        out->max.x = in->mins[3];
+        out->max.y = in->mins[4];
+        out->max.z = in->mins[5];
+
+        out->plane = mapa->planes + in->planenum;
+
+        out->firstsurface = in->firstface;
+        out->numsurfaces  = in->numfaces;
+
+        printf(">>> Node[%d] > child0:%d - child1:%d\n", i, in->children[0], in->children[1]);
+
+        for (int j=0 ; j<2 ; j++)
+		{
+			//johnfitz -- hack to handle nodes > 32k, adapted from darkplaces
+			int p = (unsigned short)in->children[j];
+			if (p < mapa->numnodes)
+				out->children[j] = mapa->nodes + p;
+			else
+			{
+				p = 65535 - p; //note this uses 65535 intentionally, -1 is leaf 0
+				if (p < mapa->numleafs)
+					out->children[j] = (node_t *)(mapa->leafs + p);
+				else
+				{
+					printf("Mod_LoadNodes: invalid leaf index %i (file has only %i leafs)\n", p, mapa->numleafs);
+					out->children[j] = (node_t *)(mapa->leafs); //map it to the solid leaf
+				}
+			}
+			//johnfitz
+		}
+    }
+
+    return 0;
+}
+
 int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     // loadVisibility antes
@@ -249,7 +306,16 @@ int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
 
     out = mapa->leafs;
     for (int i=0; i < mapa->numleafs; i++, in++, out++) {
-        memcpy(out, in, sizeof(leaf_t));
+        out->contents = in->contents;
+        out->visofs   = in->visofs;
+
+        out->min.x = in->mins[0];
+        out->min.y = in->mins[1];
+        out->min.z = in->mins[2];
+
+        out->max.x = in->mins[3];
+        out->max.y = in->mins[4];
+        out->max.z = in->mins[5];
 
         if (out->visofs == -1)
 			out->compressed_vis = NULL;
@@ -359,6 +425,28 @@ mapa_t *readBsp(char *fileName)
         return NULL;
     }
 
+    err = loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadVisibility!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+    printf("VIS: %s\n\n", mapa->visibility);
+
+    err = loadLeafs(mapa, &header->lumps[LUMP_LEAFS], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadLeafs!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
+    err = loadNodes(mapa, &header->lumps[LUMP_NODES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadNodes!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
     err = loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
     if (err) {
         printf("readBsp: erro %d loadTextures!\n\n", err);
@@ -381,21 +469,6 @@ mapa_t *readBsp(char *fileName)
     }
     printf("ents: %s\n\n", mapa->entities);
 
-    err = loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
-    if (err) {
-        printf("readBsp: erro %d loadVisibility!\n\n", err);
-        freeMapa3D(mapa);
-        return NULL;
-    }
-    printf("VIS: %s\n\n", mapa->visibility);
-
-    err = loadLeafs(mapa, &header->lumps[LUMP_LEAFS], buffer);
-    if (err) {
-        printf("readBsp: erro %d loadLeafs!\n\n", err);
-        freeMapa3D(mapa);
-        return NULL;
-    }
-
     free(buffer);
 
     return mapa;
@@ -404,7 +477,6 @@ mapa_t *readBsp(char *fileName)
         printf("Lump [%d] -> ofs:%d - size:%d\n", l, header->lumps[l].fileofs, header->lumps[l].filelen);
 
         switch (l) {
-            case LUMP_NODES:        break;
             case LUMP_LIGHTING:     break;
             case LUMP_CLIPNODES:    break;
             case LUMP_MARKSURFACES: break;

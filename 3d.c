@@ -352,6 +352,9 @@ void freeMapa3D(mapa_t *mapa)
     if(mapa->faces)
         free(mapa->faces);
     
+    if(mapa->nodes)
+        free(mapa->nodes);
+    
     if(mapa->texinfo)
         free(mapa->texinfo);
 

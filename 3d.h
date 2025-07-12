@@ -1,6 +1,8 @@
 #ifndef gfx3D_H
 #define gfx3D_H
 
+#include "QuakeViewer.h"
+
 #define OBJ_TIPO_WIRE    1
 #define OBJ_TIPO_FLAT    2
 #define OBJ_TIPO_GOURAD  4
@@ -94,18 +96,46 @@ typedef struct
     int frameF;
 } animationframes_t;
 
-typedef struct
+typedef struct mnode_s
 {
-	int			contents;
-	int			visofs;				// -1 = no visibility info
+// common with leaf
+	int			contents;		// 0, to differentiate from leafs
+	int			visofs;		// node needs to be traversed if current
 
-	short		mins[3];			// for frustum culling
-	short		maxs[3];
+	vetor3d_t	min;            // for bounding box culling
+    vetor3d_t   max;
 
-	unsigned short		firstmarksurface;
-	unsigned short		nummarksurfaces;
+	struct mnode_s	*parent;
 
-    unsigned char *compressed_vis;
+// node specific
+	plano_t         *plane;
+	struct mnode_s	*children[2];
+
+	unsigned int		firstsurface;
+	unsigned int		numsurfaces;
+} node_t;
+
+
+
+typedef struct mleaf_s
+{
+// common with node
+	int			contents;		// wil be a negative contents number
+	int			visofs;		// node needs to be traversed if current
+
+	vetor3d_t	min;            // for bounding box culling
+    vetor3d_t   max;
+
+	struct mnode_s	*parent;
+
+// leaf specific
+	byte		*compressed_vis;
+	// efrag_t		*efrags;
+
+	// msurface_t	**firstmarksurface;
+	// int			nummarksurfaces;
+	// int			key;			// BSP sequence number for leaf's contents
+	// byte		ambient_sound_level[NUM_AMBIENTS];
 } leaf_t;
 
 typedef struct
@@ -149,6 +179,7 @@ typedef struct
     int numledges;
     int numplanes;
     int numfaces;
+    int numnodes;
     int numtextures;
     int numtexinfo;
     int numleafs;
@@ -166,6 +197,7 @@ typedef struct
     face_t        *faces;
     texture_t     *textures;
     textureinfo_t *texinfo;
+    node_t        *nodes;
     leaf_t        *leafs;
 
     char *entities;
