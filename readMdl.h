@@ -1,11 +1,10 @@
 #ifndef READMDL_H
 #define READMDL_H
 
+#include "QuakeViewer.h"
 #include "3d.h"
 
 obj3d_t *readMdl(char *mdlfilename);
-
-typedef unsigned char byte;
 
 typedef float	vec_t;
 typedef vec_t	vec3_t[3];
