@@ -25,7 +25,7 @@ int map_scaleX(int v, mapa_t *mapa)
 }
 int map_scaleY(int v, mapa_t *mapa)
 {
-	return map(v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+10, grafico_altura - 10);
+	return map((mapa->bbMax.y + mapa->bbMin.y) - v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+10, grafico_altura - 10);
 }
 
 void mostraMapa2D(mapa_t *mapa, camera_t *cam)
@@ -33,7 +33,7 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam)
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
 	edge_t    *e = mapa->edges;
-	leaf_t    *l = mapa->leafs;
+	// leaf_t    *l = mapa->leafs;
 
 	for (int i=0; i < mapa->numverts; i++, b++, v++) {
 		v->rot.x = b->x;
@@ -49,22 +49,25 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam)
 		ponto_t *p1 = &mapa->verts[e->v[0]];
 		ponto_t *p2 = &mapa->verts[e->v[1]];
 
-		if (i != 10) continue;
+		// if (i != 100) continue;
 
 		grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
 
-		vetor3d_t *vxt = &mapa->base[e->v[0]];
-		printf("LL%d,%d > ", (int)vxt->x, (int)vxt->y);
+		// vetor3d_t *vxt = &mapa->base[e->v[0]];
+		// printf("LL%d,%d,%d > ", (int)vxt->x, (int)vxt->y, (int)vxt->z);
 	}
 
-	grafico_cor(100,255,100);
 	int camMX = map_scaleX(cam->pos.x, mapa);
 	int camMY = map_scaleY(cam->pos.y, mapa);
 	float camLenArrow = 10.0;
 	float camAng = to_radians(cam->ang.y);
-	int camAX = camMX - sin(camAng) * camLenArrow;
+	int camAX = camMX + sin(camAng) * camLenArrow;
 	int camAY = camMY - cos(camAng) * camLenArrow;
+
+	grafico_cor(255,100,100);
 	grafico_xis( camMX, camMY );
+
+	grafico_cor(100,200,100);
 	grafico_xis( camAX, camAY );
 	grafico_linha(camMX, camMY, camAX, camAY);
 
