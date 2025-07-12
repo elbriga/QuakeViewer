@@ -167,13 +167,22 @@ int main(int argc, char **argv)
 
 	mostraMapa2D(mapa, &cam);
 
-	FILE *camPosIn = fopen("cam.dat", "rb");
-	if (camPosIn) {
-		fread(&cam, 1, sizeof(camera_t), camPosIn);
-		fclose(camPosIn);
-	}
+	// FILE *camPosIn = fopen("cam.dat", "rb");
+	// if (camPosIn) {
+	// 	fread(&cam, 1, sizeof(camera_t), camPosIn);
+	// 	fclose(camPosIn);
+	// }
 
 	// obj->tipo = OBJ_TIPO_WIRE;
+
+	printf("Mapa BBox {\n%d,%d,%d\n%d,%d,%d\n}\n",
+			(int)mapa->bbMin.x,
+			(int)mapa->bbMin.y,
+			(int)mapa->bbMin.z,
+			(int)mapa->bbMax.x,
+			(int)mapa->bbMax.y,
+			(int)mapa->bbMax.z
+		);
 
 	printf("Init!\n");
 	// grafico_tecla_espera();
@@ -225,7 +234,7 @@ int main(int argc, char **argv)
 	grafico_tecla_espera();
 	
 	int cntRender = 0;
-	int leaf = -1;
+	leaf_t *leaf;
 	while (1)
 	{
 		if (cntRender++ > 10) {
@@ -285,7 +294,7 @@ int main(int argc, char **argv)
 			}
 
 			leaf = discover_leaf(&cam.pos, mapa);
-			printf("L:%d ", leaf);
+			printf("L:%d ", leaf->visofs);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
@@ -302,12 +311,12 @@ int main(int argc, char **argv)
 			break;
 		
 		else if (c == 81) camera_pitch(&cam, -2); // ESQUERDA
-		else if (c == 82) camera_step( &cam,  2); // CIMA
+		else if (c == 82) camera_step( &cam, -2); // CIMA
 		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
-		else if (c == 84) camera_step( &cam, -2); // BAIXO
+		else if (c == 84) camera_step( &cam,  2); // BAIXO
 
-		else if (c == 'w') camera_step(&cam,  20);
-		else if (c == 's') camera_step(&cam, -20);
+		else if (c == 'w') camera_step(&cam, -20);
+		else if (c == 's') camera_step(&cam,  20);
 
 		else if (c == 'a') camera_strafe(&cam, -2);
 		else if (c == 'd') camera_strafe(&cam,  2);

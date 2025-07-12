@@ -1,17 +1,24 @@
+#include <stdio.h>
+
 #include "3d.h"
 
-int discover_leaf(vetor3d_t *pos, mapa_t *mapa)
+leaf_t *discover_leaf(vetor3d_t *pos, mapa_t *mapa)
 {
-    leaf_t *l = mapa->leafs;
+    node_t  *node = mapa->nodes;
+    plano_t *plano;
+    float    d;
 
-    for (int i=0; i < mapa->numleafs; i++, l++) {
-        if (pos->x >= l->mins[0] && pos->x <= l->maxs[0] &&
-            pos->y >= l->mins[1] && pos->y <= l->maxs[1] &&
-            pos->z >= l->mins[2] && pos->z <= l->maxs[2]) {
-            
-            return i;
-        }
-    }
+	while (1)
+	{
+		if (node->contents < 0)
+			return (leaf_t *)node;
+		plano = node->plane;
+		d = dot_product (*pos, plano->normal) - plano->dist;
+		if (d > 0)
+			node = node->children[0];
+		else
+			node = node->children[1];
+	}
 
-    return -1;
+	return NULL;	// never reached
 }
