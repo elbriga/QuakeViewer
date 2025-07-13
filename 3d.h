@@ -132,8 +132,9 @@ typedef struct mleaf_s
 	byte		*compressed_vis;
 	// efrag_t		*efrags;
 
-	// msurface_t	**firstmarksurface;
-	// int			nummarksurfaces;
+	face_t	**firstmarksurface;
+	int       nummarksurfaces;
+    
 	// int			key;			// BSP sequence number for leaf's contents
 	// byte		ambient_sound_level[NUM_AMBIENTS];
 } leaf_t;
@@ -179,6 +180,7 @@ typedef struct
     int numledges;
     int numplanes;
     int numfaces;
+    int nummarksurfaces;
     int numnodes;
     int numtextures;
     int numtexinfo;
@@ -195,6 +197,7 @@ typedef struct
 
     plano_t       *planes;
     face_t        *faces;
+    face_t       **marksurfaces;
     texture_t     *textures;
     textureinfo_t *texinfo;
     node_t        *nodes;

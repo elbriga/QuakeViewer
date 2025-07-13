@@ -191,6 +191,32 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadMarkSurfaces (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+	short   *in;
+    face_t **out;
+    int      i, j;
+
+    if (!mapa->faces) {
+        return 2;
+    }
+
+    mapa->nummarksurfaces = l->filelen / sizeof(short);
+    mapa->marksurfaces    = (face_t **) malloc(mapa->nummarksurfaces * sizeof(face_t *));
+    if (!mapa->marksurfaces) return 1;
+
+	in  = (short *)(buffer + l->fileofs);
+    out = (face_t **)mapa->marksurfaces;
+    for (i=0; i < mapa->nummarksurfaces; i++, in++) {
+        j = (unsigned short)*in;
+        if (j > mapa->numfaces) return 10;
+
+        out[i] = mapa->faces + j;
+    }
+
+    return 0;
+}
+
 int loadTexInfo (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     texinfo_t     *in = (texinfo_t *)(buffer + l->fileofs);
@@ -237,19 +263,20 @@ int loadVisibility (mapa_t *mapa, lump_t *l, byte *buffer)
 
 int loadNodes (mapa_t *mapa, lump_t *l, byte *buffer)
 {
+    int       i, j, p;
     dsnode_t *in = (dsnode_t *)(buffer + l->fileofs);
     node_t   *out;
 
     if (!mapa->planes) return 20;
     if (!mapa->leafs)  return 30;
     
-    mapa->numnodes = l->filelen / sizeof(node_t);
+    mapa->numnodes = l->filelen / sizeof(dsnode_t);
 
     mapa->nodes = (node_t *) malloc(mapa->numnodes * sizeof(node_t));
     if (!mapa->nodes) return 1;
 
     out = mapa->nodes;
-    for (int i=0; i < mapa->numnodes; i++, in++, out++) {
+    for (i=0; i < mapa->numnodes; i++, in++, out++) {
         out->contents = 0;
         out->visofs   = 0;
 
@@ -266,27 +293,28 @@ int loadNodes (mapa_t *mapa, lump_t *l, byte *buffer)
         out->firstsurface = in->firstface;
         out->numsurfaces  = in->numfaces;
 
-        printf(">>> Node[%d] > child0:%d - child1:%d\n", i, in->children[0], in->children[1]);
+        // printf(">>> [%d] Node[%d][%d][%d]:\n", mapa->numnodes, i, (unsigned short)in->children[0], (unsigned short)in->children[1]);
 
-        for (int j=0 ; j<2 ; j++)
+        for (j=0 ; j<2 ; j++)
 		{
 			//johnfitz -- hack to handle nodes > 32k, adapted from darkplaces
-			int p = (unsigned short)in->children[j];
-			if (p < mapa->numnodes)
+			p = (unsigned short)in->children[j];
+			if (p < mapa->numnodes) {
 				out->children[j] = mapa->nodes + p;
-			else
-			{
+                // printf("child%dNODE:%d\n", j, p);
+            } else {
 				p = 65535 - p; //note this uses 65535 intentionally, -1 is leaf 0
-				if (p < mapa->numleafs)
+				if (p >= 0 && p < mapa->numleafs) {
 					out->children[j] = (node_t *)(mapa->leafs + p);
-				else
-				{
+                    // printf("child%dLEAF:%d ", j, p);
+                } else {
 					printf("Mod_LoadNodes: invalid leaf index %i (file has only %i leafs)\n", p, mapa->numleafs);
 					out->children[j] = (node_t *)(mapa->leafs); //map it to the solid leaf
 				}
 			}
 			//johnfitz
 		}
+        printf("\n");
     }
 
     return 0;
@@ -321,6 +349,9 @@ int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
 			out->compressed_vis = NULL;
 		else
 			out->compressed_vis = mapa->visibility + out->visofs;
+        
+        out->firstmarksurface = (face_t **)(mapa->marksurfaces + (unsigned short)in->firstmarksurface);
+        out->nummarksurfaces  = (unsigned short)in->nummarksurfaces;
     }
 
     return 0;
@@ -425,13 +456,20 @@ mapa_t *readBsp(char *fileName)
         return NULL;
     }
 
+    err = loadMarkSurfaces(mapa, &header->lumps[LUMP_MARKSURFACES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadMarkSurfaces!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
     err = loadVisibility(mapa, &header->lumps[LUMP_VISIBILITY], buffer);
     if (err) {
         printf("readBsp: erro %d loadVisibility!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
-    printf("VIS: %s\n\n", mapa->visibility);
+    // printf("VIS: %s\n\n", mapa->visibility);
 
     err = loadLeafs(mapa, &header->lumps[LUMP_LEAFS], buffer);
     if (err) {
@@ -467,7 +505,7 @@ mapa_t *readBsp(char *fileName)
         freeMapa3D(mapa);
         return NULL;
     }
-    printf("ents: %s\n\n", mapa->entities);
+    //printf("ents: %s\n\n", mapa->entities);
 
     free(buffer);
 
@@ -479,7 +517,6 @@ mapa_t *readBsp(char *fileName)
         switch (l) {
             case LUMP_LIGHTING:     break;
             case LUMP_CLIPNODES:    break;
-            case LUMP_MARKSURFACES: break;
             case LUMP_MODELS:       break;
         }
     }*/

@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 		msg("Erro ao carregar mapa");
 		exit(34);
 	}
-	printf("ENTs:\n%s\n", mapa->entities);
+	// printf("ENTs:\n%s\n", mapa->entities);
 	mostraTexturas(mapa);
 
 	int numAnimSel = 0;
@@ -234,7 +234,6 @@ int main(int argc, char **argv)
 	grafico_tecla_espera();
 	
 	int cntRender = 0;
-	leaf_t *leaf;
 	while (1)
 	{
 		if (cntRender++ > 10) {
@@ -292,9 +291,6 @@ int main(int argc, char **argv)
 					numFrameSel = obj->framesanims[naSel].frameI;
 				}
 			}
-
-			leaf = discover_leaf(&cam.pos, mapa);
-			printf("L:%d ", leaf->visofs);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,

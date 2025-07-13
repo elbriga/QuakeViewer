@@ -5,6 +5,7 @@
 #include "3d.h"
 #include "gfx_ptBR.h"
 #include "render.h"
+#include "mapa.h"
 
 void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
@@ -123,7 +124,7 @@ int mapa_clip_near_face(
     return out_count;
 }
 
-void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
+void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
@@ -136,70 +137,65 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 	vetor3d_t		*vBase;
 	float            dist;
 
-	mapa_projecao3D(cam, mapa);
+	if (face->numedges > MAX_VERTS_POR_POLIGONO) {
+		//printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
+		return;
+	}
 
+	// Backface culling
+	// if (tri->normal.z < 0) {
+	// 	continue;
+	// }
 
-	face_t *face = mapa->faces;
-	for (int i=0; i < mapa->numfaces; i++, face++) {
-		if (face->numedges > MAX_VERTS_POR_POLIGONO) {
-			//printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
-			continue;
+	texinfo = &mapa->texinfo[face->texinfo];
+	if (texinfo->miptex == mapa->numTextureTrigger) return;
+
+	tex = &mapa->textures[texinfo->miptex];
+
+	ledge = (int *)&mapa->ledges[face->firstedge];
+	grafico_cor(255,255,255);
+	dist = 0.0;
+	for (int v=0; v < face->numedges; v++, ledge++) {
+		if (*ledge < 0) {
+			edge = (edge_t *)&mapa->edges[-*ledge];
+			vxtNum = edge->v[1];
+		} else {
+			edge = (edge_t *)&mapa->edges[*ledge];
+			vxtNum = edge->v[0];
+		}
+		verts[v] = &mapa->verts[vxtNum];
+
+		if (v == 0) {
+			dist = vector_length(&verts[0]->rot);
+			if (dist > FAR_CLIP) {
+				break;
+			}
 		}
 
-		// Backface culling
-		// if (tri->normal.z < 0) {
-		// 	continue;
+		// if (verts[v]->rot.z > 10) {
+		// 	grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
 		// }
 
-        texinfo = &mapa->texinfo[face->texinfo];
-		if (texinfo->miptex == mapa->numTextureTrigger) continue;
-
-        tex = &mapa->textures[texinfo->miptex];
-
-		ledge = (int *)&mapa->ledges[face->firstedge];
-		grafico_cor(255,255,255);
-		dist = 0.0;
-		for (int v=0; v < face->numedges; v++, ledge++) {
-			if (*ledge < 0) {
-                edge = (edge_t *)&mapa->edges[-*ledge];
-				vxtNum = edge->v[1];
-            } else {
-                edge = (edge_t *)&mapa->edges[*ledge];
-				vxtNum = edge->v[0];
-            }
-			verts[v] = &mapa->verts[vxtNum];
-
-			if (v == 0) {
-				dist = vector_length(&verts[0]->rot);
-				if (dist > FAR_CLIP) {
-					break;
-				}
-			}
-
-			// if (verts[v]->rot.z > 10) {
-			// 	grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
-			// }
-
-			vBase = &mapa->base[vxtNum];
-			verts[v]->tex.x = (dot_product(*vBase, texinfo->vetorS) + texinfo->distS) / tex->width;
-			verts[v]->tex.y = (dot_product(*vBase, texinfo->vetorT) + texinfo->distT) / tex->height;
-		}
+		vBase = &mapa->base[vxtNum];
+		verts[v]->tex.x = (dot_product(*vBase, texinfo->vetorS) + texinfo->distS) / tex->width;
+		verts[v]->tex.y = (dot_product(*vBase, texinfo->vetorT) + texinfo->distT) / tex->height;
+	}
 //dbg
 // if (i != 100) continue;
 
-		if (dist > FAR_CLIP) continue;
+	if (dist > FAR_CLIP) return;
 
-		// Faz o clipping contra o plano NEAR
-        int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
-        if (clipped_count < 3) continue;
+	// Faz o clipping contra o plano NEAR
+	int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
+	if (clipped_count < 3) return;
 
-		// Projeta os vértices válidos
-        for (int v = 0; v < clipped_count; v++) {
-            grafico_projecao3D(&clipped[v]);
-            clipped_ptrs[v] = &clipped[v];
-        }
+	// Projeta os vértices válidos
+	for (int v = 0; v < clipped_count; v++) {
+		grafico_projecao3D(&clipped[v]);
+		clipped_ptrs[v] = &clipped[v];
+	}
 
-		grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
+	grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
 
 // printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
 // 	tri->normal.x, tri->normal.y, tri->normal.z,
@@ -214,5 +210,44 @@ void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 // 				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, s2, t2,
 // 				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, s3, t3
 // 			);
+}
+
+void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
+{
+	int		 visON = 1;
+	int		 i, j, facesRendered = 0;
+	leaf_t	*leafCAM, *leaf;
+	face_t	*face;
+	byte	*vis;
+
+	mapa_projecao3D(cam, mapa);
+
+	if (visON) {
+		leafCAM = mapa_discoverLeaf(&cam->pos, mapa);
+		printf("L:%d ", leafCAM->visofs);
+
+		vis = mapa_leafVIS(leafCAM, mapa);
+
+		leaf = &mapa->leafs[1];
+		for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
+			if (!(vis[i >> 3] & (1 << (i & 7)))) {
+				// LEAF nao visivel
+				continue;
+			}
+
+			// Render LEAF
+			face = *leaf->firstmarksurface;
+			for (j=0; j < leaf->nummarksurfaces; j++, face++) {
+				render_desenhaFace(face, mapa, paleta);
+				facesRendered++;
+			}
+		}
+
+		printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
+	} else {
+		face = mapa->faces;
+		for (int i=0; i < mapa->numfaces; i++, face++) {
+			render_desenhaFace(face, mapa, paleta);
+		}
 	}
 }
