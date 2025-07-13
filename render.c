@@ -7,7 +7,7 @@
 #include "render.h"
 #include "mapa.h"
 
-void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
+void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
 {
 	int meiaSkin = obj->skinwidth / 2;
 
@@ -76,7 +76,7 @@ void grafico_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char p
 #define NEAR_Z 0.1f
 #define FAR_CLIP 500.0
 
-int mapa_clip_near_face(
+int render_clip_near_face(
     ponto_t *in[MAX_VERTS_POR_POLIGONO],
     int in_count,
     ponto_t out[MAX_VERTS_POR_POLIGONO * 2]
@@ -186,7 +186,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	if (dist > FAR_CLIP) return;
 
 	// Faz o clipping contra o plano NEAR
-	int clipped_count = mapa_clip_near_face(verts, face->numedges, clipped);
+	int clipped_count = render_clip_near_face(verts, face->numedges, clipped);
 	if (clipped_count < 3) return;
 
 	// Projeta os vértices válidos
@@ -212,7 +212,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 // 			);
 }
 
-void grafico_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
+void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 {
 	int		 visON = 1;
 	int		 i, j, facesRendered = 0;

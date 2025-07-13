@@ -239,7 +239,7 @@ int main(int argc, char **argv)
 		if (cntRender++ > 10) {
 			cntRender = 0;
 
-			grafico_desenha_mapa(&cam, mapa, paleta);
+			render_desenha_mapa(&cam, mapa, paleta);
 
 			mostraMapa2D(mapa, &cam);
 
