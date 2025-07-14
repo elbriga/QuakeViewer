@@ -114,9 +114,9 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
         rotacao2DEixoZ(&pnt->rot, obj->rotacao.z);
 
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
-        pnt->rot.x += obj->posicao.x + cam->pos.x;
-        pnt->rot.y += obj->posicao.y + cam->pos.y;
-        pnt->rot.z += obj->posicao.z + cam->pos.z;
+        pnt->rot.x += obj->posicao.x - cam->pos.x;
+        pnt->rot.y += obj->posicao.y - cam->pos.y;
+        pnt->rot.z += obj->posicao.z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&pnt->rot, cam->ang.x);
@@ -144,9 +144,9 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
         rotacao2DEixoZ(&tri->normal, obj->rotacao.z);
 
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
-        tri->normal.x += obj->posicao.x + cam->pos.x;
-        tri->normal.y += obj->posicao.y + cam->pos.y;
-        tri->normal.z += obj->posicao.z + cam->pos.z;
+        tri->normal.x += obj->posicao.x - cam->pos.x;
+        tri->normal.y += obj->posicao.y - cam->pos.y;
+        tri->normal.z += obj->posicao.z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&tri->normal, cam->ang.x);

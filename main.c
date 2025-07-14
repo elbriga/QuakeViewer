@@ -142,10 +142,10 @@ int main(int argc, char **argv)
 
 	chao->posicao.y = 27;
 
-	obj->posicao.x  = 0;
-	obj->posicao.y  = 0;
-	obj->posicao.z  = 0;
-	obj->rotacao.x = 0;
+	obj->posicao.x = 544;
+	obj->posicao.y = -650;
+	obj->posicao.z = 72;
+	obj->rotacao.x = 270;
 
 	obj2->posicao.x  = 40;
 	obj2->posicao.y  = 0;
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 
 			// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
-			// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+			render_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
@@ -336,9 +336,9 @@ int main(int argc, char **argv)
 		} else if (c == 'h') {
 			cam.pos.z -= 10;
 		} else if (c == 't') {
-			obj3->posicao.y++;
+			obj->posicao.y+=20;
 		} else if (c == 'g') {
-			obj3->posicao.y--;
+			obj->posicao.y-=20;
 		} else if (c == 'u') {
 			cam.ang.x += 5;
 		} else if (c == 'j') {
