@@ -167,11 +167,11 @@ int main(int argc, char **argv)
 
 	mostraMapa2D(mapa, &cam);
 
-	// FILE *camPosIn = fopen("cam.dat", "rb");
-	// if (camPosIn) {
-	// 	fread(&cam, 1, sizeof(camera_t), camPosIn);
-	// 	fclose(camPosIn);
-	// }
+	FILE *camPosIn = fopen("cam.dat", "rb");
+	if (camPosIn) {
+		fread(&cam, 1, sizeof(camera_t), camPosIn);
+		fclose(camPosIn);
+	}
 
 	// obj->tipo = OBJ_TIPO_WIRE;
 
@@ -350,7 +350,7 @@ int main(int argc, char **argv)
 		if (numFrameSel >= obj->numframes)
 			numFrameSel = obj->numframes - 1;
 		
-		usleep(2000);
+		usleep(500);
 	}
 
 	msg("Free Myke Tyson FREE");
