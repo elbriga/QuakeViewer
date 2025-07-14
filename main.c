@@ -157,9 +157,9 @@ int main(int argc, char **argv)
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
-	cam.pos.x = 0;
-	cam.pos.y = 0;
-	cam.pos.z = 0;
+	cam.pos.x = 544;
+	cam.pos.y = -808;
+	cam.pos.z = 72;
 
 	cam.ang.x = 90;
 	cam.ang.y = 0;
@@ -306,16 +306,16 @@ int main(int argc, char **argv)
 		if (c == 'q')
 			break;
 		
-		else if (c == 81) camera_pitch(&cam, -2); // ESQUERDA
-		else if (c == 82) camera_step( &cam, -2); // CIMA
-		else if (c == 83) camera_pitch(&cam,  2); // DIREITA
-		else if (c == 84) camera_step( &cam,  2); // BAIXO
+		else if (c == 81) camera_pitch(&cam, -5); // ESQUERDA
+		else if (c == 82) camera_step( &cam, -5); // CIMA
+		else if (c == 83) camera_pitch(&cam,  5); // DIREITA
+		else if (c == 84) camera_step( &cam,  5); // BAIXO
 
 		else if (c == 'w') camera_step(&cam, -20);
 		else if (c == 's') camera_step(&cam,  20);
 
-		else if (c == 'a') camera_strafe(&cam, -2);
-		else if (c == 'd') camera_strafe(&cam,  2);
+		else if (c == 'a') camera_strafe(&cam,  10);
+		else if (c == 'd') camera_strafe(&cam, -10);
 
 		else if (c == 'z') _debug = 40;
 
