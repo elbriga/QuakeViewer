@@ -324,6 +324,7 @@ int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
 {
     // loadVisibility antes
     if (!mapa->visibility) return 10;
+    if (!mapa->marksurfaces) return 20;
 
     dsleaf_t *in = (dsleaf_t *)(buffer + l->fileofs);
     leaf_t *out;

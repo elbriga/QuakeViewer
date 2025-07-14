@@ -165,12 +165,12 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		}
 		verts[v] = &mapa->verts[vxtNum];
 
-		if (v == 0) {
-			dist = vector_length(&verts[0]->rot);
-			if (dist > FAR_CLIP) {
-				break;
-			}
-		}
+		// if (v == 0) {
+		// 	dist = vector_length(&verts[0]->rot);
+		// 	if (dist > FAR_CLIP) {
+		// 		break;
+		// 	}
+		// }
 
 		// if (verts[v]->rot.z > 10) {
 		// 	grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
@@ -183,7 +183,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 //dbg
 // if (i != 100) continue;
 
-	if (dist > FAR_CLIP) return;
+	// if (dist > FAR_CLIP) return;
 
 	// Faz o clipping contra o plano NEAR
 	int clipped_count = render_clip_near_face(verts, face->numedges, clipped);
@@ -214,40 +214,37 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 {
-	int		 visON = 1;
 	int		 i, j, facesRendered = 0;
 	leaf_t	*leafCAM, *leaf;
-	face_t	*face;
+	face_t	*face, **mark;
 	byte	*vis;
 
 	mapa_projecao3D(cam, mapa);
 
-	if (visON) {
-		leafCAM = mapa_discoverLeaf(&cam->pos, mapa);
-		printf("L:%d ", leafCAM->visofs);
+	leafCAM = mapa_discoverLeaf(&cam->pos, mapa);
+	printf("L:%d ", leafCAM->visofs);
 
-		vis = mapa_leafVIS(leafCAM, mapa);
+	vis = mapa_leafVIS(leafCAM, mapa);
 
-		leaf = &mapa->leafs[1];
-		for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
-			if (!(vis[i >> 3] & (1 << (i & 7)))) {
-				// LEAF nao visivel
-				continue;
-			}
-
-			// Render LEAF
-			face = *leaf->firstmarksurface;
-			for (j=0; j < leaf->nummarksurfaces; j++, face++) {
-				render_desenhaFace(face, mapa, paleta);
-				facesRendered++;
-			}
+	leaf = &mapa->leafs[1];
+	for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
+		if (!(vis[i >> 3] & (1 << (i & 7)))) {
+			// LEAF nao visivel
+			continue;
 		}
 
-		printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
-	} else {
-		face = mapa->faces;
-		for (int i=0; i < mapa->numfaces; i++, face++) {
+		// Render LEAF
+		for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
+			face = *mark;
 			render_desenhaFace(face, mapa, paleta);
+			facesRendered++;
 		}
 	}
+
+	printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
+
+	// face = mapa->faces;
+	// for (int i=0; i < mapa->numfaces; i++, face++) {
+	// 	render_desenhaFace(face, mapa, paleta);
+	// }
 }
