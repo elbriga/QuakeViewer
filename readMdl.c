@@ -5,18 +5,6 @@
 #include "3d.h"
 #include "readMdl.h"
 
-int readLittleEndian(FILE *fp)
-{
-    int ret = 0;
-    unsigned char in[4];
-
-    fread(&in, 1, 4, fp);
-
-    ret = (in[3] << 24) + (in[2] << 16) + (in[1] << 8) + in[0];
-
-    return ret;
-}
-
 obj3d_t *readMdl(char *mdlfilename)
 {
     obj3d_t *ret;
