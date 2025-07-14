@@ -16,6 +16,11 @@ typedef struct
 
 typedef struct
 {
+    float x, y;
+} vetor2df_t;
+
+typedef struct
+{
     float x, y, z;
 } vetor3d_t;
 
@@ -41,7 +46,7 @@ typedef struct
 {
     vetor3d_t rot;
     vetor2d_t screen;
-    vetor2d_t tex;
+    vetor2df_t tex;
 } ponto_t;
 
 typedef struct
@@ -134,7 +139,7 @@ typedef struct mleaf_s
 
 	face_t	**firstmarksurface;
 	int       nummarksurfaces;
-    
+
 	// int			key;			// BSP sequence number for leaf's contents
 	// byte		ambient_sound_level[NUM_AMBIENTS];
 } leaf_t;
