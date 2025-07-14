@@ -196,20 +196,6 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	}
 
 	grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
-
-// printf("n[%.4f,%.4f,%.4f] v1{%d,%d,%d}s[%d,%d], v2{%d,%d,%d}s[%d,%d], v3{%d,%d,%d}s[%d,%d] ",
-// 	tri->normal.x, tri->normal.y, tri->normal.z,
-// 	(int)vBase1->x, (int)vBase1->y, (int)vBase1->z, s1,t1,
-// 	(int)vBase2->x, (int)vBase2->y, (int)vBase2->z, s2,t2,
-// 	(int)vBase3->x, (int)vBase3->y, (int)vBase3->z, s3,t3
-// );
-// printf("vS{%.3f,%.3f,%.3f} ", texinfo->vetorS.x, texinfo->vetorS.y, texinfo->vetorS.z);
-// printf("vT{%.3f,%.3f,%.3f} ", texinfo->vetorT.x, texinfo->vetorT.y, texinfo->vetorT.z);
-// 		grafico_triangulo_textura(tex->data, tex->width, tex->height, paleta,
-// 				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z, s1, t1,
-// 				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, s2, t2,
-// 				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, s3, t3
-// 			);
 }
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
