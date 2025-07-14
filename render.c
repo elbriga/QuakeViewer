@@ -7,71 +7,6 @@
 #include "render.h"
 #include "mapa.h"
 
-void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
-{
-	int meiaSkin = obj->skinwidth / 2;
-
-	obj_projecao3D(cam, obj, numFrameSel);
-
-	triangulo_t *tri = obj->tris;
-	for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++, tri++) {
-		// Backface culling
-		if (tri->normal.z < 0) {
-			continue;
-		}
-
-		ponto_t *vertice1 = &obj->verts[tri->v[0]];
-		ponto_t *vertice2 = &obj->verts[tri->v[1]];
-		ponto_t *vertice3 = &obj->verts[tri->v[2]];
-		switch (obj->tipo)
-		{
-		case OBJ_TIPO_WIRE:
-			grafico_triangulo_wireZ(
-				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
-				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z);
-			break;
-
-		case OBJ_TIPO_FLAT:
-			grafico_triangulo(
-				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z,
-				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z,
-				tri->cor.r, tri->cor.g, tri->cor.b);
-			break;
-
-		case OBJ_TIPO_TEXTURE:
-			skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
-			skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
-			skinvert_t *svxt3 = &obj->skinmap[tri->v[2]];
-
-			int skinX1 = svxt1->s;
-			int skinY1 = svxt1->t;
-			int skinX2 = svxt2->s;
-			int skinY2 = svxt2->t;
-			int skinX3 = svxt3->s;
-			int skinY3 = svxt3->t;
-
-			if (!tri->isFront) {
-				if (svxt1->onseam) skinX1 += meiaSkin;
-				if (svxt2->onseam) skinX2 += meiaSkin;
-				if (svxt3->onseam) skinX3 += meiaSkin;
-			}
-
-			grafico_triangulo_textura(obj->skin, obj->skinwidth, obj->skinheight, paleta,
-				vertice1->screen.x, vertice1->screen.y, vertice1->rot.z, skinX1,skinY1,
-				vertice2->screen.x, vertice2->screen.y, vertice2->rot.z, skinX2,skinY2,
-				vertice3->screen.x, vertice3->screen.y, vertice3->rot.z, skinX3,skinY3);
-			break;
-		
-		default:
-			printf("OBJ tipo desconhecido");
-			break;
-		}
-		
-	}
-}
-
 #define MAX_VERTS_POR_POLIGONO 16
 #define NEAR_Z 0.1f
 #define FAR_CLIP 500.0
@@ -124,6 +59,69 @@ int render_clip_near_face(
     return out_count;
 }
 
+void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
+{
+	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
+	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
+    ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
+
+	texture_t texture;
+
+	obj_projecao3D(cam, obj, numFrameSel);
+
+	texture.data   = obj->skin;
+	texture.width  = obj->skinwidth;
+	texture.height = obj->skinheight;
+
+	triangulo_t *tri = obj->tris;
+	for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++, tri++) {
+		// Backface culling
+		if (tri->normal.z < 0) {
+			continue;
+		}
+
+		verts[0] = &obj->verts[tri->v[0]];
+		verts[1] = &obj->verts[tri->v[1]];
+		verts[2] = &obj->verts[tri->v[2]];
+
+		skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
+		skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
+		skinvert_t *svxt3 = &obj->skinmap[tri->v[2]];
+
+		float skinX1 = (float)svxt1->s / obj->skinwidth;
+		float skinY1 = (float)svxt1->t / obj->skinheight;
+		float skinX2 = (float)svxt2->s / obj->skinwidth;
+		float skinY2 = (float)svxt2->t / obj->skinheight;
+		float skinX3 = (float)svxt3->s / obj->skinwidth;
+		float skinY3 = (float)svxt3->t / obj->skinheight;
+
+		if (!tri->isFront) {
+			if (svxt1->onseam) skinX1 += 0.5;
+			if (svxt2->onseam) skinX2 += 0.5;
+			if (svxt3->onseam) skinX3 += 0.5;
+		}
+
+		verts[0]->tex.x = skinX1;
+		verts[0]->tex.y = skinY1;
+		verts[1]->tex.x = skinX2;
+		verts[1]->tex.y = skinY2;
+		verts[2]->tex.x = skinX3;
+		verts[2]->tex.y = skinY3;
+
+		// Faz o clipping contra o plano NEAR
+		int clipped_count = render_clip_near_face(verts, 3, clipped);
+		if (clipped_count < 3) return;
+
+		// Projeta os vértices válidos
+		for (int v = 0; v < clipped_count; v++) {
+			grafico_projecao3D(&clipped[v]);
+			clipped_ptrs[v] = &clipped[v];
+		}
+
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, paleta);
+	}
+}
+
 void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
@@ -165,25 +163,12 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		}
 		verts[v] = &mapa->verts[vxtNum];
 
-		// if (v == 0) {
-		// 	dist = vector_length(&verts[0]->rot);
-		// 	if (dist > FAR_CLIP) {
-		// 		break;
-		// 	}
-		// }
-
-		// if (verts[v]->rot.z > 10) {
-		// 	grafico_xis( verts[v]->screen.x, verts[v]->screen.y );
-		// }
-
 		vBase = &mapa->base[vxtNum];
 		verts[v]->tex.x = (dot_product(*vBase, texinfo->vetorS) + texinfo->distS) / tex->width;
 		verts[v]->tex.y = (dot_product(*vBase, texinfo->vetorT) + texinfo->distT) / tex->height;
 	}
 //dbg
 // if (i != 100) continue;
-
-	// if (dist > FAR_CLIP) return;
 
 	// Faz o clipping contra o plano NEAR
 	int clipped_count = render_clip_near_face(verts, face->numedges, clipped);
