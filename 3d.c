@@ -166,13 +166,6 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
     }
 }
 
-void obj_projecao3D_allFrames(camera_t *cam, obj3d_t *obj)
-{
-    for (int numFrame=0; numFrame < obj->numframes; numFrame++) {
-        obj_projecao3D(cam, obj, numFrame);
-    }
-}
-
 void obj_calculate_face_normals(obj3d_t *obj)
 {
     obj->trisnormals = malloc(obj->numframes * obj->numtris * sizeof(vetor3d_t));
