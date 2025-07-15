@@ -186,7 +186,7 @@ void grafico_projecao3D(ponto_t *p)
     p->screen.y = ((FOV * p->rot.y) / p->rot.z) + (grafico_altura  / 2);
 }
 
-extern int _debug;
+// extern int _debug;
 void grafico_triangulo(
 	int x1, int y1, float z1,
 	int x2, int y2, float z2,
@@ -285,14 +285,14 @@ void grafico_triangulo(
 		deltaZ = (zL2 - zL1) / (float)(xL2 - xL1);
 		z = zI;
 
-		if (_debug-- > 0) {
-			printf("cY: %d >>> <%d a %d>\n", cY, xL1, xL2);
+		// if (_debug-- > 0) {
+		// 	printf("cY: %d >>> <%d a %d>\n", cY, xL1, xL2);
 
-			if (!_debug) {
-				printf("====================================\n");
-				grafico_tecla_espera();
-			}
-		}
+		// 	if (!_debug) {
+		// 		printf("====================================\n");
+		// 		grafico_tecla_espera();
+		// 	}
+		// }
 
 		// Desenha LINHA HORIZONTAL no Y=cY, de xI ate xF
 		zBufferBase = cY * grafico_largura;
