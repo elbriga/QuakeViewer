@@ -6,6 +6,7 @@
 #include "3d.h"
 #include "gfx_ptBR.h"
 #include "render.h"
+#include "mapa.h"
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	/* pi */
@@ -52,20 +53,28 @@ void camera_pitch(camera_t *cam, int step)
     cam->ang.y = (int)(cam->ang.y + step) % 360;
 }
 
-void camera_step(camera_t *cam, int step)
+void camera_step(camera_t *cam, int step, mapa_t *mapa)
 {
     double anguloRad = to_radians(cam->ang.y);
+    float newPX = cam->pos.x - sin(anguloRad) * step;
+    float newPY = cam->pos.y - cos(anguloRad) * step;
 
-    cam->pos.x -= sin(anguloRad) * step;
-    cam->pos.y -= cos(anguloRad) * step;
+    if (mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
+        cam->pos.x = newPX;
+        cam->pos.y = newPY;
+    }
 }
 
-void camera_strafe(camera_t *cam, int step)
+void camera_strafe(camera_t *cam, int step, mapa_t *mapa)
 {
     double anguloRad = to_radians(cam->ang.y);
+    float newPX = cam->pos.x - cos(anguloRad) * step;
+    float newPY = cam->pos.y + sin(anguloRad) * step;
 
-    cam->pos.x -= cos(anguloRad) * step;
-    cam->pos.y += sin(anguloRad) * step;
+    if (mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
+        cam->pos.x = newPX;
+        cam->pos.y = newPY;
+    }
 }
 
 void rotacao2DEixoX(vetor3d_t *p, int angulo)

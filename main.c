@@ -74,7 +74,7 @@ void mostraTexturas(mapa_t *mapa)
 
 int main(int argc, char **argv)
 {
-	int janX = 720, janY = 720, totAnims;
+	int janX = 800, janY = 600, totAnims;
 	camera_t cam;
 
 	msg("Quake MDL Viewer");
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 	fclose(fpPal);
 
 	char tituloJanela[128];
-	sprintf(tituloJanela, "MDL VIEWER - %s", basename(argv[1]));
+	sprintf(tituloJanela, "Quake Viewer - %s", basename(argv[1]));
 
 	int erro = grafico_init(janX, janY, tituloJanela);
 	if (erro) {
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
 	obj->posicao.x = 544;
 	obj->posicao.y = -650;
-	obj->posicao.z = 72;
+	obj->posicao.z = 42;
 	obj->rotacao.x = 270;
 
 	obj2->posicao.x  = 40;
@@ -157,21 +157,22 @@ int main(int argc, char **argv)
 	obj3->posicao.z  = 0;
 	obj3->rotacao.x = 0;
 
-	cam.pos.x = 544;
-	cam.pos.y = -808;
-	cam.pos.z = 72;
-
-	cam.ang.x = 90;
+	cam.pos.x = 0;
+	cam.pos.y = 0;
+	cam.pos.z = 0;
+	cam.ang.x = 0;
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
+	mapa_loadEntities(mapa, &cam); // Posiciona a camera no "info_player_start"
+
 	mostraMapa2D(mapa, &cam);
 
-	FILE *camPosIn = fopen("cam.dat", "rb");
-	if (camPosIn) {
-		fread(&cam, 1, sizeof(camera_t), camPosIn);
-		fclose(camPosIn);
-	}
+	// FILE *camPosIn = fopen("cam.dat", "rb");
+	// if (camPosIn) {
+	// 	fread(&cam, 1, sizeof(camera_t), camPosIn);
+	// 	fclose(camPosIn);
+	// }
 
 	// obj->tipo = OBJ_TIPO_WIRE;
 
@@ -307,15 +308,15 @@ int main(int argc, char **argv)
 			break;
 		
 		else if (c == 81) camera_pitch(&cam, -5); // ESQUERDA
-		else if (c == 82) camera_step( &cam, -5); // CIMA
+		else if (c == 82) camera_step( &cam, -5, mapa); // CIMA
 		else if (c == 83) camera_pitch(&cam,  5); // DIREITA
-		else if (c == 84) camera_step( &cam,  5); // BAIXO
+		else if (c == 84) camera_step( &cam,  5, mapa); // BAIXO
 
-		else if (c == 'w') camera_step(&cam, -20);
-		else if (c == 's') camera_step(&cam,  20);
+		else if (c == 'w') camera_step(&cam, -20, mapa);
+		else if (c == 's') camera_step(&cam,  20, mapa);
 
-		else if (c == 'a') camera_strafe(&cam,  10);
-		else if (c == 'd') camera_strafe(&cam, -10);
+		else if (c == 'a') camera_strafe(&cam,  10, mapa);
+		else if (c == 'd') camera_strafe(&cam, -10, mapa);
 
 		else if (c == 'z') _debug = 40;
 
@@ -336,9 +337,9 @@ int main(int argc, char **argv)
 		} else if (c == 'h') {
 			cam.pos.z -= 10;
 		} else if (c == 't') {
-			obj->posicao.y+=20;
+			obj->posicao.z+=20;
 		} else if (c == 'g') {
-			obj->posicao.y-=20;
+			obj->posicao.z-=20;
 		} else if (c == 'u') {
 			cam.ang.x += 5;
 		} else if (c == 'j') {

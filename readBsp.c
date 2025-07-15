@@ -314,7 +314,6 @@ int loadNodes (mapa_t *mapa, lump_t *l, byte *buffer)
 			}
 			//johnfitz
 		}
-        printf("\n");
     }
 
     return 0;
@@ -408,6 +407,10 @@ mapa_t *readBsp(char *fileName)
     int          err;
 
     buffer = readFile(fileName);
+    if (!buffer) {
+        printf("readBsp: Erro read file %s!\n\n", fileName);
+        return NULL;
+    }
 
     header = (dheader_t *)buffer;
     printf("Header version [%d]\n\n", header->version);
