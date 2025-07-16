@@ -173,7 +173,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char pa
 	}
 }
 
-void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
+int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
@@ -190,7 +190,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 
 	if (face->numedges > MAX_VERTS_POR_POLIGONO) {
 		//printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
-		return;
+		return 1;
 	}
 
 	// Backface culling
@@ -199,7 +199,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	// }
 
 	texinfo = &mapa->texinfo[face->texinfo];
-	if (texinfo->miptex == mapa->numTextureTrigger) return;
+	if (texinfo->miptex == mapa->numTextureTrigger) return 2;
 
 	tex = &mapa->textures[texinfo->miptex];
 
@@ -225,7 +225,7 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 
 	// Faz o clipping contra o plano NEAR
 	int clipped_count = render_clip_near_face(verts, face->numedges, clipped);
-	if (clipped_count < 3) return;
+	if (clipped_count < 3) return 3;
 
 	// Projeta os vértices válidos
 	for (int v = 0; v < clipped_count; v++) {
@@ -234,6 +234,8 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	}
 
 	grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
+
+	return 0;
 }
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
@@ -265,8 +267,9 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 			face = *mark;
 
 			if (!face->drawn && (!_debug || _debug == face->id)) {
-				render_desenhaFace(face, mapa, paleta);
-				facesRendered++;
+				if (!render_desenhaFace(face, mapa, paleta)) {
+					facesRendered++;
+				}
 			}
 		}
 	}
