@@ -11,6 +11,8 @@
 #include "gfx.h"
 #include "gfx_ptBR.h"
 
+extern int _debug;
+
 float *zBuffer = NULL;
 int grafico_altura, grafico_largura;
 
@@ -347,7 +349,6 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
         if (y > maxY) maxY = y;
     }
 
-    // Clamp para dentro da tela
     if (minY < 0) minY = 0;
     if (maxY >= grafico_altura) maxY = grafico_altura - 1;
 
@@ -355,7 +356,7 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
         struct {
             int x;
             float u_over_z, v_over_z, one_over_z;
-            float z_view; // profundidade real do ponto
+            float z_view;
         } intersecoes[64];
 
         int count = 0;
@@ -392,7 +393,6 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
             }
         }
 
-        // Ordenar interseções por x
         for (int i = 0; i < count - 1; i++) {
             for (int j = 0; j < count - i - 1; j++) {
                 if (intersecoes[j].x > intersecoes[j + 1].x) {
@@ -403,16 +403,12 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
             }
         }
 
-		int zBufferBase = y * grafico_largura;
+        int zBufferBase = y * grafico_largura;
         for (int i = 0; i < count; i += 2) {
             if (i + 1 >= count) break;
 
             int x0 = intersecoes[i].x;
             int x1 = intersecoes[i + 1].x;
-
-            if (x0 == x1) continue;
-            if (x0 < 0) x0 = 0;
-            if (x1 >= grafico_largura) x1 = grafico_largura - 1;
 
             float u0 = intersecoes[i].u_over_z;
             float v0 = intersecoes[i].v_over_z;
@@ -424,26 +420,48 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
             float w1 = intersecoes[i + 1].one_over_z;
             float z1 = intersecoes[i + 1].z_view;
 
-            int dx = x1 - x0;
+            int original_x0 = x0;
+            int original_x1 = x1;
+
+            int dx = original_x1 - original_x0;
             if (dx == 0) dx = 1;
 
+            // Clamp com correção de interpolação
+            if (x0 < 0) {
+                float t = (float)(0 - original_x0) / dx;
+                x0 = 0;
+                u0 = u0 + (u1 - u0) * t;
+                v0 = v0 + (v1 - v0) * t;
+                w0 = w0 + (w1 - w0) * t;
+                z0 = z0 + (z1 - z0) * t;
+            }
+            if (x1 >= grafico_largura) {
+                float t = (float)(grafico_largura - 1 - original_x0) / dx;
+                x1 = grafico_largura - 1;
+                u1 = u0 + (u1 - u0) * t;
+                v1 = v0 + (v1 - v0) * t;
+                w1 = w0 + (w1 - w0) * t;
+                z1 = z0 + (z1 - z0) * t;
+            }
+
             for (int x = x0; x <= x1; x++) {
-                float t = (float)(x - x0) / dx;
+                float t = (float)(x - x0) / (float)(x1 - x0);
 
                 float u_over_z = u0 + (u1 - u0) * t;
                 float v_over_z = v0 + (v1 - v0) * t;
                 float one_over_z = w0 + (w1 - w0) * t;
                 float z = z0 + (z1 - z0) * t;
 
-                int u = (int)((float)(u_over_z / one_over_z) * tex->width ) % tex->width;
-                int v = (int)((float)(v_over_z / one_over_z) * tex->height) % tex->height;
+                float u = (u_over_z / one_over_z) * tex->width;
+                float v = (v_over_z / one_over_z) * tex->height;
 
-                // Teste de profundidade (Z-buffer)
+                // Corrige u/v fora da textura
+                int tex_u = ((int)u % tex->width + tex->width) % tex->width;
+                int tex_v = ((int)v % tex->height + tex->height) % tex->height;
+
                 if (x >= 0 && x < grafico_largura && y >= 0 && y < grafico_altura) {
                     if (z < zBuffer[zBufferBase + x]) {
-						unsigned char cor = tex->data[u + v * tex->width];
-                        // int r, g, b;
-                        // texture_sample(tex, u, v, &r, &g, &b);
+                        unsigned char cor = tex->data[tex_u + tex_v * tex->width];
                         grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
                         grafico_ponto(x, y);
                         zBuffer[zBufferBase + x] = z;
