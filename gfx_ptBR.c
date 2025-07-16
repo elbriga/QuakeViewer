@@ -28,7 +28,7 @@ int map_scaleX(int v, mapa_t *mapa)
 }
 int map_scaleY(int v, mapa_t *mapa)
 {
-	return map((mapa->bbMax.y + mapa->bbMin.y) - v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+50, grafico_altura - 10);
+	return map((mapa->bbMax.y + mapa->bbMin.y) - v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2 + 10, grafico_altura - 10);
 }
 
 void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
