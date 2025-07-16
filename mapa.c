@@ -303,7 +303,7 @@ mapa_getEntities
 Busca na string de entities uma chave e retorna seu valor
 =============
 */
-int mapa_loadEntities (mapa_t *mapa, camera_t *cam)
+int mapa_loadEntities (mapa_t *mapa)
 {
 	char key[MAX_ATRS_ENTITIES][128], value[MAX_ATRS_ENTITIES][4096];
 	const char *data;
@@ -325,16 +325,16 @@ int mapa_loadEntities (mapa_t *mapa, camera_t *cam)
 
                             if (!strcmp(key[j], "angle")) {
                                 printf("Player Start > angulo [%s]\n", value[j]);
-                                cam->ang.x = atoi(value[j]);
+                                mapa->player_start_angle = atoi(value[j]);
                                 ok++;
                             }
 
                             if (!strcmp(key[j], "origin")) {
                                 sscanf(value[j], "%d %d %d", &camX, &camY, &camZ);
                                 printf("Player Start > POS [%d %d %d]\n", camX, camY, camZ);
-                                cam->pos.x = camX;
-                                cam->pos.y = camY;
-                                cam->pos.z = camZ;
+                                mapa->player_start.x = camX;
+                                mapa->player_start.y = camY;
+                                mapa->player_start.z = camZ;
                                 ok++;
                             }
                         }

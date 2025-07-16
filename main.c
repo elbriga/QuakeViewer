@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
-	mapa_loadEntities(mapa, &cam); // Posiciona a camera no "info_player_start"
+	mapa_loadEntities(mapa);
 
 	FILE *camPosIn = fopen("cam.dat", "rb");
 	if (camPosIn) {
@@ -352,6 +352,12 @@ int main(int argc, char **argv)
 			cam.ang.x += 5;
 		} else if (c == 'j') {
 			cam.ang.x -= 5;
+		} else if (c == '1') {
+			cam.pos.x = mapa->player_start.x;
+			cam.pos.y = mapa->player_start.y;
+			cam.pos.z = mapa->player_start.z;
+
+			cam.ang.y = mapa->player_start_angle;
 		}
 
 		if (numFrameSel < 0)

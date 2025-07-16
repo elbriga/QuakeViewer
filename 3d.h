@@ -181,6 +181,9 @@ typedef struct
 {
     char nome[64];
 
+    vetor3d_t   player_start;
+    int         player_start_angle;
+
     int tipo;
     int numverts;
     int numedges;
