@@ -17,7 +17,7 @@ void grafico_xis( int x, int y );
 void grafico_linha( int x0, int y0, int x1, int y1 );
 
 void grafico_projecao3D(ponto_t *p);
-void mostraMapa2D(mapa_t *mapa, camera_t *cam);
+void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis);
 
 void grafico_triangulo(
 	int x1, int y1, float z1,

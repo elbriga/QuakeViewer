@@ -166,13 +166,11 @@ int main(int argc, char **argv)
 
 	mapa_loadEntities(mapa, &cam); // Posiciona a camera no "info_player_start"
 
-	mostraMapa2D(mapa, &cam);
-
-	// FILE *camPosIn = fopen("cam.dat", "rb");
-	// if (camPosIn) {
-	// 	fread(&cam, 1, sizeof(camera_t), camPosIn);
-	// 	fclose(camPosIn);
-	// }
+	FILE *camPosIn = fopen("cam.dat", "rb");
+	if (camPosIn) {
+		fread(&cam, 1, sizeof(camera_t), camPosIn);
+		fclose(camPosIn);
+	}
 
 	// obj->tipo = OBJ_TIPO_WIRE;
 
@@ -254,8 +252,6 @@ int main(int argc, char **argv)
 			cntRender = 0;
 
 			render_desenha_mapa(&cam, mapa, paleta);
-
-			mostraMapa2D(mapa, &cam);
 
 			// grafico_desenha_objeto(&cam, chao, 0, NULL);
 

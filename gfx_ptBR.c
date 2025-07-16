@@ -10,6 +10,7 @@
 #include "3d.h"
 #include "gfx.h"
 #include "gfx_ptBR.h"
+#include "mapa.h"
 
 extern int _debug;
 
@@ -27,15 +28,15 @@ int map_scaleX(int v, mapa_t *mapa)
 }
 int map_scaleY(int v, mapa_t *mapa)
 {
-	return map((mapa->bbMax.y + mapa->bbMin.y) - v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+10, grafico_altura - 10);
+	return map((mapa->bbMax.y + mapa->bbMin.y) - v, mapa->bbMin.y, mapa->bbMax.y, grafico_altura/2+50, grafico_altura - 10);
 }
 
-void mostraMapa2D(mapa_t *mapa, camera_t *cam)
+void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 {
+	int mostraComVIS = 1;
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
-	edge_t    *e = mapa->edges;
-	// leaf_t    *l = mapa->leafs;
+	edge_t    *e;
 
 	for (int i=0; i < mapa->numverts; i++, b++, v++) {
 		v->rot.x = b->x;
@@ -46,17 +47,56 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam)
 		v->screen.y = map_scaleY(b->y, mapa);
 	}
 
-	grafico_cor(200,200,200);
-	for (int i=0; i < mapa->numedges; i++, e++) {
-		ponto_t *p1 = &mapa->verts[e->v[0]];
-		ponto_t *p2 = &mapa->verts[e->v[1]];
+	if (mostraComVIS) {
+		int		 i, j, k, *ledge;
+		leaf_t	*leaf;
+		face_t	*face, **mark;
 
-		// if (i != 100) continue;
+		for (i=0, face = mapa->faces; i < mapa->numfaces; i++, face++)
+			face->drawn = 0;
 
-		grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+		leaf = &mapa->leafs[1];
+		for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
+			if (!(vis[i >> 3] & (1 << (i & 7)))) {
+				// LEAF nao visivel
+				grafico_cor(200,20,20);
+			} else {
+				grafico_cor(20,200,120);
+			}
 
-		// vetor3d_t *vxt = &mapa->base[e->v[0]];
-		// printf("LL%d,%d,%d > ", (int)vxt->x, (int)vxt->y, (int)vxt->z);
+			// Render LEAF
+			for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
+				face = *mark;
+
+				// if (face->drawn)
+				// 	continue;
+				// face->drawn = 1;
+
+				ledge = &mapa->ledges[face->firstedge];
+				for (k=0; k<face->numedges; k++, ledge++) {
+					e = (*ledge >= 0) ? &mapa->edges[*ledge] : &mapa->edges[-*ledge];
+					ponto_t *p1 = &mapa->verts[e->v[0]];
+					ponto_t *p2 = &mapa->verts[e->v[1]];
+
+					grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+				}
+			}
+		}
+	} else {
+		int i;
+
+		grafico_cor(200,200,200);
+		for (i=0, e = mapa->edges; i < mapa->numedges; i++, e++) {
+			ponto_t *p1 = &mapa->verts[e->v[0]];
+			ponto_t *p2 = &mapa->verts[e->v[1]];
+
+			// if (i != 100) continue;
+
+			grafico_linha( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+
+			// vetor3d_t *vxt = &mapa->base[e->v[0]];
+			// printf("LL%d,%d,%d > ", (int)vxt->x, (int)vxt->y, (int)vxt->z);
+		}
 	}
 
 	int camMX = map_scaleX(cam->pos.x, mapa);
