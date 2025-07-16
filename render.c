@@ -11,6 +11,8 @@
 #define NEAR_Z 0.1f
 #define FAR_CLIP 500.0
 
+extern int _debug;
+
 int render_clip_near_face(
     ponto_t *in[MAX_VERTS_POR_POLIGONO],
     int in_count,
@@ -22,35 +24,84 @@ int render_clip_near_face(
         ponto_t *cur = in[i];
         ponto_t *prev = in[(i - 1 + in_count) % in_count];
 
-        float d_cur = cur->rot.z - NEAR_Z;
+        float d_cur  = cur->rot.z - NEAR_Z;
         float d_prev = prev->rot.z - NEAR_Z;
 
-        int inside_cur = d_cur >= 0;
-        int inside_prev = d_prev >= 0;
+        int inside_cur  = d_cur  >= 0.0f;
+        int inside_prev = d_prev >= 0.0f;
 
         if (inside_cur) {
             if (!inside_prev) {
+                // Interseção entrada — calcula ponto novo
                 float t = d_prev / (d_prev - d_cur);
+
                 ponto_t p;
+
+                // Interpolação linear para posição
                 p.rot.x = prev->rot.x + t * (cur->rot.x - prev->rot.x);
                 p.rot.y = prev->rot.y + t * (cur->rot.y - prev->rot.y);
                 p.rot.z = NEAR_Z;
 
-                p.tex.x = prev->tex.x + t * (cur->tex.x - prev->tex.x);
-                p.tex.y = prev->tex.y + t * (cur->tex.y - prev->tex.y);
+                // Correção de perspectiva (1/z)
+                float z1 = prev->rot.z;
+                float z2 = cur->rot.z;
+                float inv_z1 = 1.0f / z1;
+                float inv_z2 = 1.0f / z2;
+
+                float u1 = prev->tex.x;
+                float v1 = prev->tex.y;
+                float u2 = cur->tex.x;
+                float v2 = cur->tex.y;
+
+                float u1_corr = u1 * inv_z1;
+                float v1_corr = v1 * inv_z1;
+                float u2_corr = u2 * inv_z2;
+                float v2_corr = v2 * inv_z2;
+
+                float inv_z = inv_z1 + t * (inv_z2 - inv_z1);
+                float u_corr = u1_corr + t * (u2_corr - u1_corr);
+                float v_corr = v1_corr + t * (v2_corr - v1_corr);
+
+                p.tex.x = u_corr / inv_z;
+                p.tex.y = v_corr / inv_z;
 
                 out[out_count++] = p;
             }
+
+            // Ponto atual é visível — copia direto
             out[out_count++] = *cur;
-        } else if (inside_prev) {
+        }
+        else if (inside_prev) {
+            // Interseção saída — calcula ponto novo
             float t = d_prev / (d_prev - d_cur);
+
             ponto_t p;
+
             p.rot.x = prev->rot.x + t * (cur->rot.x - prev->rot.x);
             p.rot.y = prev->rot.y + t * (cur->rot.y - prev->rot.y);
             p.rot.z = NEAR_Z;
 
-            p.tex.x = prev->tex.x + t * (cur->tex.x - prev->tex.x);
-            p.tex.y = prev->tex.y + t * (cur->tex.y - prev->tex.y);
+            float z1 = prev->rot.z;
+            float z2 = cur->rot.z;
+            float inv_z1 = 1.0f / z1;
+            float inv_z2 = 1.0f / z2;
+
+            float u1 = prev->tex.x;
+            float v1 = prev->tex.y;
+            float u2 = cur->tex.x;
+            float v2 = cur->tex.y;
+
+            float u1_corr = u1 * inv_z1;
+            float v1_corr = v1 * inv_z1;
+            float u2_corr = u2 * inv_z2;
+            float v2_corr = v2 * inv_z2;
+
+            float inv_z = inv_z1 + t * (inv_z2 - inv_z1);
+            float u_corr = u1_corr + t * (u2_corr - u1_corr);
+            float v_corr = v1_corr + t * (v2_corr - v1_corr);
+
+            p.tex.x = u_corr / inv_z;
+            p.tex.y = v_corr / inv_z;
 
             out[out_count++] = p;
         }
@@ -135,6 +186,8 @@ void render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	vetor3d_t		*vBase;
 	float            dist;
 
+	face->drawn = 1;
+
 	if (face->numedges > MAX_VERTS_POR_POLIGONO) {
 		//printf("face[%d] > numEgdes %d muito grande! ", i, face->numedges);
 		return;
@@ -197,6 +250,9 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 
 	vis = mapa_leafVIS(leafCAM, mapa);
 
+	for (i=0, face = mapa->faces; i < mapa->numfaces; i++, face++)
+		face->drawn = 0;
+
 	leaf = &mapa->leafs[1];
 	for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
 		if (!(vis[i >> 3] & (1 << (i & 7)))) {
@@ -207,8 +263,11 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 		// Render LEAF
 		for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
 			face = *mark;
-			render_desenhaFace(face, mapa, paleta);
-			facesRendered++;
+
+			if (!face->drawn && (!_debug || _debug == face->id)) {
+				render_desenhaFace(face, mapa, paleta);
+				facesRendered++;
+			}
 		}
 	}
 

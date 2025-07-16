@@ -222,18 +222,31 @@ int main(int argc, char **argv)
 		&verticesPoligono[3],
 		&verticesPoligono[0]
 	};
-			
-	grafico_desenha_poligono(pts, 4, &mapa->textures[3], paleta);
 
+	int addX, addY;
+	while(1) {			
+		grafico_desenha_poligono(pts, 4, &mapa->textures[3], paleta);
+		grafico_mostra();
 
+		char c = grafico_tecla_espera();
+		if (c == 'q') break;
 
-	// grafico_tecla_espera();
-	// printf("FOI 2!\n");
+		addX = 0; addY = 0;
+		if (c == 'a') addX = -10;
+		if (c == 'd') addX =  10;
+		if (c == 'w') addY =  10;
+		if (c == 's') addY = -10;
 
-	grafico_mostra();
+		if (addX || addY) {
+			for (int j=0; j<4; j++) {
+				pts[j]->rot.x    += addX;
+				pts[j]->screen.x += addX;
+				pts[j]->rot.y    += addY;
+				pts[j]->screen.y += addY;
+			}
+		}
+	}
 
-	grafico_tecla_espera();
-	
 	int cntRender = 0;
 	while (1)
 	{
@@ -244,11 +257,9 @@ int main(int argc, char **argv)
 
 			mostraMapa2D(mapa, &cam);
 
-			_debug = 0;
-
 			// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
-			render_desenha_objeto(&cam, obj, numFrameSel, paleta);
+			// render_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
@@ -297,7 +308,7 @@ int main(int argc, char **argv)
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
 				(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
 
-			printf(" >>>\n");
+			printf("[dbg:%d] >>>\n", _debug);
 		}
 
 		char c = grafico_tecla();
@@ -318,7 +329,8 @@ int main(int argc, char **argv)
 		else if (c == 'a') camera_strafe(&cam,  10, mapa);
 		else if (c == 'd') camera_strafe(&cam, -10, mapa);
 
-		else if (c == 'z') _debug = 40;
+		else if (c == 'o') _debug++;
+		else if (c == 'l') _debug--;
 
 		else if (c == '\\') {
 			numAnimSel--;
