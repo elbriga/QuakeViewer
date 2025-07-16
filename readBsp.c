@@ -179,6 +179,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
     for (int i=0; i < mapa->numfaces; i++, ins++, face++) {
         // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
 
+        face->id       = i;
         face->planenum = ins->planenum;
         face->side     = ins->side;
 

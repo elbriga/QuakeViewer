@@ -66,6 +66,7 @@ typedef struct
 
 typedef struct
 {
+    int         id;
     short		planenum;
 	short		side;
 
@@ -74,6 +75,7 @@ typedef struct
 	short		texinfo;
 
     vetor3d_t   normal;
+    int         drawn;
 } face_t;
 
 typedef struct
