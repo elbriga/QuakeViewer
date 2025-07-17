@@ -73,6 +73,7 @@ typedef struct
 	int			firstedge;
 	short		numedges;
 	short		texinfo;
+    int         lightofs;
 
     vetor3d_t   normal;
     int         drawn;

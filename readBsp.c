@@ -186,6 +186,7 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         face->firstedge = ins->firstedge;
         face->numedges  = ins->numedges;
         face->texinfo   = ins->texinfo;
+        face->lightofs  = ins->lightofs;
     }
     // grafico_tecla_espera();
 
