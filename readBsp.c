@@ -161,13 +161,39 @@ int loadEntities (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+int loadLighting (mapa_t *mapa, lump_t *l, byte *buffer)
+{
+    char *light = (char *)(buffer + l->fileofs);
+    
+    mapa->lightinglen = l->filelen;
+    mapa->lighting = (char *) malloc(mapa->lightinglen);
+    if (!mapa->lighting) return 1;
+
+    memcpy(mapa->lighting, light, mapa->lightinglen);
+
+    return 0;
+}
+
 int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dsface_t	*ins;
     face_t      *face;
+    plano_t     *plano;
 
     if (!mapa->ledges) {
         return 2;
+    }
+
+    if (!mapa->lighting) {
+        return 3;
+    }
+
+    if (!mapa->planes) {
+        return 4;
+    }
+
+    if (!mapa->verts) {
+        return 5;
     }
 
     mapa->numfaces = l->filelen / sizeof(dsface_t);
@@ -186,7 +212,13 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         face->firstedge = ins->firstedge;
         face->numedges  = ins->numedges;
         face->texinfo   = ins->texinfo;
-        face->lightofs  = ins->lightofs;
+
+        face->light = (byte *)(mapa->lighting + ins->lightofs);
+
+        plano = &mapa->planes[face->planenum];
+        
+        face->light_width  = -1;
+        face->light_height = -1;
     }
     // grafico_tecla_espera();
 
@@ -451,6 +483,13 @@ mapa_t *readBsp(char *fileName)
     err = loadSurfEdges(mapa, &header->lumps[LUMP_SURFEDGES], buffer);
     if (err) {
         printf("readBsp: erro %d loadSurfEdges!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
+    err = loadLighting(mapa, &header->lumps[LUMP_LIGHTING], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadLighting!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }

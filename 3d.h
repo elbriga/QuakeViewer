@@ -73,7 +73,8 @@ typedef struct
 	int			firstedge;
 	short		numedges;
 	short		texinfo;
-    int         lightofs;
+    byte       *light;
+    short       light_width, light_height;
 
     vetor3d_t   normal;
     int         drawn;
@@ -213,6 +214,9 @@ typedef struct
     textureinfo_t *texinfo;
     node_t        *nodes;
     leaf_t        *leafs;
+
+    char *lighting;
+    int   lightinglen;
 
     char *entities;
     int   entitieslen;
