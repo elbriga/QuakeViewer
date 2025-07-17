@@ -33,7 +33,7 @@ int map_scaleY(int v, mapa_t *mapa)
 
 void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 {
-	int mostraComVIS = 1;
+	int mostraComVIS = !!(vis);
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
 	edge_t    *e;
@@ -68,9 +68,9 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 			for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
 				face = *mark;
 
-				// if (face->drawn)
-				// 	continue;
-				// face->drawn = 1;
+				if (face->drawn)
+					continue;
+				face->drawn = 1;
 
 				ledge = &mapa->ledges[face->firstedge];
 				for (k=0; k<face->numedges; k++, ledge++) {
