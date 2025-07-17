@@ -178,7 +178,6 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dsface_t	*ins;
     face_t      *face;
-    plano_t     *plano;
 
     if (!mapa->ledges) {
         return 2;
@@ -206,17 +205,15 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         // printf("face[%d] > numEdges: %d\n", i, ins->numedges);
 
         face->id       = i;
-        face->planenum = ins->planenum;
         face->side     = ins->side;
 
         face->firstedge = ins->firstedge;
         face->numedges  = ins->numedges;
         face->texinfo   = ins->texinfo;
 
-        face->light = (byte *)(mapa->lighting + ins->lightofs);
+        face->plano = (plano_t *)(mapa->planes + ins->planenum);
 
-        plano = &mapa->planes[face->planenum];
-        
+        face->light = (byte *)(mapa->lighting + ins->lightofs);
         face->light_width  = -1;
         face->light_height = -1;
     }

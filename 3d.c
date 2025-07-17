@@ -203,7 +203,6 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
 {
     vetor3d_t *base = mapa->base;
     ponto_t   *pnt  = mapa->verts;
-    plano_t   *plano;
 
     for (int v=0; v < mapa->numverts; v++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
@@ -224,12 +223,10 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
     // Projetar as normais das faces
     face_t *face = mapa->faces;
     for (int f=0; f < mapa->numfaces; f++, face++) {
-        plano = &mapa->planes[face->planenum];
-
         // Reset - Coordenadas de Objeto
-        face->normal.x = plano->normal.x - cam->pos.x;
-        face->normal.y = plano->normal.y - cam->pos.y;
-        face->normal.z = plano->normal.z - cam->pos.z;
+        face->normal.x = face->plano->normal.x - cam->pos.x;
+        face->normal.y = face->plano->normal.y - cam->pos.y;
+        face->normal.z = face->plano->normal.z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&face->normal, cam->ang.x);

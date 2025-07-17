@@ -67,12 +67,14 @@ typedef struct
 typedef struct
 {
     int         id;
-    short		planenum;
 	short		side;
 
 	int			firstedge;
 	short		numedges;
 	short		texinfo;
+
+    plano_t    *plano;
+    
     byte       *light;
     short       light_width, light_height;
 
