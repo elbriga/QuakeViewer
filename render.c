@@ -43,20 +43,13 @@ int render_clip_near_face(
                 p.rot.z = NEAR_Z;
 
                 // Correção de perspectiva (1/z)
-                float z1 = prev->rot.z;
-                float z2 = cur->rot.z;
-                float inv_z1 = 1.0f / z1;
-                float inv_z2 = 1.0f / z2;
+                float inv_z1 = 1.0f / prev->rot.z;
+                float inv_z2 = 1.0f / cur->rot.z;
 
-                float u1 = prev->tex.x;
-                float v1 = prev->tex.y;
-                float u2 = cur->tex.x;
-                float v2 = cur->tex.y;
-
-                float u1_corr = u1 * inv_z1;
-                float v1_corr = v1 * inv_z1;
-                float u2_corr = u2 * inv_z2;
-                float v2_corr = v2 * inv_z2;
+                float u1_corr = prev->tex.x * inv_z1;
+                float v1_corr = prev->tex.y * inv_z1;
+                float u2_corr = cur->tex.x * inv_z2;
+                float v2_corr = cur->tex.y * inv_z2;
 
                 float inv_z = inv_z1 + t * (inv_z2 - inv_z1);
                 float u_corr = u1_corr + t * (u2_corr - u1_corr);
@@ -81,20 +74,13 @@ int render_clip_near_face(
             p.rot.y = prev->rot.y + t * (cur->rot.y - prev->rot.y);
             p.rot.z = NEAR_Z;
 
-            float z1 = prev->rot.z;
-            float z2 = cur->rot.z;
-            float inv_z1 = 1.0f / z1;
-            float inv_z2 = 1.0f / z2;
+            float inv_z1 = 1.0f / prev->rot.z;
+            float inv_z2 = 1.0f / cur->rot.z;
 
-            float u1 = prev->tex.x;
-            float v1 = prev->tex.y;
-            float u2 = cur->tex.x;
-            float v2 = cur->tex.y;
-
-            float u1_corr = u1 * inv_z1;
-            float v1_corr = v1 * inv_z1;
-            float u2_corr = u2 * inv_z2;
-            float v2_corr = v2 * inv_z2;
+            float u1_corr = prev->tex.x * inv_z1;
+            float v1_corr = prev->tex.y * inv_z1;
+            float u2_corr = cur->tex.x * inv_z2;
+            float v2_corr = cur->tex.y * inv_z2;
 
             float inv_z = inv_z1 + t * (inv_z2 - inv_z1);
             float u_corr = u1_corr + t * (u2_corr - u1_corr);
