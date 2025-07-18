@@ -66,24 +66,6 @@ typedef struct
 
 typedef struct
 {
-    int         id;
-	short		side;
-
-	int			firstedge;
-	short		numedges;
-	short		texinfo;
-
-    plano_t    *plano;
-    
-    byte       *light;
-    short       light_width, light_height;
-
-    vetor3d_t   normal;
-    int         drawn;
-} face_t;
-
-typedef struct
-{
 	char		name[16];
 	unsigned	width, height;
     char        *data;
@@ -100,6 +82,26 @@ typedef struct
 	int			miptex;
 	int			flags;
 } textureinfo_t;
+
+typedef struct
+{
+    int         id;
+	short		side;
+
+	int			firstedge;
+	short		numedges;
+
+    textureinfo_t   *texinfo;
+	texture_t       *texture;
+
+    plano_t    *plano;
+
+    byte       *light;
+    short       light_width, light_height;
+
+    vetor3d_t   normal;
+    int         drawn;
+} face_t;
 
 typedef struct
 {

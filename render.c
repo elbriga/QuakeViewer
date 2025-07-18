@@ -165,11 +165,10 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
 
-	textureinfo_t	*texinfo;
-	texture_t		*tex;
 	edge_t			*edge;
     int				*ledge, vxtNum, s, t;
 	vetor3d_t		*vBase;
+	byte            *lightmap;
 	float            dist;
 
 	face->drawn = 1;
@@ -184,10 +183,11 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	// 	continue;
 	// }
 
-	texinfo = &mapa->texinfo[face->texinfo];
-	if (texinfo->miptex == mapa->numTextureTrigger) return 2;
+	if (face->texinfo->miptex == mapa->numTextureTrigger)
+		return 2;
 
-	tex = &mapa->textures[texinfo->miptex];
+	lightmap = face->light;
+	printf("pT[%d]", face->plano->type);
 
 	ledge = (int *)&mapa->ledges[face->firstedge];
 	grafico_cor(255,255,255);
@@ -203,8 +203,8 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		verts[v] = &mapa->verts[vxtNum];
 
 		vBase = &mapa->base[vxtNum];
-		verts[v]->tex.x = (dot_product(*vBase, texinfo->vetorS) + texinfo->distS) / tex->width;
-		verts[v]->tex.y = (dot_product(*vBase, texinfo->vetorT) + texinfo->distT) / tex->height;
+		verts[v]->tex.x = (dot_product(*vBase, face->texinfo->vetorS) + face->texinfo->distS) / face->texture->width;
+		verts[v]->tex.y = (dot_product(*vBase, face->texinfo->vetorT) + face->texinfo->distT) / face->texture->height;
 	}
 //dbg
 // if (i != 100) continue;
@@ -219,7 +219,7 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		clipped_ptrs[v] = &clipped[v];
 	}
 
-	grafico_desenha_poligono(clipped_ptrs, clipped_count, tex, paleta);
+	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, paleta);
 
 	return 0;
 }

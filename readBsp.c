@@ -195,6 +195,10 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         return 5;
     }
 
+    if (!mapa->texinfo) {
+        return 6;
+    }
+
     mapa->numfaces = l->filelen / sizeof(dsface_t);
     mapa->faces    = (face_t *) malloc(mapa->numfaces * sizeof(face_t));
     if (!mapa->faces) return 1;
@@ -209,7 +213,9 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 
         face->firstedge = ins->firstedge;
         face->numedges  = ins->numedges;
-        face->texinfo   = ins->texinfo;
+
+        face->texinfo = (textureinfo_t *)(mapa->texinfo + ins->texinfo);
+        face->texture = (texture_t *)(mapa->textures + face->texinfo->miptex);
 
         face->plano = (plano_t *)(mapa->planes + ins->planenum);
 
@@ -491,6 +497,20 @@ mapa_t *readBsp(char *fileName)
         return NULL;
     }
 
+    err = loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadTextures!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
+    err = loadTexInfo(mapa, &header->lumps[LUMP_TEXINFO], buffer);
+    if (err) {
+        printf("readBsp: erro %d loadTexInfo!\n\n", err);
+        freeMapa3D(mapa);
+        return NULL;
+    }
+
     err = loadFaces(mapa, &header->lumps[LUMP_FACES], buffer);
     if (err) {
         printf("readBsp: erro %d loadFaces!\n\n", err);
@@ -523,20 +543,6 @@ mapa_t *readBsp(char *fileName)
     err = loadNodes(mapa, &header->lumps[LUMP_NODES], buffer);
     if (err) {
         printf("readBsp: erro %d loadNodes!\n\n", err);
-        freeMapa3D(mapa);
-        return NULL;
-    }
-
-    err = loadTextures(mapa, &header->lumps[LUMP_TEXTURES], buffer);
-    if (err) {
-        printf("readBsp: erro %d loadTextures!\n\n", err);
-        freeMapa3D(mapa);
-        return NULL;
-    }
-
-    err = loadTexInfo(mapa, &header->lumps[LUMP_TEXINFO], buffer);
-    if (err) {
-        printf("readBsp: erro %d loadTexInfo!\n\n", err);
         freeMapa3D(mapa);
         return NULL;
     }
