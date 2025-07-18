@@ -189,7 +189,7 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	lightmap = face->light;
 	printf("pT[%d]", face->plano->type);
 
-	ledge = (int *)&mapa->ledges[face->firstedge];
+	ledge = (int *)face->firstledge;
 	grafico_cor(255,255,255);
 	dist = 0.0;
 	for (int v=0; v < face->numedges; v++, ledge++) {

@@ -88,7 +88,7 @@ typedef struct
     int         id;
 	short		side;
 
-	int			firstedge;
+	int		   *firstledge;
 	short		numedges;
 
     textureinfo_t   *texinfo;

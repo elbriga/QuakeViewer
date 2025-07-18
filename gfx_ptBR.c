@@ -72,7 +72,7 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 					continue;
 				face->drawn = 1;
 
-				ledge = &mapa->ledges[face->firstedge];
+				ledge = (int *)face->firstledge;
 				for (k=0; k<face->numedges; k++, ledge++) {
 					e = (*ledge >= 0) ? &mapa->edges[*ledge] : &mapa->edges[-*ledge];
 					ponto_t *p1 = &mapa->verts[e->v[0]];

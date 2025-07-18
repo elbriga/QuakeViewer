@@ -211,8 +211,8 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         face->id       = i;
         face->side     = ins->side;
 
-        face->firstedge = ins->firstedge;
-        face->numedges  = ins->numedges;
+        face->firstledge = (int *)(mapa->ledges + ins->firstedge);
+        face->numedges   = ins->numedges;
 
         face->texinfo = (textureinfo_t *)(mapa->texinfo + ins->texinfo);
         face->texture = (texture_t *)(mapa->textures + face->texinfo->miptex);
