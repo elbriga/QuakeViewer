@@ -155,7 +155,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char pa
 			clipped_ptrs[v] = &clipped[v];
 		}
 
-		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, paleta);
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, NULL,0,0, paleta);
 	}
 }
 
@@ -168,8 +168,6 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	edge_t			*edge;
     int				*ledge, vxtNum, s, t;
 	vetor3d_t		*vBase;
-	byte            *lightmap;
-	float            dist;
 
 	face->drawn = 1;
 
@@ -179,19 +177,15 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 	}
 
 	// Backface culling
-	// if (tri->normal.z < 0) {
-	// 	continue;
-	// }
+	// printf("normY[%.3f,%.3f,%.3f]", face->normal.x, face->normal.y, face->normal.z);
+	if (face->normal.y < 0) {
+		return 3;
+	}
 
 	if (face->texinfo->miptex == mapa->numTextureTrigger)
 		return 2;
 
-	lightmap = face->light;
-	printf("pT[%d]", face->plano->type);
-
 	ledge = (int *)face->firstledge;
-	grafico_cor(255,255,255);
-	dist = 0.0;
 	for (int v=0; v < face->numedges; v++, ledge++) {
 		if (*ledge < 0) {
 			edge = (edge_t *)&mapa->edges[-*ledge];
@@ -203,8 +197,16 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		verts[v] = &mapa->verts[vxtNum];
 
 		vBase = &mapa->base[vxtNum];
-		verts[v]->tex.x = (dot_product(*vBase, face->texinfo->vetorS) + face->texinfo->distS) / face->texture->width;
-		verts[v]->tex.y = (dot_product(*vBase, face->texinfo->vetorT) + face->texinfo->distT) / face->texture->height;
+		float s = dot_product(*vBase, face->texinfo->vetorS) + face->texinfo->distS;
+		float t = dot_product(*vBase, face->texinfo->vetorT) + face->texinfo->distT;
+
+		// Coordenadas da textura (normalizadas 0–1)
+		verts[v]->tex.x = s / face->texture->width;
+		verts[v]->tex.y = t / face->texture->height;
+
+		// Coordenadas do lightmap (em escala de texel)
+		verts[v]->tex_luz.x = (s - face->light_mins_s) / face->light_width;//(s / 16.0f) - face->light_mins_s;
+		verts[v]->tex_luz.y = (t - face->light_mins_t) / face->light_height;//(t / 16.0f) - face->light_mins_t;
 	}
 //dbg
 // if (i != 100) continue;
@@ -219,7 +221,9 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		clipped_ptrs[v] = &clipped[v];
 	}
 
-	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, paleta);
+if (_debug) printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}\n",
+		face->light_width, face->light_height, face->light_mins_s, face->light_mins_t);
+	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, face->light, face->light_width, face->light_height, paleta);
 
 	return 0;
 }

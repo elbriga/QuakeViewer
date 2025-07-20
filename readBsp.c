@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <float.h> // Required for FLT_MAX
+#include <math.h>
 
 #include "3d.h"
 #include "bspfile.h"
@@ -174,6 +175,89 @@ int loadLighting (mapa_t *mapa, lump_t *l, byte *buffer)
     return 0;
 }
 
+/*
+================
+CalcSurfaceExtents
+Preenche face->light_width e face->light_height
+================
+*/
+static void CalcSurfaceExtents (face_t *face, mapa_t *mapa)
+{
+	float	mins[2], maxs[2], val;
+	int		i,j, *ledge;
+	vetor3d_t       *base;
+	textureinfo_t	*texinfo;
+	int		bmins[2], bmaxs[2];
+
+	mins[0] = mins[1] = FLT_MAX;
+	maxs[0] = maxs[1] = -FLT_MAX;
+
+	texinfo = face->texinfo;
+
+	ledge = (int *)face->firstledge;
+	for (i=0 ; i<face->numedges ; i++, ledge++)
+	{
+		if (*ledge >= 0)
+			base = &mapa->base[mapa->edges[*ledge].v[0]];
+		else
+			base = &mapa->base[mapa->edges[-*ledge].v[1]];
+
+		for (j=0 ; j<2 ; j++)
+		{
+			/* The following calculation is sensitive to floating-point
+			 * precision.  It needs to produce the same result that the
+			 * light compiler does, because R_BuildLightMap uses surf->
+			 * extents to know the width/height of a surface's lightmap,
+			 * and incorrect rounding here manifests itself as patches
+			 * of "corrupted" looking lightmaps.
+			 * Most light compilers are win32 executables, so they use
+			 * x87 floating point.  This means the multiplies and adds
+			 * are done at 80-bit precision, and the result is rounded
+			 * down to 32-bits and stored in val.
+			 * Adding the casts to double seems to be good enough to fix
+			 * lighting glitches when Quakespasm is compiled as x86_64
+			 * and using SSE2 floating-point.  A potential trouble spot
+			 * is the hallway at the beginning of mfxsp17.  -- ericw
+			 */
+            if (j == 0) {
+                val = ((double)base->x * (double)texinfo->vetorS.x) +
+                      ((double)base->y * (double)texinfo->vetorS.y) +
+                      ((double)base->z * (double)texinfo->vetorS.z) +
+                      (double)texinfo->distS;
+            } else {
+                val = ((double)base->x * (double)texinfo->vetorT.x) +
+                      ((double)base->y * (double)texinfo->vetorT.y) +
+                      ((double)base->z * (double)texinfo->vetorT.z) +
+                      (double)texinfo->distT;
+            }
+			if (val < mins[j])
+				mins[j] = val;
+			if (val > maxs[j])
+				maxs[j] = val;
+		}
+	}
+
+	for (i=0 ; i<2 ; i++)
+	{
+		bmins[i] = floor(mins[i]/16);
+		bmaxs[i] = ceil(maxs[i]/16);
+
+        if (i == 0) {
+            // s->texturemins[i] = bmins[i] * 16;
+            // s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
+            face->light_mins_s = bmins[i] * 16;
+            face->light_width  = (bmaxs[i] - bmins[i]) * 16;
+        } else {
+            // face->texturemins[i] = bmins[i] * 16;
+            // s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
+            face->light_mins_t = bmins[i] * 16;
+            face->light_height = (bmaxs[i] - bmins[i]) * 16;
+        }
+	}
+
+    printf("LIGHT{%d, %d}\n", face->light_width, face->light_height);
+}
+
 int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
 {
 	dsface_t	*ins;
@@ -220,8 +304,10 @@ int loadFaces (mapa_t *mapa, lump_t *l, byte *buffer)
         face->plano = (plano_t *)(mapa->planes + ins->planenum);
 
         face->light = (byte *)(mapa->lighting + ins->lightofs);
-        face->light_width  = -1;
-        face->light_height = -1;
+        face->light_width  = 0;
+        face->light_height = 0;
+
+        CalcSurfaceExtents (face, mapa);
     }
     // grafico_tecla_espera();
 

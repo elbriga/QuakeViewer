@@ -47,6 +47,7 @@ typedef struct
     vetor3d_t rot;
     vetor2d_t screen;
     vetor2df_t tex;
+    vetor2df_t tex_luz;
 } ponto_t;
 
 typedef struct
@@ -98,6 +99,7 @@ typedef struct
 
     byte       *light;
     short       light_width, light_height;
+    short       light_mins_s, light_mins_t;
 
     vetor3d_t   normal;
     int         drawn;

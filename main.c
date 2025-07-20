@@ -20,7 +20,9 @@
 char paleta[256][3];
 float oldTS = 0;
 
+// int _debug = 5352;
 int _debug = 0;
+int _lightON = 1;
 
 void msg(char *out) {
     struct timeval tv;
@@ -195,35 +197,42 @@ int main(int argc, char **argv)
 				{
 					.rot = {10.0f, 10.0f, 10.0f},
 					.screen = {10.0f, 10.0f},
-					.tex = {0.0f, 0.0f}
+					.tex = {0.0f, 0.0f},
+					.tex_luz = {0.0f, 0.0f}
 				},
 				{
-					.rot = {150.0f, 25.0f, 10.0f},
-					.screen = {150.0f, 25.0f},
-					.tex = {1.0f, 0.0f}
+					.rot = {550.0f, 25.0f, 10.0f},
+					.screen = {550.0f, 25.0f},
+					.tex = {1.0f, 0.0f},
+					.tex_luz = {1.0f, 0.0f}
 				},
 				{
-					.rot = {100.0f, 350.0f, 10.0f},
-					.screen = {100.0f, 350.0f},
-					.tex = {1.0f, 1.0f}
+					.rot = {500.0f, 450.0f, 10.0f},
+					.screen = {500.0f, 450.0f},
+					.tex = {1.0f, 1.0f},
+					.tex_luz = {1.0f, 1.0f}
 				},
 				{
 					.rot = {5.0f, 300.0f, 10.0f},
 					.screen = {5.0f, 300.0f},
-					.tex = {0.0f, 1.0f}
+					.tex = {0.0f, 1.0f},
+					.tex_luz = {0.0f, 1.0f}
 				}
 			};
 	
 	ponto_t *pts[16] = {
+		&verticesPoligono[0],
 		&verticesPoligono[1],
 		&verticesPoligono[2],
-		&verticesPoligono[3],
-		&verticesPoligono[0]
+		&verticesPoligono[3]
 	};
 
-	int addX, addY;
+	face_t *fd = mapa->faces + _debug;
+
+	int addX, addY, lightON = 1;
 	while(1) {			
-		grafico_desenha_poligono(pts, 4, &mapa->textures[3], paleta);
+		grafico_desenha_poligono(pts, 4, &mapa->textures[3],
+			lightON ? fd->light : NULL,fd->light_width,fd->light_height, paleta);
 		grafico_mostra();
 
 		char c = grafico_tecla_espera();
@@ -232,8 +241,10 @@ int main(int argc, char **argv)
 		addX = 0; addY = 0;
 		if (c == 'a') addX = -10;
 		if (c == 'd') addX =  10;
-		if (c == 'w') addY =  10;
-		if (c == 's') addY = -10;
+		if (c == 'w') addY = -10;
+		if (c == 's') addY =  10;
+
+		if (c == 'e') lightON = 1 - lightON;
 
 		if (addX || addY) {
 			for (int j=0; j<4; j++) {

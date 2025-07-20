@@ -380,15 +380,40 @@ void grafico_triangulo_wireZ(
 	grafico_linha(x3, y3, x1, y1);
 }
 
-void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, char paleta[256][3]) {
-    int minY = INT_MAX, maxY = INT_MIN;
+byte get_light_level(char *light, int light_u, int light_v, int lightW, int lightH)
+{
+	if (!light) return 255;
+
+	int u = ((light_u < 0) ? 0 : ((light_u >= lightW) ? lightW-1 : light_u)) >> 4;
+	int v = ((light_v < 0) ? 0 : ((light_v >= lightH) ? lightH-1 : light_v)) >> 4;
+
+	return (byte)light[u + v * (lightW >> 4)];
+}
+
+void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH, char paleta[256][3]) {
+    int minY = INT_MAX, maxY = INT_MIN, lightON = !!(light);
 
     for (int i = 0; i < numVerts; i++) {
+if (_debug) {
+	ponto_t *vp = verticesPoligono[i];
+	printf("\nvP{%.1f,%.1f,%.1f}{%.1f,%.1f}{%.1f,%.1f}",
+		vp->rot.x, vp->rot.y, vp->rot.z, vp->tex.x, vp->tex.y, vp->tex_luz.x, vp->tex_luz.y);
+}
         int y = verticesPoligono[i]->screen.y;
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
     }
+if (_debug) {
+	printf("\n");
 
+	for (int ly=0; ly < lightH; ly++) {
+		for (int lx=0; lx < lightW; lx++) {
+			byte intensidade = get_light_level(light, lx, ly, lightW, lightH);
+			grafico_cor(intensidade,intensidade,intensidade);
+			grafico_ponto( lx, ly );
+		}
+	}
+}
     if (minY < 0) minY = 0;
     if (maxY >= grafico_altura) maxY = grafico_altura - 1;
 
@@ -396,6 +421,7 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
         struct {
             int x;
             float u_over_z, v_over_z, one_over_z;
+            float lu_over_z, lv_over_z;
             float z_view;
         } intersecoes[64];
 
@@ -418,15 +444,21 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
                 float one_over_z1 = 1.0f / z1, one_over_z2 = 1.0f / z2;
                 float u_over_z1 = p1.tex.x / z1, u_over_z2 = p2.tex.x / z2;
                 float v_over_z1 = p1.tex.y / z1, v_over_z2 = p2.tex.y / z2;
+                float lu_over_z1 = p1.tex_luz.x / z1, lu_over_z2 = p2.tex_luz.x / z2;
+                float lv_over_z1 = p1.tex_luz.y / z1, lv_over_z2 = p2.tex_luz.y / z2;
 
                 float one_over_z = one_over_z1 + (one_over_z2 - one_over_z1) * t;
-                float u_over_z   = u_over_z1   + (u_over_z2   - u_over_z1)   * t;
-                float v_over_z   = v_over_z1   + (v_over_z2   - v_over_z1)   * t;
+                float u_over_z   = u_over_z1   + (u_over_z2   - u_over_z1) * t;
+                float v_over_z   = v_over_z1   + (v_over_z2   - v_over_z1) * t;
+                float lu_over_z  = lu_over_z1  + (lu_over_z2  - lu_over_z1) * t;
+                float lv_over_z  = lv_over_z1  + (lv_over_z2  - lv_over_z1) * t;
                 float z_view     = z1 + (z2 - z1) * t;
 
                 intersecoes[count].x = x;
                 intersecoes[count].u_over_z = u_over_z;
                 intersecoes[count].v_over_z = v_over_z;
+                intersecoes[count].lu_over_z = lu_over_z;
+                intersecoes[count].lv_over_z = lv_over_z;
                 intersecoes[count].one_over_z = one_over_z;
                 intersecoes[count].z_view = z_view;
                 count++;
@@ -454,26 +486,31 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
             float v0 = intersecoes[i].v_over_z;
             float w0 = intersecoes[i].one_over_z;
             float z0 = intersecoes[i].z_view;
+            float lu0 = intersecoes[i].lu_over_z;
+            float lv0 = intersecoes[i].lv_over_z;
 
             float u1 = intersecoes[i + 1].u_over_z;
             float v1 = intersecoes[i + 1].v_over_z;
             float w1 = intersecoes[i + 1].one_over_z;
             float z1 = intersecoes[i + 1].z_view;
+            float lu1 = intersecoes[i + 1].lu_over_z;
+            float lv1 = intersecoes[i + 1].lv_over_z;
 
             int original_x0 = x0;
             int original_x1 = x1;
-
-            int dx = original_x1 - original_x0;
+            int dx = x1 - x0;
             if (dx == 0) dx = 1;
 
-            // Clamp com correção de interpolação
+            // Clamp horizontal com correção
             if (x0 < 0) {
                 float t = (float)(0 - original_x0) / dx;
                 x0 = 0;
-                u0 = u0 + (u1 - u0) * t;
-                v0 = v0 + (v1 - v0) * t;
-                w0 = w0 + (w1 - w0) * t;
-                z0 = z0 + (z1 - z0) * t;
+                u0 += (u1 - u0) * t;
+                v0 += (v1 - v0) * t;
+                w0 += (w1 - w0) * t;
+                z0 += (z1 - z0) * t;
+                lu0 += (lu1 - lu0) * t;
+                lv0 += (lv1 - lv0) * t;
             }
             if (x1 >= grafico_largura) {
                 float t = (float)(grafico_largura - 1 - original_x0) / dx;
@@ -482,6 +519,8 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
                 v1 = v0 + (v1 - v0) * t;
                 w1 = w0 + (w1 - w0) * t;
                 z1 = z0 + (z1 - z0) * t;
+                lu1 = lu0 + (lu1 - lu0) * t;
+                lv1 = lv0 + (lv1 - lv0) * t;
             }
 
             for (int x = x0; x <= x1; x++) {
@@ -491,18 +530,46 @@ void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_
                 float v_over_z = v0 + (v1 - v0) * t;
                 float one_over_z = w0 + (w1 - w0) * t;
                 float z = z0 + (z1 - z0) * t;
+                float lu_over_z = lu0 + (lu1 - lu0) * t;
+                float lv_over_z = lv0 + (lv1 - lv0) * t;
 
                 float u = (u_over_z / one_over_z) * tex->width;
                 float v = (v_over_z / one_over_z) * tex->height;
+                float lu = (lu_over_z / one_over_z);
+                float lv = (lv_over_z / one_over_z);
 
-                // Corrige u/v fora da textura
                 int tex_u = ((int)u % tex->width + tex->width) % tex->width;
                 int tex_v = ((int)v % tex->height + tex->height) % tex->height;
-
+//printf("(lu:%.2f-W:%d-H:%d)", lu, lightW, lightH);
+// grafico_tecla_espera();
+				int light_u=0, light_v=0;
+				if (lightON) {
+					if (lu < 0) lu = 0;
+					if (lu > 1) lu = 1;
+					if (lv < 0) lv = 0;
+					if (lv > 1) lv = 1;
+					light_u = lu * lightW; //((int)lu % lightW + lightW) % lightW;
+					light_v = lv * lightH; //((int)lv % lightH + lightH) % lightH;
+				}
                 if (x >= 0 && x < grafico_largura && y >= 0 && y < grafico_altura) {
                     if (z < zBuffer[zBufferBase + x]) {
                         unsigned char cor = tex->data[tex_u + tex_v * tex->width];
-                        grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
+
+						int r,g,b;
+						if (lightON) {
+							unsigned char intensidade = get_light_level(light, light_u, light_v, lightW, lightH);
+							float fator = intensidade / 255.0f;
+
+							r = (byte)paleta[cor][0] * fator;
+							g = (byte)paleta[cor][1] * fator;
+							b = (byte)paleta[cor][2] * fator;
+						} else {
+							r = (byte)paleta[cor][0];
+							g = (byte)paleta[cor][1];
+							b = (byte)paleta[cor][2];
+						}
+
+                        grafico_cor(r, g, b);
                         grafico_ponto(x, y);
                         zBuffer[zBufferBase + x] = z;
                     }
