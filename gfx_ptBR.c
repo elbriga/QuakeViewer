@@ -382,12 +382,40 @@ void grafico_triangulo_wireZ(
 
 byte get_light_level(char *light, int light_u, int light_v, int lightW, int lightH)
 {
-	if (!light) return 255;
+    if (!light) return 255;
 
-	int u = ((light_u < 0) ? 0 : ((light_u >= lightW) ? lightW-1 : light_u)) >> 4;
-	int v = ((light_v < 0) ? 0 : ((light_v >= lightH) ? lightH-1 : light_v)) >> 4;
+    // Lightmap tem resolução 1/16 (>>4), então pegamos o valor inteiro e a fração
+    float fu = (float)light_u / 16.0f;
+    float fv = (float)light_v / 16.0f;
 
-	return (byte)light[u + v * (lightW >> 4)];
+    int u0 = (int)fu;
+    int v0 = (int)fv;
+    float frac_u = fu - u0;
+    float frac_v = fv - v0;
+
+    // Clamp para evitar acesso fora do buffer
+    int lw = lightW >> 4;
+    int lh = lightH >> 4;
+    
+    if (u0 < 0) u0 = 0; else if (u0 >= lw - 1) u0 = lw - 2;
+    if (v0 < 0) v0 = 0; else if (v0 >= lh - 1) v0 = lh - 2;
+
+    int idx00 = u0     + v0     * lw;
+    int idx10 = (u0+1) + v0     * lw;
+    int idx01 = u0     + (v0+1) * lw;
+    int idx11 = (u0+1) + (v0+1) * lw;
+
+    float l00 = light[idx00];
+    float l10 = light[idx10];
+    float l01 = light[idx01];
+    float l11 = light[idx11];
+
+    // Interpolação bilinear
+    float i0 = l00 * (1 - frac_u) + l10 * frac_u;
+    float i1 = l01 * (1 - frac_u) + l11 * frac_u;
+    float value = i0 * (1 - frac_v) + i1 * frac_v;
+
+    return (byte)value;
 }
 
 void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH, char paleta[256][3]) {
