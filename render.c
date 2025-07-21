@@ -12,6 +12,7 @@
 #define FAR_CLIP 500.0
 
 extern int _debug;
+extern int _lightON;
 
 int render_clip_near_face(
     ponto_t *in[MAX_VERTS_POR_POLIGONO],
@@ -223,7 +224,8 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 
 if (_debug) printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}\n",
 		face->light_width, face->light_height, face->light_mins_s, face->light_mins_t);
-	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, face->light, face->light_width, face->light_height, paleta);
+	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, 
+		_lightON ? face->light : NULL, face->light_width, face->light_height, paleta);
 
 	return 0;
 }

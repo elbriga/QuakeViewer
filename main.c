@@ -339,6 +339,8 @@ int main(int argc, char **argv)
 		else if (c == 'o') _debug++;
 		else if (c == 'l') _debug--;
 
+		else if (c == 'e') _lightON = 1 - _lightON;
+
 		else if (c == '\\') {
 			numAnimSel--;
 			if (numAnimSel < -1)
