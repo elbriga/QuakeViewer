@@ -24,6 +24,8 @@ float oldTS = 0;
 int _debug = 0;
 int _lightON = 1;
 
+float tempo_de_jogo = 0.0f;
+
 void msg(char *out) {
     struct timeval tv;
     struct tm *timeinfo;
@@ -261,6 +263,10 @@ int main(int argc, char **argv)
 	{
 		if (cntRender++ > 10) {
 			cntRender = 0;
+
+			// tempo desde o último frame, em segundos ou milissegundos
+			float delta_time = 0.5;//calcula_delta_tempo();
+			tempo_de_jogo += delta_time;
 
 			render_desenha_mapa(&cam, mapa, paleta);
 

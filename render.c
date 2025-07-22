@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "3d.h"
 #include "gfx_ptBR.h"
@@ -13,6 +14,8 @@
 
 extern int _debug;
 extern int _lightON;
+
+extern float tempo_de_jogo;
 
 int render_clip_near_face(
     ponto_t *in[MAX_VERTS_POR_POLIGONO],
@@ -222,10 +225,21 @@ int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
 		clipped_ptrs[v] = &clipped[v];
 	}
 
-if (_debug) printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}\n",
-		face->light_width, face->light_height, face->light_mins_s, face->light_mins_t);
-	grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, 
-		_lightON ? face->light : NULL, face->light_width, face->light_height, paleta);
+if (_debug)
+printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}[S:%.1f,%.1f,%.1f+%.1f--T:%.1f,%.1f,%.1f+%.1f]\n",
+		face->light_width, face->light_height, face->light_mins_s, face->light_mins_t,
+		face->texinfo->vetorS.x, face->texinfo->vetorS.y, face->texinfo->vetorS.z, face->texinfo->distS,
+		face->texinfo->vetorT.x, face->texinfo->vetorT.y, face->texinfo->vetorT.z, face->texinfo->distT
+);
+
+	if (strncmp(face->texture->name, "sky", 3) == 0) {
+		// Use função especial para céu
+		grafico_desenha_poligono_sky(clipped_ptrs, clipped_count,
+			face->texture, tempo_de_jogo, paleta);
+	} else {
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, 
+			_lightON ? face->light : NULL, face->light_width, face->light_height, paleta);
+	}
 
 	return 0;
 }

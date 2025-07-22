@@ -12,6 +12,10 @@
 #include "gfx_ptBR.h"
 #include "mapa.h"
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846	/* pi */
+#endif
+
 extern int _debug;
 
 float *zBuffer = NULL;
@@ -563,8 +567,6 @@ if (_debug) {
 
                 float u = (u_over_z / one_over_z) * tex->width;
                 float v = (v_over_z / one_over_z) * tex->height;
-                float lu = (lu_over_z / one_over_z);
-                float lv = (lv_over_z / one_over_z);
 
                 int tex_u = ((int)u % tex->width + tex->width) % tex->width;
                 int tex_v = ((int)v % tex->height + tex->height) % tex->height;
@@ -572,6 +574,9 @@ if (_debug) {
 // grafico_tecla_espera();
 				int light_u=0, light_v=0;
 				if (lightON) {
+					float lu = (lu_over_z / one_over_z);
+					float lv = (lv_over_z / one_over_z);
+
 					if (lu < 0) lu = 0;
 					if (lu > 1) lu = 1;
 					if (lv < 0) lv = 0;
@@ -607,6 +612,113 @@ if (_debug) {
     }
 }
 
+void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo, char paleta[256][3]) {
+    int minY = INT_MAX, maxY = INT_MIN;
+
+    for (int i = 0; i < numVerts; i++) {
+        int y = verticesPoligono[i]->screen.y;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+    }
+
+    if (minY < 0) minY = 0;
+    if (maxY >= grafico_altura) maxY = grafico_altura - 1;
+
+    for (int y = minY; y <= maxY; y++) {
+        struct {
+            int x;
+            float ndc_x, ndc_y;
+        } intersecoes[64];
+
+        int count = 0;
+
+        for (int i = 0; i < numVerts; i++) {
+            ponto_t p1 = *verticesPoligono[i];
+            ponto_t p2 = *verticesPoligono[(i + 1) % numVerts];
+
+            int y1 = p1.screen.y;
+            int y2 = p2.screen.y;
+
+            if (y1 == y2) continue;
+
+            if ((y >= y1 && y < y2) || (y >= y2 && y < y1)) {
+                float t = (float)(y - y1) / (float)(y2 - y1);
+                int x = p1.screen.x + (int)((p2.screen.x - p1.screen.x) * t);
+
+                float ndc_x = ((float)x / grafico_largura) * 2.0f - 1.0f;
+                float ndc_y = 1.0f - ((float)y / grafico_altura) * 2.0f;
+
+                intersecoes[count].x = x;
+                intersecoes[count].ndc_x = ndc_x;
+                intersecoes[count].ndc_y = ndc_y;
+                count++;
+            }
+        }
+
+        // Ordena por X
+        for (int i = 0; i < count - 1; i++) {
+            for (int j = 0; j < count - i - 1; j++) {
+                if (intersecoes[j].x > intersecoes[j + 1].x) {
+                    typeof(intersecoes[0]) tmp = intersecoes[j];
+                    intersecoes[j] = intersecoes[j + 1];
+                    intersecoes[j + 1] = tmp;
+                }
+            }
+        }
+
+        for (int i = 0; i < count; i += 2) {
+            if (i + 1 >= count) break;
+
+            int x0 = intersecoes[i].x;
+            int x1 = intersecoes[i + 1].x;
+            int dx = x1 - x0;
+            if (dx == 0) dx = 1;
+
+            for (int x = x0; x <= x1; x++) {
+                float t = (float)(x - x0) / dx;
+
+                float ndc_x = intersecoes[i].ndc_x + (intersecoes[i + 1].ndc_x - intersecoes[i].ndc_x) * t;
+                float ndc_y = intersecoes[i].ndc_y + (intersecoes[i + 1].ndc_y - intersecoes[i].ndc_y) * t;
+
+                // Vetor da direção da câmera (para céu)
+                vetor3d_t dir = { ndc_x, ndc_y, 1.0f };
+                float len = sqrtf(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+                dir.x /= len;
+                dir.y /= len;
+                dir.z /= len;
+
+                // UV base
+                float u = 0.5f + (atan2f(dir.x, dir.z) / (2.0f * M_PI));
+                float v = 0.5f - (asinf(dir.y) / M_PI);
+
+                // MOVIMENTO: deslocamento suave para SKYTOP
+                float scrollU = tempo * 0.01f;
+                float scrollV = tempo * 0.005f;
+
+                // TEX SKYBASE (fundo)
+                int base_u = ((int)(u * sky->width)) % sky->width;
+                int base_v = ((int)(v * (sky->height / 2))) % (sky->height / 2);
+                int base_index = base_u + base_v * sky->width;
+
+                // TEX SKYTOP (nuvem)
+                int top_u = ((int)((u + scrollU) * sky->width)) % sky->width;
+                int top_v = ((int)((v + scrollV) * (sky->height / 2))) % (sky->height / 2);
+                top_v += sky->height / 2; // parte inferior
+                int top_index = top_u + top_v * sky->width;
+
+                // Cor final (mistura simples)
+                unsigned char cor_base = sky->data[base_index];
+                unsigned char cor_top = sky->data[top_index];
+
+                // Sem alpha: apenas usa a cor do topo se for != 0, senão a do fundo
+                unsigned char final_cor = (cor_top != 0) ? cor_top : cor_base;
+
+                grafico_cor(paleta[final_cor][0], paleta[final_cor][1], paleta[final_cor][2]);
+                grafico_ponto(x, y);
+            }
+        }
+    }
+}
 
 void grafico_triangulo_textura(char *textura, int textW, int textH, char paleta[256][3],
     int x1,int y1,int z1, int ts1,int tt1,
