@@ -612,6 +612,40 @@ if (_debug) {
     }
 }
 
+// Retorna a cor interpolada da textura, usando UV normalizados
+byte bilinear_sample(texture_t *tex, float u, float v) {
+    if (!tex || !tex->data) return 0;
+
+    int texW = tex->width;
+    int texH = tex->height;
+
+    // Mapeia UVs para coordenadas reais
+    float x = u * texW;
+    float y = v * texH;
+
+    int x0 = (int)x;
+    int y0 = (int)y;
+    int x1 = (x0 + 1) % texW;
+    int y1 = (y0 + 1) % texH;
+
+    float tx = x - x0;
+    float ty = y - y0;
+
+    unsigned char c00 = tex->data[x0 + y0 * texW];
+    unsigned char c10 = tex->data[x1 + y0 * texW];
+    unsigned char c01 = tex->data[x0 + y1 * texW];
+    unsigned char c11 = tex->data[x1 + y1 * texW];
+
+    float w00 = (1.0f - tx) * (1.0f - ty);
+    float w10 = tx * (1.0f - ty);
+    float w01 = (1.0f - tx) * ty;
+    float w11 = tx * ty;
+
+    float cor = w00 * c00 + w10 * c10 + w01 * c01 + w11 * c11;
+
+    return (byte)cor;
+}
+
 void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo, char paleta[256][3]) {
     int minY = INT_MAX, maxY = INT_MIN;
 
@@ -696,19 +730,18 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
                 float scrollV = tempo * 0.005f;
 
                 // TEX SKYBASE (fundo)
-                int base_u = ((int)(u * sky->width)) % sky->width;
-                int base_v = ((int)(v * (sky->height / 2))) % (sky->height / 2);
-                int base_index = base_u + base_v * sky->width;
+                float v_base = fmodf(v, 0.5f);                 // [0.0 ~ 0.5]
+				float v_top  = fmodf(v + scrollV, 0.5f);       // [0.0 ~ 0.5] + scroll
+				// TEX SKYTOP (nuvens)
+				float u_top  = fmodf(u + scrollU, 1.0f);
+				float u_base = fmodf(u, 1.0f);
 
-                // TEX SKYTOP (nuvem)
-                int top_u = ((int)((u + scrollU) * sky->width)) % sky->width;
-                int top_v = ((int)((v + scrollV) * (sky->height / 2))) % (sky->height / 2);
-                top_v += sky->height / 2; // parte inferior
-                int top_index = top_u + top_v * sky->width;
+				// Interpolação bilinear (mapa base)
+				unsigned char cor_base = bilinear_sample(sky, u_base, v_base);
 
-                // Cor final (mistura simples)
-                unsigned char cor_base = sky->data[base_index];
-                unsigned char cor_top = sky->data[top_index];
+				// Interpolação bilinear (camada do topo)
+				float v_top_real = v_top + 0.5f;               // desloca para metade inferior
+				unsigned char cor_top = bilinear_sample(sky, u_top, v_top_real);
 
                 // Sem alpha: apenas usa a cor do topo se for != 0, senão a do fundo
                 unsigned char final_cor = (cor_top != 0) ? cor_top : cor_base;
