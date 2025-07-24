@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "3d.h"
-#include "gfx_ptBR.h"
+#include "grafico.h"
 #include "render.h"
 #include "mapa.h"
 

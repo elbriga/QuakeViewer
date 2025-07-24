@@ -8,7 +8,8 @@
 #include <sys/time.h> // gettimeofday localtime
 #include <time.h>
 
-#include "gfx_ptBR.h"
+#include "grafico.h"
+#include "gfx.h"
 
 #include "readBsp.h"
 #include "readMdl.h"
@@ -64,8 +65,8 @@ void mostraTexturas(mapa_t *mapa)
             for (int x=0; x < tex->width; x++) {
                 byte cor = pixels[x + yOfs];
 
-                grafico_cor(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
-                grafico_ponto(x+ofs, y+ofs);
+                gfx_color(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
+                gfx_point(x+ofs, y+ofs);
             }
         }
 
@@ -73,7 +74,7 @@ void mostraTexturas(mapa_t *mapa)
     }
 
     grafico_mostra();
-    grafico_tecla_espera();
+    engine_get_key_block();
 }
 
 int main(int argc, char **argv)
@@ -237,7 +238,7 @@ int main(int argc, char **argv)
 			lightON ? fd->light : NULL,fd->light_width,fd->light_height, paleta);
 		grafico_mostra();
 
-		char c = grafico_tecla_espera();
+		char c = engine_get_key_block();
 		if (c == 'q') break;
 
 		addX = 0; addY = 0;
@@ -324,7 +325,7 @@ int main(int argc, char **argv)
 			printf("[dbg:%d] >>>\n", _debug);
 		}
 
-		char c = grafico_tecla();
+		char c = engine_get_key();
 		// printf("c = %d\n", c);
 
 		// Quit if it is the letter q.

@@ -6,3 +6,5 @@ int mapa_canMoveTo(float px, float py, float pz, mapa_t *mapa);
 byte *mapa_leafVIS (leaf_t *leaf, mapa_t *mapa);
 
 int mapa_loadEntities (mapa_t *mapa);
+
+void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis);

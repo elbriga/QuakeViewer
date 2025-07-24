@@ -4,13 +4,8 @@
 #include <math.h>
 
 #include "3d.h"
-#include "gfx_ptBR.h"
-#include "render.h"
+#include "grafico.h"
 #include "mapa.h"
-
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	/* pi */
-#endif
 
 // https://microstudio.dev/community/articles/how-to-make-your-own-3d-3d-projection/37/
 
