@@ -82,28 +82,23 @@ int main(int argc, char **argv)
 	int janX = 800, janY = 600, totAnims;
 	camera_t cam;
 
-	msg("Quake MDL Viewer");
-
-	if (argc < 4 || strlen(argv[1]) < 4) {
-		msg("Uso: mdlViewer ARQUIVO1.mdl ARQUIVO2.mdl ARQUIVO3.mdl");
-		exit(1);
-	}
+	msg("Quake Viewer");
 
 	obj3d_t *chao = obj_plano(10, 10);
 
-	obj3d_t *obj = readMdl(argv[1]);
+	obj3d_t *obj = readMdl("data/models/hknight.mdl");
 	if (!obj) {
 		msg("Falha ao carregar ARQUIVO.mdl");
 		exit(2);
 	}
 
-	obj3d_t *obj2 = readMdl(argv[2]);
+	obj3d_t *obj2 = readMdl("data/models/mon_minotaur.mdl");
 	if (!obj2) {
 		msg("Falha ao carregar ARQUIVO2.mdl");
 		exit(2);
 	}
 
-	obj3d_t *obj3 = readMdl(argv[3]);
+	obj3d_t *obj3 = readMdl("data/models/enforcer.mdl");
 	if (!obj3) {
 		msg("Falha ao carregar ARQUIVO3.mdl");
 		exit(2);
