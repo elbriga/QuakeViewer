@@ -218,12 +218,12 @@ void grafico_linha( int x0, int y0, int x1, int y1 )
 
 char grafico_tecla()
 {
-	return gfx_wait();
+	return engine_get_key();
 }
 
 char grafico_tecla_espera()
 {
-	return gfx_wait_block();
+	return engine_get_key_block();
 }
 
 void grafico_projecao3D(ponto_t *p)
@@ -602,8 +602,8 @@ if (_debug) {
 							b = (byte)paleta[cor][2];
 						}
 
-                        grafico_cor(r, g, b);
-                        grafico_ponto(x, y);
+                        gfx_color(r, g, b);
+                        gfx_point(x, y);
                         zBuffer[zBufferBase + x] = z;
                     }
                 }
@@ -746,8 +746,8 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
                 // Sem alpha: apenas usa a cor do topo se for != 0, senão a do fundo
                 unsigned char final_cor = (cor_top != 0) ? cor_top : cor_base;
 
-                grafico_cor(paleta[final_cor][0], paleta[final_cor][1], paleta[final_cor][2]);
-                grafico_ponto(x, y);
+                gfx_color(paleta[final_cor][0], paleta[final_cor][1], paleta[final_cor][2]);
+                gfx_point(x, y);
             }
         }
     }
