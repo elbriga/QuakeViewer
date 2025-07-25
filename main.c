@@ -125,7 +125,7 @@ void testePoligono(mapa_t *mapa)
 	int addX, addY, lightON = 1;
 	while(1) {			
 		grafico_desenha_poligono(pts, 4, &mapa->textures[3],
-			lightON ? fd->light : NULL,fd->light_width,fd->light_height, paleta);
+			lightON ? fd->light : NULL,fd->light_width,fd->light_height);
 		grafico_mostra();
 
 		char c = engine_get_key_block();
@@ -271,18 +271,18 @@ int loopPrincipal()
 			float delta_time = 0.5;//calcula_delta_tempo();
 			tempo_de_jogo += delta_time;
 
-			render_desenha_mapa(&cam, mapa, paleta);
+			render_desenha_mapa(&cam, mapa);
 
-			render_desenha_objeto(&cam, chao, 0, NULL);
+			render_desenha_objeto(&cam, chao, 0);
 
-			render_desenha_objeto(&cam, obj, numFrameSel, paleta);
+			render_desenha_objeto(&cam, obj, numFrameSel);
 /*
-		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
+		render_desenha_objeto(&cam, obj2, numFrameSel2);
 		numFrameSel2++;
 		if(numFrameSel2 >= obj2->numframes -1)
 			numFrameSel2 = 0;
 
-		grafico_desenha_objeto(&cam, obj3, numFrameSel3, paleta);
+		render_desenha_objeto(&cam, obj3, numFrameSel3);
 		numFrameSel3++;
 		if(numFrameSel3 >= 8)
 			numFrameSel3 = 0;

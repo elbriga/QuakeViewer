@@ -100,7 +100,7 @@ int render_clip_near_face(
     return out_count;
 }
 
-void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char paleta[256][3])
+void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel)
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
@@ -159,11 +159,11 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel, char pa
 			clipped_ptrs[v] = &clipped[v];
 		}
 
-		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, NULL,0,0, paleta);
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, NULL,0,0);
 	}
 }
 
-int render_desenhaFace(face_t *face, mapa_t *mapa, char paleta[256][3])
+int render_desenhaFace(face_t *face, mapa_t *mapa)
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
@@ -235,16 +235,16 @@ printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}[S:%.1f,%.1f,%.1f+%.1f--T:%.1f,%.1
 	if (strncmp(face->texture->name, "sky", 3) == 0) {
 		// Use função especial para céu
 		grafico_desenha_poligono_sky(clipped_ptrs, clipped_count,
-			face->texture, tempo_de_jogo, paleta);
+			face->texture, tempo_de_jogo);
 	} else {
 		grafico_desenha_poligono(clipped_ptrs, clipped_count, face->texture, 
-			_lightON ? face->light : NULL, face->light_width, face->light_height, paleta);
+			_lightON ? face->light : NULL, face->light_width, face->light_height);
 	}
 
 	return 0;
 }
 
-void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
+void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 {
 	int		 i, j, facesRendered = 0;
 	leaf_t	*leafCAM, *leaf;
@@ -273,7 +273,7 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 			face = *mark;
 
 			if (!face->drawn && (!_debug || _debug == face->id)) {
-				if (!render_desenhaFace(face, mapa, paleta)) {
+				if (!render_desenhaFace(face, mapa)) {
 					facesRendered++;
 				}
 			}

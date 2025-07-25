@@ -12,6 +12,8 @@
 #include "grafico.h"
 #include "mapa.h"
 
+extern char paleta[256][3];
+
 extern int _debug;
 
 float *zBuffer = NULL;
@@ -113,7 +115,8 @@ byte get_light_level(char *light, int light_u, int light_v, int lightW, int ligh
     return (byte)value;
 }
 
-void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH, char paleta[256][3]) {
+void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH)
+{
     int minY = INT_MAX, maxY = INT_MIN, lightON = !!(light);
 
     for (int i = 0; i < numVerts; i++) {
@@ -335,7 +338,7 @@ byte bilinear_sample(texture_t *tex, float u, float v) {
     return (byte)cor;
 }
 
-void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo, char paleta[256][3]) {
+void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo) {
     int minY = INT_MAX, maxY = INT_MIN;
 
     for (int i = 0; i < numVerts; i++) {

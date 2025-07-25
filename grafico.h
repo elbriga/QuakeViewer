@@ -17,7 +17,7 @@ void grafico_xis( int x, int y, byte r, byte g, byte b );
 
 void grafico_projecao3D(ponto_t *p);
 
-void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH, char paleta[256][3]);
-void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo, char paleta[256][3]);
+void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH);
+void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, texture_t *sky, float tempo);
 
 #endif
