@@ -282,7 +282,7 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa, char paleta[256][3])
 
 	printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
 
-	//mostraMapa2D(mapa, cam, vis);
+	mostraMapa2D(mapa, cam, vis);
 
 	// face = mapa->faces;
 	// for (int i=0; i < mapa->numfaces; i++, face++) {
