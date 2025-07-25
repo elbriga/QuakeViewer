@@ -18,15 +18,21 @@
 #include "render.h"
 #include "mapa.h"
 
+int janX = 800, janY = 600;
+
 char paleta[256][3];
-float oldTS = 0;
+
+camera_t cam;
+obj3d_t *chao, *obj, *obj2, *obj3;
+mapa_t *mapa;
+
+float tempo_de_jogo = 0.0f;
 
 // int _debug = 5352;
 int _debug = 0;
 int _lightON = 1;
 
-float tempo_de_jogo = 0.0f;
-
+float oldTS = 0;
 void msg(char *out) {
     struct timeval tv;
     struct tm *timeinfo;
@@ -76,116 +82,9 @@ void mostraTexturas(mapa_t *mapa)
     engine_get_key_block();
 }
 
-int main(int argc, char **argv)
+void testePoligono(mapa_t *mapa)
 {
-	int janX = 800, janY = 600, totAnims;
-	camera_t cam;
-
-	msg("Quake Viewer");
-
-	obj3d_t *chao = obj_plano(10, 10);
-
-	obj3d_t *obj = readMdl("data/models/hknight.mdl");
-	if (!obj) {
-		msg("Falha ao carregar ARQUIVO.mdl");
-		exit(2);
-	}
-
-	obj3d_t *obj2 = readMdl("data/models/mon_minotaur.mdl");
-	if (!obj2) {
-		msg("Falha ao carregar ARQUIVO2.mdl");
-		exit(2);
-	}
-
-	obj3d_t *obj3 = readMdl("data/models/enforcer.mdl");
-	if (!obj3) {
-		msg("Falha ao carregar ARQUIVO3.mdl");
-		exit(2);
-	}
-
-	// Use current time as
-	// seed for random generator
-	srand(time(0));
-
-	FILE *fpPal = fopen("data/paleta", "rb");
-	if(!fpPal) {
-		msg("Paleta nao encontrada!");
-		exit(99);
-	}
-	int pRead = fread(&paleta, 1, 768, fpPal);
-	fclose(fpPal);
-
-	int erro = grafico_init(janX, janY, "Quake Viewer");
-	if (erro) {
-		msg("Erro ao inicializar graficos");
-		exit(33);
-	}
-
-	mapa_t *mapa = readBsp("data/maps/e2m1.bsp");
-	if (!mapa) {
-		msg("Erro ao carregar mapa");
-		exit(34);
-	}
-	// printf("ENTs:\n%s\n", mapa->entities);
-	mostraTexturas(mapa);
-
-	int numAnimSel = 0;
-	int numAnimSelAuto = 2;
-	int numFrameSel = 0;
-	int numFrameSel2 = 0;
-	int numFrameSel3 = 0;
-	char out[256];
-
-	chao->posicao.y = 27;
-
-	obj->posicao.x = 544;
-	obj->posicao.y = -650;
-	obj->posicao.z = 42;
-	obj->rotacao.x = 270;
-
-	obj2->posicao.x  = 40;
-	obj2->posicao.y  = 0;
-	obj2->posicao.z  = 0;
-	obj2->rotacao.x = 0;
-
-	obj3->posicao.x  = -40;
-	obj3->posicao.y  = 0;
-	obj3->posicao.z  = 0;
-	obj3->rotacao.x = 0;
-
-	cam.pos.x = 0;
-	cam.pos.y = 0;
-	cam.pos.z = 0;
-	cam.ang.x = 0;
-	cam.ang.y = 0;
-	cam.ang.z = 0;
-
-	mapa_loadEntities(mapa);
-
-	FILE *camPosIn = fopen("cam.dat", "rb");
-	if (camPosIn) {
-		fread(&cam, 1, sizeof(camera_t), camPosIn);
-		fclose(camPosIn);
-	}
-
-	// obj->tipo = OBJ_TIPO_WIRE;
-
-	printf("Mapa BBox {\n%d,%d,%d\n%d,%d,%d\n}\n",
-			(int)mapa->bbMin.x,
-			(int)mapa->bbMin.y,
-			(int)mapa->bbMin.z,
-			(int)mapa->bbMax.x,
-			(int)mapa->bbMax.y,
-			(int)mapa->bbMax.z
-		);
-
-	printf("Init!\n");
-	// grafico_tecla_espera();
-	// printf("FOI!\n");
-
-	// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
-
-	// grafico_desenha_objeto(&cam, chao, 0, NULL);
+	msg("testePoligono");
 
 	ponto_t verticesPoligono[4] = {
 				{
@@ -249,8 +148,120 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+}
 
-	int cntRender = 0;
+int loadData()
+{
+	chao = obj = obj2 = obj3 = NULL;
+	mapa = NULL;
+
+	chao = obj_plano(10, 10);
+
+	obj = readMdl("data/models/hknight.mdl");
+	if (!obj) {
+		msg("Falha ao carregar ARQUIVO.mdl");
+		return 1;
+	}
+
+	obj2 = readMdl("data/models/mon_minotaur.mdl");
+	if (!obj2) {
+		msg("Falha ao carregar ARQUIVO2.mdl");
+		return 2;
+	}
+
+	obj3 = readMdl("data/models/enforcer.mdl");
+	if (!obj3) {
+		msg("Falha ao carregar ARQUIVO3.mdl");
+		return 3;
+	}
+
+	// Use current time as
+	// seed for random generator
+	srand(time(0));
+
+	FILE *fpPal = fopen("data/paleta", "rb");
+	if(!fpPal) {
+		msg("Paleta nao encontrada!");
+		return 99;
+	}
+	int pRead = fread(&paleta, 1, 768, fpPal);
+	fclose(fpPal);
+
+	mapa = readBsp("data/maps/e2m1.bsp");
+	if (!mapa) {
+		msg("Erro ao carregar mapa");
+		return 34;
+	}
+
+	mapa_loadEntities(mapa);
+
+	chao->posicao.y = 27;
+
+	obj->posicao.x = 544;
+	obj->posicao.y = -650;
+	obj->posicao.z = 42;
+	obj->rotacao.x = 270;
+
+	obj2->posicao.x  = 40;
+	obj2->posicao.y  = 0;
+	obj2->posicao.z  = 0;
+	obj2->rotacao.x = 0;
+
+	obj3->posicao.x  = -40;
+	obj3->posicao.y  = 0;
+	obj3->posicao.z  = 0;
+	obj3->rotacao.x = 0;
+
+	cam.pos.x = 0;
+	cam.pos.y = 0;
+	cam.pos.z = 0;
+	cam.ang.x = 0;
+	cam.ang.y = 0;
+	cam.ang.z = 0;
+
+	FILE *camPosIn = fopen("cam.dat", "rb");
+	if (camPosIn) {
+		fread(&cam, 1, sizeof(camera_t), camPosIn);
+		fclose(camPosIn);
+	}
+
+	return 0;
+}
+
+void saida(int err)
+{
+	grafico_desliga();
+
+	msg("Free Myke Tyson FREE");
+
+	freeMapa3D(mapa);
+
+	freeObj3D(obj3);
+	freeObj3D(obj2);
+	freeObj3D(obj);
+
+	freeObj3D(chao);
+
+	FILE *camPosOut = fopen("cam.dat", "wb");
+	if (camPosOut) {
+		fwrite(&cam, 1, sizeof(camera_t), camPosOut);
+		fclose(camPosOut);
+	}
+
+	exit(err);
+}
+
+int loopPrincipal()
+{
+	int numAnimSel     = 0;
+	int numAnimSelAuto = 2;
+
+	int numFrameSel  = 0;
+	int numFrameSel2 = 0;
+	int numFrameSel3 = 0;
+
+	int cntRender = 20;
+
 	while (1)
 	{
 		if (cntRender++ > 10) {
@@ -262,7 +273,7 @@ int main(int argc, char **argv)
 
 			render_desenha_mapa(&cam, mapa, paleta);
 
-			// grafico_desenha_objeto(&cam, chao, 0, NULL);
+			render_desenha_objeto(&cam, chao, 0, NULL);
 
 			render_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
@@ -379,23 +390,38 @@ int main(int argc, char **argv)
 		usleep(500);
 	}
 
-	msg("Free Myke Tyson FREE");
+	return 0;
+}
 
-	freeMapa3D(mapa);
+int main(int argc, char **argv)
+{
+	int err;
 
-	freeObj3D(obj3);
-	freeObj3D(obj2);
-	freeObj3D(obj);
+	msg("Quake Viewer");
 
-	freeObj3D(chao);
+	err = loadData();
+	if (err) {
+		msg("Erro ao carregar dados");
+		saida(err);
+	}
+	// printf("ENTs:\n%s\n", mapa->entities);
 
-	grafico_desliga();
-
-	FILE *camPosOut = fopen("cam.dat", "wb");
-	if (camPosOut) {
-		fwrite(&cam, 1, sizeof(camera_t), camPosOut);
-		fclose(camPosOut);
+	err = grafico_init(janX, janY, "Quake Viewer");
+	if (err) {
+		msg("Erro ao inicializar graficos");
+		saida(err);
 	}
 
-	return 0;
+	msg("Init!");
+	
+	mostraTexturas(mapa);
+	// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
+	// grafico_desenha_objeto(&cam, chao, 0, NULL);
+	testePoligono(mapa);
+
+	msg("Loop!");
+	err = loopPrincipal();
+
+	msg("Saida!");
+	saida(err);
 }

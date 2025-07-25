@@ -302,11 +302,7 @@ q_strlcpy (char *dst, const char *src, size_t siz)
 #define MAX_ATRS_ENTITIES 8
 
 /*
-=============
-mapa_getEntities
-
-Busca na string de entities uma chave e retorna seu valor
-=============
+Busca na string de entities as informações de player_start
 */
 int mapa_loadEntities (mapa_t *mapa)
 {
