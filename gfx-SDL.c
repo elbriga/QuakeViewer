@@ -139,7 +139,13 @@ char engine_get_key()
 			if (tecla == SDLK_ESCAPE) {
 				return 'q';  // ESC encerra o programa
 			} else if (tecla == SDLK_LEFT) {
-				printf("Seta esquerda pressionada\n");
+				return 81;
+			} else if (tecla == SDLK_RIGHT) {
+				return 83;
+			} else if (tecla == SDLK_UP) {
+				return 82;
+			} else if (tecla == SDLK_DOWN) {
+				return 84;
 			} else if (tecla == SDLK_a) {
 				printf("Tecla 'A' pressionada\n");
 			}
