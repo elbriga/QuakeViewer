@@ -56,6 +56,7 @@ void grafico_limpa_zbuffer()
 void grafico_mostra()
 {
 	gfx_flush();
+    gfx_clear();
 	grafico_limpa_zbuffer();
 }
 
