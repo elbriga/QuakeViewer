@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "3d.h"
+#include "obj3d.h"
 #include "grafico.h"
 #include "mapa.h"
 

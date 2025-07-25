@@ -5,6 +5,7 @@
 #define M_PI    3.14159265358979323846	/* pi */
 
 #include "3d.h"
+#include "obj3d.h"
 
 int  grafico_init( int altura, int largura, const char *titulo );
 void grafico_desliga();

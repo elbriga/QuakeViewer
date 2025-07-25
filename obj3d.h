@@ -3,6 +3,7 @@
 
 #include "QuakeViewer.h"
 #include "3d.h"
+#include "obj3d.h"
 
 typedef struct
 {
