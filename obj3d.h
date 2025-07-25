@@ -128,7 +128,10 @@ typedef struct
     int numtris;
     int numframes;
     int totAnims;
+
     int numFrameSel;
+    int numAnimSel;
+    int numAnimSelAuto;
 
     int   skinwidth;
     int   skinheight;
@@ -198,6 +201,10 @@ typedef struct
 
     ponto_t *verts;
 } mapa_t;
+
+void obj_inc_frame(obj3d_t *obj);
+void obj_inc_anim(obj3d_t *obj);
+void obj_dec_anim(obj3d_t *obj);
 
 void freeObj3D(obj3d_t *obj);
 void freeMapa3D(mapa_t *mapa);

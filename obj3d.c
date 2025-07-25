@@ -214,6 +214,40 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
     return ret;
 }
 
+void obj_inc_frame(obj3d_t *obj)
+{
+    obj->numFrameSel++;
+
+    int naSel = (obj->numAnimSel == -1) ? obj->numAnimSelAuto : obj->numAnimSel;
+    if (obj->numFrameSel >= obj->framesanims[naSel].frameF) {
+        if (obj->numAnimSel == -1) {
+            obj->numAnimSelAuto = rand() % obj->totAnims;
+            obj->numFrameSel = obj->framesanims[obj->numAnimSelAuto].frameI;
+        } else {
+            obj->numFrameSel = obj->framesanims[naSel].frameI;
+        }
+    }
+}
+
+void obj_dec_anim(obj3d_t *obj)
+{
+    obj->numAnimSel--;
+    if (obj->numAnimSel < -1)
+        obj->numAnimSel = -1;
+    
+    int naSel = (obj->numAnimSel == -1) ? obj->numAnimSelAuto : obj->numAnimSel;
+    obj->numFrameSel = obj->framesanims[naSel].frameI;
+}
+
+void obj_inc_anim(obj3d_t *obj)
+{
+    obj->numAnimSel++;
+    if (obj->numAnimSel >= obj->totAnims)
+        obj->numAnimSel = obj->totAnims - 1;
+
+    obj->numFrameSel = obj->framesanims[obj->numAnimSel].frameI;
+}
+
 void freeObj3D(obj3d_t *obj)
 {
     if (!obj) return;

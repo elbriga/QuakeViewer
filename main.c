@@ -304,17 +304,7 @@ int loopPrincipal()
 		// 	numFrameSel, framename, (int)obj3->posicao.y);
 		//  msg(out);
 
-			obj->numFrameSel++;
-
-			int naSel = (numAnimSel == -1) ? numAnimSelAuto : numAnimSel;
-			if (obj->numFrameSel >= obj->framesanims[naSel].frameF) {
-				if (numAnimSel == -1) {
-					numAnimSelAuto = rand() % obj->totAnims;
-					obj->numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
-				} else {
-					obj->numFrameSel = obj->framesanims[naSel].frameI;
-				}
-			}
+			obj_inc_frame(obj);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
@@ -347,17 +337,9 @@ int loopPrincipal()
 		else if (c == 'e') _lightON = 1 - _lightON;
 
 		else if (c == '\\') {
-			numAnimSel--;
-			if (numAnimSel < -1)
-				numAnimSel = -1;
-			
-			obj->numFrameSel = obj->framesanims[numAnimSel].frameI;
+			obj_dec_anim(obj);
 		} else if (c == 'z') {
-			numAnimSel++;
-			if (numAnimSel >= obj->totAnims)
-				numAnimSel = obj->totAnims - 1;
-
-			obj->numFrameSel = obj->framesanims[numAnimSel].frameI;
+			obj_inc_anim(obj);
 		} else if (c == 'y') {
 			cam.pos.z += 10;
 		} else if (c == 'h') {
