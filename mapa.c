@@ -411,7 +411,7 @@ int map_scaleY(int v, mapa_t *mapa)
 void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 {
 	int mostraComVIS = !!(vis);
-	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
+	vetor3d_t *b = mapa->base;
 	ponto_t   *v = mapa->verts;
 	edge_t    *e;
 	byte       red,green,blue;
@@ -486,9 +486,8 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 	float camAng = to_radians(cam->ang.y);
 	int camAX = camMX + sin(camAng) * camLenArrow;
 	int camAY = camMY - cos(camAng) * camLenArrow;
+	
 	grafico_xis( camMX, camMY, 255,100,100 );
 	grafico_xis( camAX, camAY, 100,200,100 );
 	gfx_line(camMX, camMY, camAX, camAY, 100,200,100);
-
-	grafico_xis( map_scaleX(player_start.x, mapa), map_scaleY(player_start.y, mapa), 255,200,200 );
 }
