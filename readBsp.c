@@ -545,7 +545,6 @@ mapa_t *readBsp(char *fileName)
     }
 
     strncpy(mapa->nome, fileName, 64);
-    mapa->tipo = OBJ_TIPO_MAPA;
     mapa->numTextureTrigger = -1;
 
     err = loadVertexes(mapa, &header->lumps[LUMP_VERTEXES], buffer);

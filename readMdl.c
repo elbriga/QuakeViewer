@@ -49,8 +49,6 @@ obj3d_t *readMdl(char *mdlfilename)
         return NULL;
     }
 
-    ret->tipo = OBJ_TIPO_TEXTURE;
-    
     strncpy(ret->nome, mdlfilename, 64);
     ret->numframes = header.numframes;
     ret->numverts  = header.numverts;
