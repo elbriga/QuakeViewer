@@ -115,10 +115,7 @@ int main(int argc, char **argv)
 	int pRead = fread(&paleta, 1, 768, fpPal);
 	fclose(fpPal);
 
-	char tituloJanela[128];
-	sprintf(tituloJanela, "Quake Viewer - %s", basename(argv[1]));
-
-	int erro = grafico_init(janX, janY, tituloJanela);
+	int erro = grafico_init(janX, janY, "Quake Viewer");
 	if (erro) {
 		msg("Erro ao inicializar graficos");
 		exit(33);
