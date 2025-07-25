@@ -21,8 +21,10 @@ typedef struct
 typedef struct
 {
     vetor3d_t	normal;
+    vetor3d_t	ponto;
 	float	    dist;
 	int		    type;
+    int         ON;     // backface culling
 } plano_t;
 
 typedef struct

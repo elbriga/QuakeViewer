@@ -67,7 +67,6 @@ typedef struct
     short       light_width, light_height;
     short       light_mins_s, light_mins_t;
 
-    vetor3d_t   normal;
     int         drawn;
 } face_t;
 

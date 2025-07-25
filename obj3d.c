@@ -123,21 +123,34 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         grafico_projecao3D(pnt);
     }
 
-    // Projetar as normais das faces
-    face_t *face = mapa->faces;
-    for (int f=0; f < mapa->numfaces; f++, face++) {
-        // Reset - Coordenadas de Objeto
-        face->normal.x = face->plano->normal.x - cam->pos.x;
-        face->normal.y = face->plano->normal.y - cam->pos.y;
-        face->normal.z = face->plano->normal.z - cam->pos.z;
+    // Projetar as normais dos planos e fazer backface culling
+    float dot;
+    vetor3d_t view_vector;
+    plano_t *plano = mapa->planes;
+    for (int p = 0; p < mapa->numplanes; p++, plano++) {
+        // vetor do ponto da câmera até o ponto do plano
+        view_vector.x = plano->ponto.x - cam->pos.x;
+        view_vector.y = plano->ponto.y - cam->pos.y;
+        view_vector.z = plano->ponto.z - cam->pos.z;
 
-        // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&face->normal, cam->ang.x);
-        rotacao2DEixoY(&face->normal, cam->ang.y);
-        rotacao2DEixoZ(&face->normal, cam->ang.z);
-
-        normalize(&face->normal);
+        // produto escalar no espaço do mundo
+        plano->ON = (dot_product(plano->normal, view_vector) < 0) ? 1 : 0;  // visível se a câmera vê a frente do plano
     }
+
+    // face_t *face = mapa->faces;
+    // for (int f=0; f < mapa->numfaces; f++, face++) {
+    //     // Reset - Coordenadas de Objeto
+    //     face->normal.x = face->plano->normal.x - cam->pos.x;
+    //     face->normal.y = face->plano->normal.y - cam->pos.y;
+    //     face->normal.z = face->plano->normal.z - cam->pos.z;
+
+    //     // Rotacao de Camera - coordenadas de camera
+    //     rotacao2DEixoX(&face->normal, cam->ang.x);
+    //     rotacao2DEixoY(&face->normal, cam->ang.y);
+    //     rotacao2DEixoZ(&face->normal, cam->ang.z);
+
+    //     normalize(&face->normal);
+    // }
 }
 
 obj3d_t *obj_plano(int sizeX, int sizeY)

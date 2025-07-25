@@ -180,12 +180,6 @@ int render_desenhaFace(face_t *face, mapa_t *mapa)
 		return 1;
 	}
 
-	// Backface culling
-	// printf("normY[%.3f,%.3f,%.3f]", face->normal.x, face->normal.y, face->normal.z);
-	if (face->normal.y < 0) {
-		return 3;
-	}
-
 	if (face->texinfo->miptex == mapa->numTextureTrigger)
 		return 2;
 
@@ -272,10 +266,13 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 		for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
 			face = *mark;
 
-			if (!face->drawn && (!_debug || _debug == face->id)) {
-				if (!render_desenhaFace(face, mapa)) {
-					facesRendered++;
-				}
+			if (!face->drawn && // ignore dups
+				((face->plano->ON && !face->side) || (!face->plano->ON && face->side)) && // backface culling
+				(!_debug || _debug == face->id)) { // debug
+
+					if (!render_desenhaFace(face, mapa)) {
+						facesRendered++;
+					}
 			}
 		}
 	}

@@ -140,10 +140,14 @@ int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
         plano->normal.y = in->normal[1];
         plano->normal.z = in->normal[2];
 
-        //rotacao2DEixoX(&plano->normal, 90);
+        normalize(&plano->normal);
 
         plano->dist = in->dist;
         plano->type = in->type;
+
+        plano->ponto.x = plano->normal.x * plano->dist;
+        plano->ponto.y = plano->normal.y * plano->dist;
+        plano->ponto.z = plano->normal.z * plano->dist;
     }
 
     return 0;
