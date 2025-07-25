@@ -4,9 +4,11 @@
 #include "QuakeViewer.h"
 
 int  gfx_open( int width, int height, const char *title );
-void gfx_point( int x, int y );
-void gfx_line( int x1, int y1, int x2, int y2 );
-void gfx_color( byte r, byte g, byte b );
+void gfx_close();
+
+void gfx_point( int x, int y, byte r, byte g, byte b );
+void gfx_line( int x1, int y1, int x2, int y2, byte r, byte g, byte b );
+
 void gfx_clear();
 void gfx_flush();
 
