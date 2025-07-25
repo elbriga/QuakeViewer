@@ -87,8 +87,8 @@ void gfx_point( int x, int y, byte r, byte g, byte b )
 
 void gfx_line( int x1, int y1, int x2, int y2, byte r, byte g, byte b )
 {
-	int dx = abs(x1 - x1);
-    int dy = abs(y1 - y1);
+	int dx = abs(x1 - x2);
+    int dy = abs(y1 - y2);
     int sx = (x1 < x2) ? 1 : -1;
     int sy = (y1 < y2) ? 1 : -1;
     int err = dx - dy;
