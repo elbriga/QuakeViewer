@@ -23,8 +23,6 @@ int grafico_init( int width, int height, const char *title )
 	grafico_altura  = height;
 	gfx_open(width, height, title);
 
-	gfx_color(200,200,200);
-
 	zBuffer = (float *)malloc(width * height * sizeof(float));
 	if (!zBuffer)
 		return 1;
@@ -35,6 +33,8 @@ int grafico_init( int width, int height, const char *title )
 
 void grafico_desliga()
 {
+    gfx_close();
+    
 	if (zBuffer)
 		free(zBuffer);
 }
@@ -59,13 +59,13 @@ void grafico_mostra()
 	grafico_limpa_zbuffer();
 }
 
-void grafico_xis( int x, int y )
+void grafico_xis( int x, int y, byte r, byte g, byte b )
 {
-	gfx_point(x,   y-1);
-	gfx_point(x-1, y);
-	gfx_point(x,   y);
-	gfx_point(x+1, y);
-	gfx_point(x,   y+1);
+	gfx_point(x,   y-1, r,g,b);
+	gfx_point(x-1, y,   r,g,b);
+	gfx_point(x,   y,   r,g,b);
+	gfx_point(x+1, y,   r,g,b);
+	gfx_point(x,   y+1, r,g,b);
 }
 
 void grafico_projecao3D(ponto_t *p)
@@ -131,8 +131,7 @@ if (_debug) {
 	for (int ly=0; ly < lightH; ly++) {
 		for (int lx=0; lx < lightW; lx++) {
 			byte intensidade = get_light_level(light, lx, ly, lightW, lightH);
-			gfx_color(intensidade,intensidade,intensidade);
-			gfx_point( lx, ly );
+			gfx_point( lx, ly, intensidade,intensidade,intensidade );
 		}
 	}
 }
@@ -292,8 +291,7 @@ if (_debug) {
 							b = (byte)paleta[cor][2];
 						}
 
-                        gfx_color(r, g, b);
-                        gfx_point(x, y);
+                        gfx_point(x, y, r, g, b);
                         zBuffer[zBufferBase + x] = z;
                     }
                 }
@@ -436,8 +434,7 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
                 // Sem alpha: apenas usa a cor do topo se for != 0, senão a do fundo
                 unsigned char final_cor = (cor_top != 0) ? cor_top : cor_base;
 
-                gfx_color(paleta[final_cor][0], paleta[final_cor][1], paleta[final_cor][2]);
-                gfx_point(x, y);
+                gfx_point(x, y, paleta[final_cor][0], paleta[final_cor][1], paleta[final_cor][2]);
             }
         }
     }

@@ -414,6 +414,7 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 	vetor3d_t *b = mapa->base,  player_start = { 544, -808, 72 };
 	ponto_t   *v = mapa->verts;
 	edge_t    *e;
+	byte       red,green,blue;
 
 	for (int i=0; i < mapa->numverts; i++, b++, v++) {
 		v->rot.x = b->x;
@@ -436,9 +437,13 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 		for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
 			if (!(vis[i >> 3] & (1 << (i & 7)))) {
 				// LEAF nao visivel
-				gfx_color(200,20,20);
+				red   = 200;
+				green = 20;
+				blue  = 20;
 			} else {
-				gfx_color(20,200,120);
+				red   = 20;
+				green = 200;
+				blue  = 120;
 			}
 
 			// Render LEAF
@@ -455,21 +460,20 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 					ponto_t *p1 = &mapa->verts[e->v[0]];
 					ponto_t *p2 = &mapa->verts[e->v[1]];
 
-					gfx_line( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+					gfx_line( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y, red,green,blue );
 				}
 			}
 		}
 	} else {
 		int i;
 
-		gfx_color(200,200,200);
 		for (i=0, e = mapa->edges; i < mapa->numedges; i++, e++) {
 			ponto_t *p1 = &mapa->verts[e->v[0]];
 			ponto_t *p2 = &mapa->verts[e->v[1]];
 
 			// if (i != 100) continue;
 
-			gfx_line( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y );
+			gfx_line( p1->screen.x,p1->screen.y, p2->screen.x,p2->screen.y, 200,200,200 );
 
 			// vetor3d_t *vxt = &mapa->base[e->v[0]];
 			// printf("LL%d,%d,%d > ", (int)vxt->x, (int)vxt->y, (int)vxt->z);
@@ -482,29 +486,9 @@ void mostraMapa2D(mapa_t *mapa, camera_t *cam, byte *vis)
 	float camAng = to_radians(cam->ang.y);
 	int camAX = camMX + sin(camAng) * camLenArrow;
 	int camAY = camMY - cos(camAng) * camLenArrow;
+	grafico_xis( camMX, camMY, 255,100,100 );
+	grafico_xis( camAX, camAY, 100,200,100 );
+	gfx_line(camMX, camMY, camAX, camAY, 100,200,100);
 
-	gfx_color(255,100,100);
-	grafico_xis( camMX, camMY );
-
-	gfx_color(100,200,100);
-	grafico_xis( camAX, camAY );
-	gfx_line(camMX, camMY, camAX, camAY);
-
-	// for (int i=0; i < mapa->numleafs; i++, l++) {
-	// 	int xi = map_scaleX(l->mins[0], mapa);
-	// 	int xf = map_scaleX(l->maxs[0], mapa);
-	// 	int yi = map_scaleY(l->mins[1], mapa);
-	// 	int yf = map_scaleY(l->maxs[1], mapa);
-
-	// 	grafico_linha( xi,yi, xf,yi );
-	// 	grafico_linha( xf,yi, xf,yf );
-	// 	grafico_linha( xf,yf, xi,yf );
-	// 	grafico_linha( xi,yf, xi,yi );
-	// }
-
-	gfx_color(255,200,200);
-	grafico_xis( map_scaleX(player_start.x, mapa), map_scaleY(player_start.y, mapa) );
-
-    // grafico_mostra();
-    // grafico_tecla_espera();
+	grafico_xis( map_scaleX(player_start.x, mapa), map_scaleY(player_start.y, mapa), 255,200,200 );
 }

@@ -78,24 +78,22 @@ int gfx_open( int width, int height, const char *title )
 	return 0;
 }
 
-/* Draw a single point at (x,y) */
-
-void gfx_point( int x, int y )
+void gfx_close()
 {
+}
+
+/* Draw a single point at (x,y) */
+void gfx_point( int x, int y, byte r, byte g, byte b )
+{
+	XSetForeground(gfx_display, back_buffer_gc, (b | (g << 8) | (r << 16)));
 	XDrawPoint(gfx_display, back_buffer, back_buffer_gc, x ,y);
 }
 
 /* Draw a line from (x1,y1) to (x2,y2) */
-
-void gfx_line( int x1, int y1, int x2, int y2 )
-{
-	XDrawLine(gfx_display, back_buffer, back_buffer_gc, x1, y1, x2, y2);
-}
-
-/* Change the current drawing color. */
-void gfx_color( byte r, byte g, byte b )
+void gfx_line( int x1, int y1, int x2, int y2, byte r, byte g, byte b )
 {
 	XSetForeground(gfx_display, back_buffer_gc, (b | (g << 8) | (r << 16)));
+	XDrawLine(gfx_display, back_buffer, back_buffer_gc, x1, y1, x2, y2);
 }
 
 /* Clear the graphics window to the background color. */

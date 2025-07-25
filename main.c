@@ -65,8 +65,7 @@ void mostraTexturas(mapa_t *mapa)
             for (int x=0; x < tex->width; x++) {
                 byte cor = pixels[x + yOfs];
 
-                gfx_color(paleta[cor][0], paleta[cor][1], paleta[cor][2]);
-                gfx_point(x+ofs, y+ofs);
+                gfx_point(x+ofs, y+ofs, paleta[cor][0], paleta[cor][1], paleta[cor][2]);
             }
         }
 
@@ -321,7 +320,7 @@ int main(int argc, char **argv)
 		}
 
 		char c = engine_get_key();
-		// printf("c = %d\n", c);
+		printf("c = %d\n", c);
 
 		// Quit if it is the letter q.
 		if (c == 'q')
