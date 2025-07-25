@@ -267,7 +267,7 @@ int main(int argc, char **argv)
 
 			// grafico_desenha_objeto(&cam, chao, 0, NULL);
 
-			// render_desenha_objeto(&cam, obj, numFrameSel, paleta);
+			render_desenha_objeto(&cam, obj, numFrameSel, paleta);
 /*
 		grafico_desenha_objeto(&cam, obj2, numFrameSel2, paleta);
 		numFrameSel2++;
