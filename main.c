@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 		}
 
 		char c = engine_get_key();
-		printf("c = %d\n", c);
+		// printf("c = %d\n", c);
 
 		// Quit if it is the letter q.
 		if (c == 'q')
