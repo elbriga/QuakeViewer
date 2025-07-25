@@ -5,3 +5,4 @@ data/maps
 QuakeViewer
 cam.dat
 QuakeViewerSDL
+QuakeViewerX11
