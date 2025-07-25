@@ -256,10 +256,6 @@ int loopPrincipal()
 	int numAnimSel     = 0;
 	int numAnimSelAuto = 2;
 
-	int numFrameSel  = 0;
-	int numFrameSel2 = 0;
-	int numFrameSel3 = 0;
-
 	int cntRender = 20;
 
 	while (1)
@@ -273,17 +269,17 @@ int loopPrincipal()
 
 			render_desenha_mapa(&cam, mapa);
 
-			render_desenha_objeto(&cam, chao, 0);
+			//render_desenha_objeto(&cam, chao);
 
-			render_desenha_objeto(&cam, obj, numFrameSel);
+			render_desenha_objeto(&cam, obj);
 /*
-		render_desenha_objeto(&cam, obj2, numFrameSel2);
-		numFrameSel2++;
+		render_desenha_objeto(&cam, obj2);
+		obj2->numFrameSel++;
 		if(numFrameSel2 >= obj2->numframes -1)
 			numFrameSel2 = 0;
 
-		render_desenha_objeto(&cam, obj3, numFrameSel3);
-		numFrameSel3++;
+		render_desenha_objeto(&cam, obj3);
+		obj3->numFrameSel++;
 		if(numFrameSel3 >= 8)
 			numFrameSel3 = 0;
 
@@ -308,15 +304,15 @@ int loopPrincipal()
 		// 	numFrameSel, framename, (int)obj3->posicao.y);
 		//  msg(out);
 
-			numFrameSel++;
+			obj->numFrameSel++;
 
 			int naSel = (numAnimSel == -1) ? numAnimSelAuto : numAnimSel;
-			if (numFrameSel >= obj->framesanims[naSel].frameF) {
+			if (obj->numFrameSel >= obj->framesanims[naSel].frameF) {
 				if (numAnimSel == -1) {
 					numAnimSelAuto = rand() % obj->totAnims;
-					numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
+					obj->numFrameSel = obj->framesanims[numAnimSelAuto].frameI;
 				} else {
-					numFrameSel = obj->framesanims[naSel].frameI;
+					obj->numFrameSel = obj->framesanims[naSel].frameI;
 				}
 			}
 
@@ -355,13 +351,13 @@ int loopPrincipal()
 			if (numAnimSel < -1)
 				numAnimSel = -1;
 			
-			numFrameSel = obj->framesanims[numAnimSel].frameI;
+			obj->numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'z') {
 			numAnimSel++;
 			if (numAnimSel >= obj->totAnims)
 				numAnimSel = obj->totAnims - 1;
 
-			numFrameSel = obj->framesanims[numAnimSel].frameI;
+			obj->numFrameSel = obj->framesanims[numAnimSel].frameI;
 		} else if (c == 'y') {
 			cam.pos.z += 10;
 		} else if (c == 'h') {
@@ -382,11 +378,6 @@ int loopPrincipal()
 			cam.ang.y = mapa->player_start_angle;
 		}
 
-		if (numFrameSel < 0)
-			numFrameSel = 0;
-		if (numFrameSel >= obj->numframes)
-			numFrameSel = obj->numframes - 1;
-		
 		usleep(500);
 	}
 

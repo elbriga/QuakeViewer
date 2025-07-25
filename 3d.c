@@ -99,9 +99,9 @@ void rotacao2DEixoZ(vetor3d_t *p, int angulo)
     p->y = sin(anguloRad) * valX + cos(anguloRad) * p->y;
 }
 
-void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
+void obj_projecao3D(camera_t *cam, obj3d_t *obj)
 {
-    int offset = numFrame * obj->numverts;
+    int offset = obj->numFrameSel * obj->numverts;
 
     for (int v=0; v<obj->numverts; v++) {
         vetor3d_t *base = &obj->frames[offset + v];
@@ -132,7 +132,7 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame)
     }
 
     // Projetar as normais das faces
-    offset = numFrame * obj->numtris;
+    offset = obj->numFrameSel * obj->numtris;
     for (int f=0; f < obj->numtris; f++) {
         vetor3d_t *base  = &obj->trisnormals[offset + f];
         triangulo_t *tri = &obj->tris[f];

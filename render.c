@@ -100,7 +100,7 @@ int render_clip_near_face(
     return out_count;
 }
 
-void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel)
+void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 {
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
@@ -108,7 +108,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj, int numFrameSel)
 
 	texture_t texture;
 
-	obj_projecao3D(cam, obj, numFrameSel);
+	obj_projecao3D(cam, obj);
 
 	texture.data   = obj->skin;
 	texture.width  = obj->skinwidth;

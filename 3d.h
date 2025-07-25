@@ -163,6 +163,7 @@ typedef struct
     int numtris;
     int numframes;
     int totAnims;
+    int numFrameSel;
 
     int   skinwidth;
     int   skinheight;
@@ -248,7 +249,7 @@ void normalize(vetor3d_t *normal);
 
 void obj_calculate_face_normals(obj3d_t *obj);
 
-void obj_projecao3D(camera_t *cam, obj3d_t *obj, int numFrame);
+void obj_projecao3D(camera_t *cam, obj3d_t *obj);
 
 void mapa_projecao3D(camera_t *cam, mapa_t *mapa);
 
