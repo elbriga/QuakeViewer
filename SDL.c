@@ -1,40 +1,42 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>  // malloc, free
 
-SDL_Window *janela;
-SDL_Renderer *renderer;
-SDL_Texture *framebuffer;
-int gfxLARGURA=0, gfxALTURA=0;
+// Framebuffer dinâmico
+uint32_t *framebuffer = NULL;
+int largura = 640;
+int altura  = 480;
 
-// Ponteiro global para os pixels da textura
-uint32_t *framebuffer_pixels = NULL;
-int framebuffer_pitch = 0;
-
-// Função para desenhar um pixel no framebuffer
+// Função para desenhar um pixel
 void put_pixel(int x, int y, uint32_t cor) {
-    if (x < 0 || x >= gfxLARGURA || y < 0 || y >= gfxALTURA) return;  // Clipping
-
-    framebuffer_pixels[y * (framebuffer_pitch / 4) + x] = cor;
+    if (x < 0 || x >= largura || y < 0 || y >= altura) return;
+    framebuffer[y * largura + x] = cor;
 }
 
-int gfx_open( int width, int height, const char *title )
-{
+// Função para limpar a tela
+void limpa_tela(uint32_t cor) {
+    for (int i = 0; i < largura * altura; i++) {
+        framebuffer[i] = cor;
+    }
+}
+
+int main(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Erro ao iniciar SDL: %s\n", SDL_GetError());
         return 1;
     }
 
-    janela = SDL_CreateWindow(title,
-                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              width, height, SDL_WINDOW_SHOWN);
+    SDL_Window *janela = SDL_CreateWindow("Framebuffer Variável",
+                                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                          largura, altura, SDL_WINDOW_SHOWN);
     if (!janela) {
         printf("Erro ao criar janela: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-    renderer = SDL_CreateRenderer(janela, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(janela, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         printf("Erro ao criar renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(janela);
@@ -42,11 +44,11 @@ int gfx_open( int width, int height, const char *title )
         return 1;
     }
 
-    framebuffer = SDL_CreateTexture(renderer,
-                                    SDL_PIXELFORMAT_ARGB8888,
-                                    SDL_TEXTUREACCESS_STREAMING,
-                                    width, height);
-    if (!framebuffer) {
+    SDL_Texture *texture = SDL_CreateTexture(renderer,
+                                             SDL_PIXELFORMAT_ARGB8888,
+                                             SDL_TEXTUREACCESS_STREAMING,
+                                             largura, altura);
+    if (!texture) {
         printf("Erro ao criar textura: %s\n", SDL_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(janela);
@@ -54,37 +56,17 @@ int gfx_open( int width, int height, const char *title )
         return 1;
     }
 
-    gfxLARGURA = width;
-    gfxALTURA  = height;
-
-    return 0;
-}
-
-int main(int argc, char*argv[])
-{
-    if( gfx_open( 800, 600, "Teste SDL" ) ) {
+    // Aloca framebuffer na RAM
+    framebuffer = malloc(sizeof(uint32_t) * largura * altura);
+    if (!framebuffer) {
+        printf("Erro ao alocar framebuffer\n");
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(janela);
         SDL_Quit();
         return 1;
     }
 
-    // Lock da textura
-    void *pixels;
-    if (SDL_LockTexture(framebuffer, NULL, &pixels, &framebuffer_pitch) < 0) {
-        printf("Erro ao fazer lock na textura: %s\n", SDL_GetError());
-    } else {
-        framebuffer_pixels = (uint32_t *)pixels;
-
-        // Exemplo: desenha um quadrado de pixels vermelhos
-        for (int y = 100; y < 110; y++) {
-            for (int x = 100; x < 110; x++) {
-                put_pixel(x, y, 0xFFFF0000);  // Vermelho
-            }
-        }
-
-        SDL_UnlockTexture(framebuffer);
-    }
-
-    // Loop principal
     int rodando = 1;
     SDL_Event evento;
 
@@ -95,16 +77,32 @@ int main(int argc, char*argv[])
             }
         }
 
+        // Limpa e desenha
+        limpa_tela(0xFF000000); // preto
+
+        // Exemplo: quadrado laranja
+        for (int y = 100; y < 120; y++) {
+            for (int x = 100; x < 120; x++) {
+                put_pixel(x, y, 0xFFFF9900);
+            }
+        }
+
+        // Atualiza textura com o conteúdo do framebuffer
+        SDL_UpdateTexture(texture, NULL, framebuffer, largura * sizeof(uint32_t));
+
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, framebuffer, NULL, NULL);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);
     }
 
-    SDL_DestroyTexture(framebuffer);
+    // Libera tudo
+    free(framebuffer);
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(janela);
     SDL_Quit();
+
     return 0;
 }
