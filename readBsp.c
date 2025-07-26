@@ -461,6 +461,8 @@ int loadLeafs (mapa_t *mapa, lump_t *l, byte *buffer)
 
     out = mapa->leafs;
     for (int i=0; i < mapa->numleafs; i++, in++, out++) {
+        out->key = i - 1;
+
         out->contents = in->contents;
         out->visofs   = in->visofs;
 

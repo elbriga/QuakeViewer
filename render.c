@@ -12,6 +12,8 @@
 #define NEAR_Z 0.1f
 #define FAR_CLIP 500.0
 
+int facesRendered;
+
 extern int _debug;
 extern int _lightON;
 
@@ -238,31 +240,19 @@ printf("\nFace{lW:%d-lH:%d}{minsS:%d-minsT:%d}[S:%.1f,%.1f,%.1f+%.1f--T:%.1f,%.1
 	return 0;
 }
 
-void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
+void render_desenha_node(node_t *node, mapa_t *mapa, camera_t *cam, char *vis)
 {
-	int		 i, j, facesRendered = 0;
-	leaf_t	*leafCAM, *leaf;
-	face_t	*face, **mark;
-	byte	*vis;
+    if (node->contents < 0) {
+		// É umm leaf
+        leaf_t *leaf = (leaf_t *)node;
 
-	mapa_projecao3D(cam, mapa);
+        // Verifica se o leaf está visível
+        if (!(vis[leaf->key >> 3] & (1 << (leaf->key & 7))))
+			return;
 
-	leafCAM = mapa_discoverLeaf(&cam->pos, mapa);
-	printf("L:%d ", leafCAM->visofs);
-
-	vis = mapa_leafVIS(leafCAM, mapa);
-
-	for (i=0, face = mapa->faces; i < mapa->numfaces; i++, face++)
-		face->drawn = 0;
-
-	leaf = &mapa->leafs[1];
-	for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
-		if (!(vis[i >> 3] & (1 << (i & 7)))) {
-			// LEAF nao visivel
-			continue;
-		}
-
-		// Render LEAF
+        // Render LEAF
+		int		j;
+		face_t	*face, **mark;
 		for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
 			face = *mark;
 
@@ -275,8 +265,74 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 					}
 			}
 		}
-	}
+        return;
+    }
 
+    // Nó interno
+    plano_t *plano = node->plane;
+
+    // Distância da câmera ao plano do nó
+    float dist = plano->normal.x * cam->pos.x +
+                 plano->normal.y * cam->pos.y +
+                 plano->normal.z * cam->pos.z - plano->dist;
+
+    int frente = (dist >= 0) ? 0 : 1;
+    int tras = 1 - frente;
+
+    // Primeiro desenha o lado mais distante (painters algo)
+    render_desenha_node(node->children[tras], mapa, cam, vis);
+
+    // Depois desenha o lado mais próximo
+    render_desenha_node(node->children[frente], mapa, cam, vis);
+}
+
+void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
+{
+	int		 i;
+	leaf_t	*leafCAM;
+	face_t	*face;
+	byte	*vis;
+
+	mapa_projecao3D(cam, mapa);
+
+	leafCAM = mapa_discoverLeaf(&cam->pos, mapa);
+	printf("L:%d ", leafCAM->visofs);
+
+	vis = mapa_leafVIS(leafCAM, mapa);
+
+	for (i=0, face = mapa->faces; i < mapa->numfaces; i++, face++)
+		face->drawn = 0;
+	
+	facesRendered = 0;
+
+	// Iniciar a recursao pela arvore BSP
+	render_desenha_node(mapa->nodes, mapa, cam, vis);
+
+		// int j;
+		// face_t **mark;
+		// leaf_t *leaf = &mapa->leafs[1];
+
+		// for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
+		// 	if (!(vis[i >> 3] & (1 << (i & 7)))) {
+		// 		// LEAF nao visivel
+		// 		continue;
+		// 	}
+
+		// 	// Render LEAF
+		// 	for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
+		// 		face = *mark;
+
+		// 		if (!face->drawn && // ignore dups
+		// 			((face->plano->ON && !face->side) || (!face->plano->ON && face->side)) && // backface culling
+		// 			(!_debug || _debug == face->id)) { // debug
+
+		// 				if (!render_desenhaFace(face, mapa)) {
+		// 					facesRendered++;
+		// 				}
+		// 		}
+		// 	}
+		// }
+	
 	printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
 
 	mostraMapa2D(mapa, cam, vis);
