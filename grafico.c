@@ -15,6 +15,7 @@
 extern char paleta[256][3];
 
 extern int _debug;
+extern float tempo_de_jogo;
 
 float *zBuffer = NULL;
 int grafico_altura, grafico_largura, FOV = 500;
@@ -260,6 +261,29 @@ if (_debug) {
 
                 float u = (u_over_z / one_over_z) * tex->width;
                 float v = (v_over_z / one_over_z) * tex->height;
+
+                // Efeito swirl para texturas de água (nome começa com '*')
+                if (tex->name && tex->name[0] == '*') {
+                    float cx = tex->width  / 2.0f;
+                    float cy = tex->height / 2.0f;
+
+                    float dx = u - cx;
+                    float dy = v - cy;
+                    float dist = sqrtf(dx * dx + dy * dy);
+
+                    float swirl_strength = 0.005f; // força do swirl (ajustável)
+                    float swirl_speed = 1.0f;     // velocidade da animação
+                    float angle = dist * swirl_strength + tempo_de_jogo * swirl_speed;
+
+                    float sin_a = sinf(angle);
+                    float cos_a = cosf(angle);
+
+                    float new_dx = dx * cos_a - dy * sin_a;
+                    float new_dy = dx * sin_a + dy * cos_a;
+
+                    u = cx + new_dx;
+                    v = cy + new_dy;
+                }
 
                 int tex_u = ((int)u % tex->width + tex->width) % tex->width;
                 int tex_v = ((int)v % tex->height + tex->height) % tex->height;
