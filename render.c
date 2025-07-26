@@ -17,7 +17,7 @@ int facesRendered;
 
 extern int _debug;
 extern int _lightON;
-extern int _showRendering;
+extern int _showRendering, _showMap2D;
 
 extern float tempo_de_jogo;
 
@@ -107,7 +107,7 @@ int render_clip_near_face(
 void render_desenha_instance(camera_t *cam, instance_t *inst)
 {
 	obj3d_t *obj = inst->obj;
-	
+
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
@@ -349,7 +349,7 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 
 	printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
 
-	if (!_showRendering)
+	if (!_showRendering && _showMap2D)
 		mostraMapa2D(mapa, cam, vis);
 
 	// face = mapa->faces;

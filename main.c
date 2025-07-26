@@ -31,6 +31,7 @@ float tempo_de_jogo = 0.0f;
 int _debug = 0;
 int _lightON = 1;
 int _showRendering = 0;
+int _showMap2D = 1;
 
 extern int FOV;
 
@@ -270,6 +271,7 @@ int loopPrincipal()
 		else if (c == 'e') _lightON = 1 - _lightON;
 
 		else if (c == '2') _showRendering = 1 - _showRendering;
+		else if (c == '3') _showMap2D     = 1 - _showMap2D;
 
 		else if (c == '\\') {
 			instance_dec_anim(0);
@@ -289,6 +291,10 @@ int loopPrincipal()
 			cam.pos.z = mapa->player_start.z;
 
 			cam.ang.y = mapa->player_start_angle;
+		} else if (c == 'n') {
+			vetor3d_t pos = cam.pos;
+			vetor3d_t ang = { 270, 0, 90 };
+			instance_create("data/models/hknight.mdl", pos, ang);
 		}
 
 		if (FOV < 100) FOV = 100;
@@ -331,6 +337,7 @@ vetor3d_t ang = { 270,    0, 90 };
 instance_create("data/models/hknight.mdl", pos, ang);
 
 pos.y += 100;
+ang.z  = 270;
 instance_create("data/models/hknight.mdl", pos, ang);
 
 	msg("Loop!");
