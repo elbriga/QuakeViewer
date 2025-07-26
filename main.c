@@ -18,7 +18,7 @@
 #include "render.h"
 #include "mapa.h"
 
-int janX = 800, janY = 600;
+int janX = 1600, janY = 800;
 
 char paleta[256][3];
 
@@ -31,6 +31,7 @@ float tempo_de_jogo = 0.0f;
 // int _debug = 5352;
 int _debug = 0;
 int _lightON = 1;
+extern int FOV;
 
 float oldTS = 0;
 void msg(char *out) {
@@ -310,7 +311,7 @@ int loopPrincipal()
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
 				(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
 
-			printf("[dbg:%d] >>>\n", _debug);
+			printf("[dbg:%d][FOV:%d] >>>\n", _debug, FOV);
 		}
 
 		char c = engine_get_key();
@@ -333,6 +334,9 @@ int loopPrincipal()
 
 		else if (c == 'o') _debug++;
 		else if (c == 'l') _debug--;
+
+		else if (c == '0') FOV += 5;
+		else if (c == '9') FOV -= 5;
 
 		else if (c == 'e') _lightON = 1 - _lightON;
 
@@ -359,6 +363,9 @@ int loopPrincipal()
 
 			cam.ang.y = mapa->player_start_angle;
 		}
+
+		if (FOV < 100) FOV = 100;
+		if (FOV > 800) FOV = 800;
 
 		usleep(500);
 	}

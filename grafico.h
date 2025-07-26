@@ -1,7 +1,6 @@
 #ifndef GRAFICO_H
 #define GRAFICO_H
 
-#define FOV     200
 #define M_PI    3.14159265358979323846	/* pi */
 
 #include "3d.h"

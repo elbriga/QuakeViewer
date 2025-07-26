@@ -17,7 +17,7 @@ extern char paleta[256][3];
 extern int _debug;
 
 float *zBuffer = NULL;
-int grafico_altura, grafico_largura;
+int grafico_altura, grafico_largura, FOV = 500;
 
 int grafico_init( int width, int height, const char *title )
 {
