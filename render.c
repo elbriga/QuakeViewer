@@ -110,8 +110,12 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
 
-	texture_t texture;
-	vetor3d_t viewDir;
+	texture_t	texture;
+	vetor3d_t	viewDir;
+	triangulo_t	*tri;
+	skinvert_t	*svxt1, *svxt2, *svxt3;
+
+	int i, j, clipped_count;
 
 	obj_projecao3D(cam, obj);
 
@@ -119,8 +123,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	texture.width  = obj->skinwidth;
 	texture.height = obj->skinheight;
 
-	triangulo_t *tri = obj->tris;
-	for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++, tri++) {
+	for (i=0, tri = obj->tris; i<obj->numtris; i++, tri++) {
 		// Backface culling
 		// if (tri->normal.z < 0) {
 		// 	// continue;
@@ -142,38 +145,30 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 			continue; // Culling: está de costas
 		}
 
-		skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
-		skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
-		skinvert_t *svxt3 = &obj->skinmap[tri->v[2]];
+		svxt1 = &obj->skinmap[tri->v[0]];
+		svxt2 = &obj->skinmap[tri->v[1]];
+		svxt3 = &obj->skinmap[tri->v[2]];
 
-		float skinX1 = (float)svxt1->s / obj->skinwidth;
-		float skinY1 = (float)svxt1->t / obj->skinheight;
-		float skinX2 = (float)svxt2->s / obj->skinwidth;
-		float skinY2 = (float)svxt2->t / obj->skinheight;
-		float skinX3 = (float)svxt3->s / obj->skinwidth;
-		float skinY3 = (float)svxt3->t / obj->skinheight;
-
+		verts[0]->tex.x = svxt1->s;
+		verts[0]->tex.y = svxt1->t;
+		verts[1]->tex.x = svxt2->s;
+		verts[1]->tex.y = svxt2->t;
+		verts[2]->tex.x = svxt3->s;
+		verts[2]->tex.y = svxt3->t;
 		if (!tri->isFront) {
-			if (svxt1->onseam) skinX1 += 0.5;
-			if (svxt2->onseam) skinX2 += 0.5;
-			if (svxt3->onseam) skinX3 += 0.5;
+			if (svxt1->onseam) verts[0]->tex.x += 0.5;
+			if (svxt2->onseam) verts[1]->tex.x += 0.5;
+			if (svxt3->onseam) verts[2]->tex.x += 0.5;
 		}
 
-		verts[0]->tex.x = skinX1;
-		verts[0]->tex.y = skinY1;
-		verts[1]->tex.x = skinX2;
-		verts[1]->tex.y = skinY2;
-		verts[2]->tex.x = skinX3;
-		verts[2]->tex.y = skinY3;
-
 		// Faz o clipping contra o plano NEAR
-		int clipped_count = render_clip_near_face(verts, 3, clipped);
+		clipped_count = render_clip_near_face(verts, 3, clipped);
 		if (clipped_count < 3) return;
 
 		// Projeta os vértices válidos
-		for (int v = 0; v < clipped_count; v++) {
-			grafico_projecao3D(&clipped[v]);
-			clipped_ptrs[v] = &clipped[v];
+		for (j=0; j < clipped_count; j++) {
+			grafico_projecao3D(&clipped[j]);
+			clipped_ptrs[j] = &clipped[j];
 		}
 
 		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, NULL,0,0);

@@ -12,8 +12,8 @@ typedef struct
 
 typedef struct {
 	int		onseam;
-	int		s;
-	int		t;
+	float	s;
+	float	t;
 } skinvert_t;
 
 typedef struct

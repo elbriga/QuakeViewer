@@ -98,8 +98,8 @@ obj3d_t *readMdl(char *mdlfilename)
         fread(&vert, 1, sizeof(stvert_t), fp);
 
         ret->skinmap[cnt_vert].onseam = vert.onseam;
-        ret->skinmap[cnt_vert].s      = vert.s;
-        ret->skinmap[cnt_vert].t      = vert.t;
+        ret->skinmap[cnt_vert].s      = (float)vert.s / ret->skinwidth;
+        ret->skinmap[cnt_vert].t      = (float)vert.t / ret->skinheight;
 
 //        printf("Vert[%d]: on:%d T:%d S:%d\n", cnt_vert, vert.onseam, vert.t, vert.s);
     }
