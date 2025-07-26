@@ -9,12 +9,13 @@
 
 void obj_projecao3D(camera_t *cam, obj3d_t *obj)
 {
-    int offset = obj->numFrameSel * obj->numverts;
+    int         i;
+    vetor3d_t   *base;
+    ponto_t     *pnt;
+    vetor3d_t   *triBase;
+    triangulo_t *tri;
 
-    for (int v=0; v<obj->numverts; v++) {
-        vetor3d_t *base = &obj->frames[offset + v];
-        ponto_t     *pnt  = &obj->verts[v];
-
+    for (i=0, base=&obj->frames[obj->numFrameSel*obj->numverts], pnt=obj->verts; i<obj->numverts; i++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
         pnt->rot.x = base->x;
         pnt->rot.y = base->y;
@@ -40,15 +41,11 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj)
     }
 
     // Projetar as normais das faces
-    offset = obj->numFrameSel * obj->numtris;
-    for (int f=0; f < obj->numtris; f++) {
-        vetor3d_t *base  = &obj->trisnormals[offset + f];
-        triangulo_t *tri = &obj->tris[f];
-
+    for (i=0, triBase=&obj->trisnormals[obj->numFrameSel*obj->numtris], tri=obj->tris; i<obj->numtris; i++, triBase++, tri++) {
         // Reset - Coordenadas de Objeto
-        tri->normal.x = base->x;
-        tri->normal.y = base->y;
-        tri->normal.z = base->z;
+        tri->normal.x = triBase->x;
+        tri->normal.y = triBase->y;
+        tri->normal.z = triBase->z;
 
         // Rotacao do objeto - coordenadas de objeto
         rotacao2DEixoX(&tri->normal, obj->rotacao.x);
