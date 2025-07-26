@@ -111,6 +111,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
 
 	texture_t texture;
+	vetor3d_t viewDir;
 
 	obj_projecao3D(cam, obj);
 
@@ -121,13 +122,25 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	triangulo_t *tri = obj->tris;
 	for (int cnt_tri=0; cnt_tri<obj->numtris; cnt_tri++, tri++) {
 		// Backface culling
-		if (tri->normal.z < 0) {
-			continue;
-		}
+		// if (tri->normal.z < 0) {
+		// 	// continue;
+		// }
 
+		// Pega os vértices do triângulo
 		verts[0] = &obj->verts[tri->v[0]];
 		verts[1] = &obj->verts[tri->v[1]];
 		verts[2] = &obj->verts[tri->v[2]];
+
+		// Calcula o centro da face (em espaço da câmera)
+		viewDir.x = (verts[0]->rot.x + verts[1]->rot.x + verts[2]->rot.x) / 3.0f;
+		viewDir.y = (verts[0]->rot.y + verts[1]->rot.y + verts[2]->rot.y) / 3.0f;
+		viewDir.z = (verts[0]->rot.z + verts[1]->rot.z + verts[2]->rot.z) / 3.0f;
+		normalize(&viewDir); // opcional, mas bom para estabilidade
+
+		// Dot product entre normal da face e viewDir
+		if (dot_product(tri->normal, viewDir) >= 0) {
+			continue; // Culling: está de costas
+		}
 
 		skinvert_t *svxt1 = &obj->skinmap[tri->v[0]];
 		skinvert_t *svxt2 = &obj->skinmap[tri->v[1]];
