@@ -119,6 +119,7 @@ byte get_light_level(char *light, int light_u, int light_v, int lightW, int ligh
 void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH)
 {
     int minY = INT_MAX, maxY = INT_MIN, lightON = !!(light);
+    char ehLiquido = (tex->name && tex->name[0] == '*');
 
     for (int i = 0; i < numVerts; i++) {
 if (_debug) {
@@ -263,7 +264,7 @@ if (_debug) {
                 float v = (v_over_z / one_over_z) * tex->height;
 
                 // Efeito swirl para texturas de água (nome começa com '*')
-                if (tex->name && tex->name[0] == '*') {
+                if (ehLiquido) {
                     float cx = tex->width  / 2.0f;
                     float cy = tex->height / 2.0f;
 
