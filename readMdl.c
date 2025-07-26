@@ -54,12 +54,12 @@ obj3d_t *readMdl(char *mdlfilename)
     ret->numverts  = header.numverts;
     ret->numtris   = header.numtris;
 
-    ret->skinwidth  = header.skinwidth;
-    ret->skinheight = header.skinheight;
+    ret->texture.width  = header.skinwidth;
+    ret->texture.height = header.skinheight;
 
     // CARREGAR SKINS ==========================================
 
-    ret->skin = (char *)&ret[1];
+    ret->texture.data = (char *)&ret[1];
 
     printf("Carregando %d Skins [%d x %d\n", header.numskins, header.skinwidth, header.skinheight);
     aliasskintype_t tipoSkin;
@@ -78,7 +78,7 @@ obj3d_t *readMdl(char *mdlfilename)
                 }
             }*/
 
-            fread(ret->skin, 1, header.skinwidth * header.skinheight, fp);
+            fread(ret->texture.data, 1, header.skinwidth * header.skinheight, fp);
         } else {
             printf("SKIN MULTIPLA!\n\n");
             fclose(fp);
@@ -90,7 +90,7 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR VERTS ==========================================
     printf("Carregando %d Verts\n", header.numverts);
 
-    ret->skinmap = (skinvert_t *)&ret->skin[(ret->skinwidth * ret->skinheight)];
+    ret->skinmap = (skinvert_t *)&ret->texture.data[(ret->texture.width * ret->texture.height)];
 
     stvert_t vert;
     for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
@@ -98,8 +98,8 @@ obj3d_t *readMdl(char *mdlfilename)
         fread(&vert, 1, sizeof(stvert_t), fp);
 
         ret->skinmap[cnt_vert].onseam = vert.onseam;
-        ret->skinmap[cnt_vert].s      = (float)vert.s / ret->skinwidth;
-        ret->skinmap[cnt_vert].t      = (float)vert.t / ret->skinheight;
+        ret->skinmap[cnt_vert].s      = (float)vert.s / ret->texture.width;
+        ret->skinmap[cnt_vert].t      = (float)vert.t / ret->texture.height;
 
 //        printf("Vert[%d]: on:%d T:%d S:%d\n", cnt_vert, vert.onseam, vert.t, vert.s);
     }

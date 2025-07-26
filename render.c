@@ -110,7 +110,6 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
 
-	texture_t	texture;
 	vetor3d_t	viewDir;
 	triangulo_t	*tri;
 	skinvert_t	*svxt1, *svxt2, *svxt3;
@@ -118,10 +117,6 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	int i, j, clipped_count;
 
 	obj_projecao3D(cam, obj);
-
-	texture.data   = obj->skin;
-	texture.width  = obj->skinwidth;
-	texture.height = obj->skinheight;
 
 	for (i=0, tri = obj->tris; i<obj->numtris; i++, tri++) {
 		// Backface culling
@@ -171,7 +166,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 			clipped_ptrs[j] = &clipped[j];
 		}
 
-		grafico_desenha_poligono(clipped_ptrs, clipped_count, &texture, NULL,0,0);
+		grafico_desenha_poligono(clipped_ptrs, clipped_count, &obj->texture, NULL,0,0);
 	}
 }
 

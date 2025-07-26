@@ -132,10 +132,8 @@ typedef struct
     int numAnimSel;
     int numAnimSelAuto;
 
-    int   skinwidth;
-    int   skinheight;
-
-    char       *skin;
+    texture_t texture;
+    
     skinvert_t *skinmap;
 
     char        *framenames;
