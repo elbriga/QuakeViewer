@@ -55,16 +55,12 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj)
         rotacao2DEixoY(&tri->normal, obj->rotacao.y);
         rotacao2DEixoZ(&tri->normal, obj->rotacao.z);
 
-        // Coordenadas de Mundo - posicao do objeto e posicao da camera
-        tri->normal.x += obj->posicao.x - cam->pos.x;
-        tri->normal.y += obj->posicao.y - cam->pos.y;
-        tri->normal.z += obj->posicao.z - cam->pos.z;
-
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&tri->normal, cam->ang.x);
         rotacao2DEixoY(&tri->normal, cam->ang.y);
         rotacao2DEixoZ(&tri->normal, cam->ang.z);
 
+        // Normalização (opcional, mas recomendado)
         normalize(&tri->normal);
     }
 }
