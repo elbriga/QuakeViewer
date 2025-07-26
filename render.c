@@ -279,11 +279,12 @@ void render_desenha_node(node_t *node, mapa_t *mapa, camera_t *cam, char *vis)
     int frente = (dist >= 0) ? 0 : 1;
     int tras = 1 - frente;
 
-    // Primeiro desenha o lado mais distante (painters algo)
-    render_desenha_node(node->children[tras], mapa, cam, vis);
-
+	// travessia da arvore BSP INVERTIDA! Para usar o zBuffer e evitar pixels
     // Depois desenha o lado mais próximo
     render_desenha_node(node->children[frente], mapa, cam, vis);
+
+    // Primeiro desenha o lado mais distante (painters algo)
+    render_desenha_node(node->children[tras], mapa, cam, vis);
 }
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
