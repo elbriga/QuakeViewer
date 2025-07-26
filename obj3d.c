@@ -6,8 +6,59 @@
 #include "3d.h"
 #include "grafico.h"
 #include "mapa.h"
+#include "readMdl.h"
+#include "render.h"
 
-void obj_projecao3D(camera_t *cam, obj3d_t *obj)
+#define MAX_OBJS        32
+#define MAX_INSTANCES   256
+
+obj3d_t *objBase[MAX_OBJS];
+static int totObjs = 0;
+
+instance_t instances[MAX_INSTANCES];
+static int totInstances = 0;
+
+obj3d_t *obj_get_base(char *modelName)
+{
+    // Verificar se ja esta carregado
+    for(int i=0; i<totObjs; i++)
+        if (!strcmp(modelName, objBase[i]->nome))
+            return objBase[i];
+        
+    // Carregar novo obj base
+    int idNovo = totObjs++;
+    objBase[idNovo] = readMdl(modelName);
+
+    return objBase[idNovo];
+}
+
+void instance_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
+{
+    int idNova = totInstances++;
+
+    memset(&instances[idNova], 0, sizeof(instance_t));
+
+    instances[idNova].obj = obj_get_base(modelName);
+    instances[idNova].posicao = pos;
+    instances[idNova].rotacao = ang;
+}
+
+void instances_render(camera_t *cam)
+{
+    int i;
+
+    for (i=0; i < totInstances; i++) {
+        render_desenha_instance(cam, &instances[i]);
+    }
+}
+
+void instances_destroy()
+{
+    for(int i=0; i<totObjs; i++)
+        freeObj3D(objBase[i]);
+}
+
+void instance_projecao3D(camera_t *cam, instance_t *inst)
 {
     int         i;
     vetor3d_t   *base;
@@ -15,42 +66,44 @@ void obj_projecao3D(camera_t *cam, obj3d_t *obj)
     vetor3d_t   *triBase;
     triangulo_t *tri;
 
-    for (i=0, base=&obj->frames[obj->numFrameSel*obj->numverts], pnt=obj->verts; i<obj->numverts; i++, base++, pnt++) {
+    obj3d_t *obj = inst->obj;
+
+    for (i=0, base=&obj->frames[inst->numFrameSel*obj->numverts], pnt=obj->verts; i<obj->numverts; i++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
         pnt->rot.x = base->x;
         pnt->rot.y = base->y;
         pnt->rot.z = base->z;
 
         // Rotacao do objeto - coordenadas de objeto
-        rotacao2DEixoX(&pnt->rot, obj->rotacao.x);
-        rotacao2DEixoY(&pnt->rot, obj->rotacao.y);
-        rotacao2DEixoZ(&pnt->rot, obj->rotacao.z);
+        rotacao2DEixoX(&pnt->rot, inst->rotacao.x);
+        rotacao2DEixoY(&pnt->rot, inst->rotacao.y);
+        rotacao2DEixoZ(&pnt->rot, inst->rotacao.z);
 
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
-        pnt->rot.x += obj->posicao.x - cam->pos.x;
-        pnt->rot.y += obj->posicao.y - cam->pos.y;
-        pnt->rot.z += obj->posicao.z - cam->pos.z;
+        pnt->rot.x += inst->posicao.x - cam->pos.x;
+        pnt->rot.y += inst->posicao.y - cam->pos.y;
+        pnt->rot.z += inst->posicao.z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&pnt->rot, cam->ang.x);
         rotacao2DEixoY(&pnt->rot, cam->ang.y);
         rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
-        // Projecao para 2D
-        grafico_projecao3D(pnt);
+        // Projecao para 2D - so depois do clipping
+        //grafico_projecao3D(pnt);
     }
 
     // Projetar as normais das faces
-    for (i=0, triBase=&obj->trisnormals[obj->numFrameSel*obj->numtris], tri=obj->tris; i<obj->numtris; i++, triBase++, tri++) {
+    for (i=0, triBase=&obj->trisnormals[inst->numFrameSel*obj->numtris], tri=obj->tris; i<obj->numtris; i++, triBase++, tri++) {
         // Reset - Coordenadas de Objeto
         tri->normal.x = triBase->x;
         tri->normal.y = triBase->y;
         tri->normal.z = triBase->z;
 
         // Rotacao do objeto - coordenadas de objeto
-        rotacao2DEixoX(&tri->normal, obj->rotacao.x);
-        rotacao2DEixoY(&tri->normal, obj->rotacao.y);
-        rotacao2DEixoZ(&tri->normal, obj->rotacao.z);
+        rotacao2DEixoX(&tri->normal, inst->rotacao.x);
+        rotacao2DEixoY(&tri->normal, inst->rotacao.y);
+        rotacao2DEixoZ(&tri->normal, inst->rotacao.z);
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&tri->normal, cam->ang.x);
@@ -220,38 +273,44 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
     return ret;
 }
 
-void obj_inc_frame(obj3d_t *obj)
+void instance_inc_frame(int id)
 {
-    obj->numFrameSel++;
+    instance_t *inst = &instances[id];
 
-    int naSel = (obj->numAnimSel == -1) ? obj->numAnimSelAuto : obj->numAnimSel;
-    if (obj->numFrameSel >= obj->framesanims[naSel].frameF) {
-        if (obj->numAnimSel == -1) {
-            obj->numAnimSelAuto = rand() % obj->totAnims;
-            obj->numFrameSel = obj->framesanims[obj->numAnimSelAuto].frameI;
+    inst->numFrameSel++;
+
+    int naSel = (inst->numAnimSel == -1) ? inst->numAnimSelAuto : inst->numAnimSel;
+    if (inst->numFrameSel >= inst->obj->framesanims[naSel].frameF) {
+        if (inst->numAnimSel == -1) {
+            inst->numAnimSelAuto = rand() % inst->obj->totAnims;
+            inst->numFrameSel = inst->obj->framesanims[inst->numAnimSelAuto].frameI;
         } else {
-            obj->numFrameSel = obj->framesanims[naSel].frameI;
+            inst->numFrameSel = inst->obj->framesanims[naSel].frameI;
         }
     }
 }
 
-void obj_dec_anim(obj3d_t *obj)
+void instance_dec_anim(int id)
 {
-    obj->numAnimSel--;
-    if (obj->numAnimSel < -1)
-        obj->numAnimSel = -1;
+    instance_t *inst = &instances[id];
+
+    inst->numAnimSel--;
+    if (inst->numAnimSel < -1)
+        inst->numAnimSel = -1;
     
-    int naSel = (obj->numAnimSel == -1) ? obj->numAnimSelAuto : obj->numAnimSel;
-    obj->numFrameSel = obj->framesanims[naSel].frameI;
+    int naSel = (inst->numAnimSel == -1) ? inst->numAnimSelAuto : inst->numAnimSel;
+    inst->numFrameSel = inst->obj->framesanims[naSel].frameI;
 }
 
-void obj_inc_anim(obj3d_t *obj)
+void instance_inc_anim(int id)
 {
-    obj->numAnimSel++;
-    if (obj->numAnimSel >= obj->totAnims)
-        obj->numAnimSel = obj->totAnims - 1;
+    instance_t *inst = &instances[id];
 
-    obj->numFrameSel = obj->framesanims[obj->numAnimSel].frameI;
+    inst->numAnimSel++;
+    if (inst->numAnimSel >= inst->obj->totAnims)
+        inst->numAnimSel = inst->obj->totAnims - 1;
+
+    inst->numFrameSel = inst->obj->framesanims[inst->numAnimSel].frameI;
 }
 
 void freeObj3D(obj3d_t *obj)

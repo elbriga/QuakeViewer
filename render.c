@@ -104,8 +104,10 @@ int render_clip_near_face(
     return out_count;
 }
 
-void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
+void render_desenha_instance(camera_t *cam, instance_t *inst)
 {
+	obj3d_t *obj = inst->obj;
+	
 	ponto_t	*verts[MAX_VERTS_POR_POLIGONO];
 	ponto_t  clipped[MAX_VERTS_POR_POLIGONO * 2];
     ponto_t *clipped_ptrs[MAX_VERTS_POR_POLIGONO * 2];
@@ -117,7 +119,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	int i, j, clipped_count;
 	// int objFacesRendered = 0;
 
-	obj_projecao3D(cam, obj);
+	instance_projecao3D(cam, inst);
 
 	for (i=0, tri = obj->tris; i<obj->numtris; i++, tri++) {
 		// Pega os vértices do triângulo

@@ -23,7 +23,6 @@ int janX = 1600, janY = 800;
 char paleta[256][3];
 
 camera_t cam;
-obj3d_t *chao, *obj, *obj2, *obj3;
 mapa_t *mapa;
 
 float tempo_de_jogo = 0.0f;
@@ -155,28 +154,7 @@ void testePoligono(mapa_t *mapa)
 
 int loadData()
 {
-	chao = obj = obj2 = obj3 = NULL;
 	mapa = NULL;
-
-	chao = obj_plano(10, 10);
-
-	obj = readMdl("data/models/hknight.mdl");
-	if (!obj) {
-		msg("Falha ao carregar ARQUIVO.mdl");
-		return 1;
-	}
-
-	obj2 = readMdl("data/models/mon_minotaur.mdl");
-	if (!obj2) {
-		msg("Falha ao carregar ARQUIVO2.mdl");
-		return 2;
-	}
-
-	obj3 = readMdl("data/models/enforcer.mdl");
-	if (!obj3) {
-		msg("Falha ao carregar ARQUIVO3.mdl");
-		return 3;
-	}
 
 	// Use current time as
 	// seed for random generator
@@ -197,23 +175,6 @@ int loadData()
 	}
 
 	mapa_loadEntities(mapa);
-
-	chao->posicao.y = 27;
-
-	obj->posicao.x = 544;
-	obj->posicao.y = -650;
-	obj->posicao.z = 42;
-	obj->rotacao.x = 270;
-
-	obj2->posicao.x  = 40;
-	obj2->posicao.y  = 0;
-	obj2->posicao.z  = 0;
-	obj2->rotacao.x = 0;
-
-	obj3->posicao.x  = -40;
-	obj3->posicao.y  = 0;
-	obj3->posicao.z  = 0;
-	obj3->rotacao.x = 0;
 
 	cam.pos.x = 0;
 	cam.pos.y = 0;
@@ -239,11 +200,7 @@ void saida(int err)
 
 	freeMapa3D(mapa);
 
-	freeObj3D(obj3);
-	freeObj3D(obj2);
-	freeObj3D(obj);
-
-	freeObj3D(chao);
+	instances_destroy();
 
 	FILE *camPosOut = fopen("cam.dat", "wb");
 	if (camPosOut) {
@@ -272,42 +229,12 @@ int loopPrincipal()
 
 			render_desenha_mapa(&cam, mapa);
 
-			//render_desenha_objeto(&cam, chao);
+			instances_render(&cam);
 
-			render_desenha_objeto(&cam, obj);
-/*
-		render_desenha_objeto(&cam, obj2);
-		obj2->numFrameSel++;
-		if(numFrameSel2 >= obj2->numframes -1)
-			numFrameSel2 = 0;
-
-		render_desenha_objeto(&cam, obj3);
-		obj3->numFrameSel++;
-		if(numFrameSel3 >= 8)
-			numFrameSel3 = 0;
-
-		obj->rotacao.y++;
-		if(obj->rotacao.y >= 360)
-			obj->rotacao.y = 0;
-		obj2->rotacao.y--;
-		if(obj2->rotacao.y <= 0)
-			obj2->rotacao.y = 360;
-		// obj3->rotacao.z--;
-		// if(obj3->rotacao.z <= 0)
-		// 	obj3->rotacao.z = 360;
-		chao->rotacao.y--;
-		if(chao->rotacao.y <= 0)
-			chao->rotacao.y = 360;
-*/
 			grafico_mostra();
 
-		// char *framename = &obj->framenames[numFrameSel * 16];
-		// sprintf(out, "cam{%d,%d,%d a:%d,%d,%d} Mostrando frame[%d]: %s > [%d]",
-		// 	(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z, (int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z,
-		// 	numFrameSel, framename, (int)obj3->posicao.y);
-		//  msg(out);
-
-			obj_inc_frame(obj);
+			instance_inc_frame(0);
+			instance_inc_frame(1);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
@@ -345,17 +272,13 @@ int loopPrincipal()
 		else if (c == '2') _showRendering = 1 - _showRendering;
 
 		else if (c == '\\') {
-			obj_dec_anim(obj);
+			instance_dec_anim(0);
 		} else if (c == 'z') {
-			obj_inc_anim(obj);
+			instance_inc_anim(0);
 		} else if (c == 'y') {
 			cam.pos.z += 10;
 		} else if (c == 'h') {
 			cam.pos.z -= 10;
-		} else if (c == 't') {
-			obj->posicao.z+=20;
-		} else if (c == 'g') {
-			obj->posicao.z-=20;
 		} else if (c == 'u') {
 			cam.ang.x += 5;
 		} else if (c == 'j') {
@@ -402,6 +325,13 @@ int main(int argc, char **argv)
 	// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 	// grafico_desenha_objeto(&cam, chao, 0, NULL);
 	testePoligono(mapa);
+
+vetor3d_t pos = { 544, -650, 42 };
+vetor3d_t ang = { 270,    0, 90 };
+instance_create("data/models/hknight.mdl", pos, ang);
+
+pos.y += 100;
+instance_create("data/models/hknight.mdl", pos, ang);
 
 	msg("Loop!");
 	err = loopPrincipal();

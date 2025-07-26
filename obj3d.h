@@ -128,28 +128,30 @@ typedef struct
     int numframes;
     int totAnims;
 
-    int numFrameSel;
-    int numAnimSel;
-    int numAnimSelAuto;
-
-    texture_t texture;
-    
+    texture_t   texture;
     skinvert_t *skinmap;
 
     char        *framenames;
     vetor3d_t   *frames;
     triangulo_t *tris;
-
-    ponto_t       *verts;
+    vetor3d_t   *trisnormals;
 
     animationframes_t *framesanims;
 
-    vetor3d_t *trisnormals;
+    ponto_t     *verts;
+} obj3d_t;
 
-    // run
+typedef struct
+{
+    obj3d_t *obj;
+
     vetor3d_t posicao;
     vetor3d_t rotacao;
-} obj3d_t;
+
+    int numFrameSel;
+    int numAnimSel;
+    int numAnimSelAuto;
+} instance_t;
 
 typedef struct
 {
@@ -199,16 +201,20 @@ typedef struct
     ponto_t *verts;
 } mapa_t;
 
-void obj_inc_frame(obj3d_t *obj);
-void obj_inc_anim(obj3d_t *obj);
-void obj_dec_anim(obj3d_t *obj);
+void instance_create(char *modelName, vetor3d_t pos, vetor3d_t ang);
+void instances_render(camera_t *cam);
+void instances_destroy();
+
+void instance_inc_frame(int id);
+void instance_inc_anim(int id);
+void instance_dec_anim(int id);
+
+void instance_projecao3D(camera_t *cam, instance_t *inst);
 
 void freeObj3D(obj3d_t *obj);
 void freeMapa3D(mapa_t *mapa);
 
 void obj_calculate_face_normals(obj3d_t *obj);
-
-void obj_projecao3D(camera_t *cam, obj3d_t *obj);
 
 void mapa_projecao3D(camera_t *cam, mapa_t *mapa);
 
