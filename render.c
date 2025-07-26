@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "3d.h"
+#include "gfx.h"
 #include "grafico.h"
 #include "render.h"
 #include "mapa.h"
@@ -16,6 +17,7 @@ int facesRendered;
 
 extern int _debug;
 extern int _lightON;
+extern int _showRendering;
 
 extern float tempo_de_jogo;
 
@@ -262,6 +264,8 @@ void render_desenha_node(node_t *node, mapa_t *mapa, camera_t *cam, char *vis)
 
 					if (!render_desenhaFace(face, mapa)) {
 						facesRendered++;
+
+						if (_showRendering) gfx_flush();
 					}
 			}
 		}

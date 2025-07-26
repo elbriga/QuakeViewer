@@ -31,6 +31,8 @@ float tempo_de_jogo = 0.0f;
 // int _debug = 5352;
 int _debug = 0;
 int _lightON = 1;
+int _showRendering = 0;
+
 extern int FOV;
 
 float oldTS = 0;
@@ -339,6 +341,8 @@ int loopPrincipal()
 		else if (c == '9') FOV -= 5;
 
 		else if (c == 'e') _lightON = 1 - _lightON;
+
+		else if (c == '2') _showRendering = 1 - _showRendering;
 
 		else if (c == '\\') {
 			obj_dec_anim(obj);
