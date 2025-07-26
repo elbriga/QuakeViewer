@@ -218,7 +218,7 @@ int loadData()
 	cam.pos.x = 0;
 	cam.pos.y = 0;
 	cam.pos.z = 0;
-	cam.ang.x = 0;
+	cam.ang.x = 90;
 	cam.ang.y = 0;
 	cam.ang.z = 0;
 
