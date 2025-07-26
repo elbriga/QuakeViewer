@@ -288,7 +288,7 @@ void render_desenha_node(node_t *node, mapa_t *mapa, camera_t *cam, char *vis)
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 {
-	int		 i;
+	int		 i, bspON = 1;
 	leaf_t	*leafCAM;
 	face_t	*face;
 	byte	*vis;
@@ -305,34 +305,36 @@ void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
 	
 	facesRendered = 0;
 
-	// Iniciar a recursao pela arvore BSP
-	render_desenha_node(mapa->nodes, mapa, cam, vis);
+	if (bspON) {
+		// Iniciar a recursao pela arvore BSP
+		render_desenha_node(mapa->nodes, mapa, cam, vis);
+	} else {
+		int j;
+		face_t **mark;
+		leaf_t *leaf = &mapa->leafs[1];
 
-		// int j;
-		// face_t **mark;
-		// leaf_t *leaf = &mapa->leafs[1];
+		for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
+			if (!(vis[i >> 3] & (1 << (i & 7)))) {
+				// LEAF nao visivel
+				continue;
+			}
 
-		// for (i=0; i < mapa->numleafs - 1; i++, leaf++) {
-		// 	if (!(vis[i >> 3] & (1 << (i & 7)))) {
-		// 		// LEAF nao visivel
-		// 		continue;
-		// 	}
+			// Render LEAF
+			for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
+				face = *mark;
 
-		// 	// Render LEAF
-		// 	for (j=0, mark = leaf->firstmarksurface; j < leaf->nummarksurfaces; j++, mark++) {
-		// 		face = *mark;
+				if (!face->drawn && // ignore dups
+					((face->plano->ON && !face->side) || (!face->plano->ON && face->side)) && // backface culling
+					(!_debug || _debug == face->id)) { // debug
 
-		// 		if (!face->drawn && // ignore dups
-		// 			((face->plano->ON && !face->side) || (!face->plano->ON && face->side)) && // backface culling
-		// 			(!_debug || _debug == face->id)) { // debug
+						if (!render_desenhaFace(face, mapa)) {
+							facesRendered++;
+						}
+				}
+			}
+		}
+	}
 
-		// 				if (!render_desenhaFace(face, mapa)) {
-		// 					facesRendered++;
-		// 				}
-		// 		}
-		// 	}
-		// }
-	
 	printf(" facesRender[%d de %d]", facesRendered, mapa->numfaces);
 
 	mostraMapa2D(mapa, cam, vis);
