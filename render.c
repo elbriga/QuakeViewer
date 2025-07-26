@@ -115,6 +115,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 	skinvert_t	*svxt1, *svxt2, *svxt3;
 
 	int i, j, clipped_count;
+	// int objFacesRendered = 0;
 
 	obj_projecao3D(cam, obj);
 
@@ -158,7 +159,7 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 
 		// Faz o clipping contra o plano NEAR
 		clipped_count = render_clip_near_face(verts, 3, clipped);
-		if (clipped_count < 3) return;
+		if (clipped_count < 3) continue;
 
 		// Projeta os vértices válidos
 		for (j=0; j < clipped_count; j++) {
@@ -167,7 +168,10 @@ void render_desenha_objeto(camera_t *cam, obj3d_t *obj)
 		}
 
 		grafico_desenha_poligono(clipped_ptrs, clipped_count, &obj->texture, NULL,0,0);
+		// objFacesRendered++;
 	}
+
+	// printf(" obj[%s]fr[%d de %d]", obj->nome, objFacesRendered, obj->numtris);
 }
 
 int render_desenhaFace(face_t *face, mapa_t *mapa)
