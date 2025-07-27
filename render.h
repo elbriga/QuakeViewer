@@ -4,6 +4,6 @@
 #include "3d.h"
 
 void render_desenha_mapa(camera_t *cam, mapa_t *mapa);
-void render_desenha_instance(camera_t *cam, instance_t *inst);
+void render_desenha_entidade(camera_t *cam, entidade_t *ent);
 
 #endif

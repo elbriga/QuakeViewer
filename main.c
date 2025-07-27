@@ -201,7 +201,7 @@ void saida(int err)
 
 	freeMapa3D(mapa);
 
-	instances_destroy();
+	entidades_destroy();
 
 	FILE *camPosOut = fopen("cam.dat", "wb");
 	if (camPosOut) {
@@ -230,12 +230,12 @@ int loopPrincipal()
 
 			render_desenha_mapa(&cam, mapa);
 
-			instances_render(&cam);
+			entidades_render(&cam);
 
 			grafico_mostra();
 
-			instance_inc_frame(0);
-			instance_inc_frame(1);
+			entidade_inc_frame(0);
+			entidade_inc_frame(1);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
@@ -274,9 +274,9 @@ int loopPrincipal()
 		else if (c == '3') _showMap2D     = 1 - _showMap2D;
 
 		else if (c == '\\') {
-			instance_dec_anim(0);
+			entidade_dec_anim(0);
 		} else if (c == 'z') {
-			instance_inc_anim(0);
+			entidade_inc_anim(0);
 		} else if (c == 'y') {
 			cam.pos.z += 10;
 		} else if (c == 'h') {
@@ -294,7 +294,7 @@ int loopPrincipal()
 		} else if (c == 'n') {
 			vetor3d_t pos = cam.pos;
 			vetor3d_t ang = { 270, 0, 90 };
-			instance_create("data/models/hknight.mdl", pos, ang);
+			entidade_create("data/models/ogre.mdl", pos, ang);
 		}
 
 		if (FOV < 100) FOV = 100;
@@ -334,11 +334,11 @@ int main(int argc, char **argv)
 
 vetor3d_t pos = { 544, -650, 42 };
 vetor3d_t ang = { 270,    0, 90 };
-instance_create("data/models/hknight.mdl", pos, ang);
+entidade_create("data/models/hknight.mdl", pos, ang);
 
 pos.y += 100;
 ang.z  = 270;
-instance_create("data/models/hknight.mdl", pos, ang);
+entidade_create("data/models/hknight.mdl", pos, ang);
 
 	msg("Loop!");
 	err = loopPrincipal();
