@@ -143,19 +143,6 @@ typedef struct
 
 typedef struct
 {
-    obj3d_t *obj;
-
-    vetor3d_t posicao;
-    vetor3d_t velocidade;
-    vetor3d_t rotacao;
-
-    int numFrameSel;
-    int numAnimSel;
-    int numAnimSelAuto;
-} entidade_t;
-
-typedef struct
-{
     char nome[64];
 
     vetor3d_t   player_start;
@@ -201,16 +188,6 @@ typedef struct
 
     ponto_t *verts;
 } mapa_t;
-
-void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang);
-void entidades_render(camera_t *cam);
-void entidades_destroy();
-
-void entidade_inc_frame(int id);
-void entidade_inc_anim(int id);
-void entidade_dec_anim(int id);
-
-void entidade_projecao3D(camera_t *cam, entidade_t *ent);
 
 void freeObj3D(obj3d_t *obj);
 void freeMapa3D(mapa_t *mapa);
