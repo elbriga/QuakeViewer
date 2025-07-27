@@ -7,6 +7,7 @@
 #include "readMdl.h"
 #include "render.h"
 #include "entidade.h"
+#include "fisica.h"
 
 obj3d_t *objBase[MAX_OBJS];
 static int totObjs = 0;
@@ -37,6 +38,20 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
     entidades[idNova].obj = obj_get_base(modelName);
     entidades[idNova].posicao = pos;
     entidades[idNova].rotacao = ang;
+    entidades[idNova].vivo = 1;
+}
+
+void entidades_update(mapa_t *mapa, float deltaTime)
+{
+    int i;
+
+    for (i=0; i < totInstances; i++) {
+        if (entidades[i].vivo) {
+            entidade_inc_frame(i);
+        }
+
+        fisica_update_entidade(mapa, &entidades[i], deltaTime);
+    }
 }
 
 void entidades_render(camera_t *cam)

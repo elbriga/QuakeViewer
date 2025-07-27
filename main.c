@@ -225,17 +225,17 @@ int loopPrincipal()
 			cntRender = 0;
 
 			// tempo desde o último frame, em segundos ou milissegundos
-			float delta_time = 0.5;//calcula_delta_tempo();
+			// TODO
+			float delta_time = 0.1;//calcula_delta_tempo();
 			tempo_de_jogo += delta_time;
 
 			render_desenha_mapa(&cam, mapa);
 
+			entidades_update(mapa, delta_time);
+
 			entidades_render(&cam);
 
 			grafico_mostra();
-
-			entidade_inc_frame(0);
-			entidade_inc_frame(1);
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
