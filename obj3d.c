@@ -102,7 +102,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
 
     int totMemObj = sizeof(obj3d_t) +                 // ret
                     (numtris * sizeof(triangulo_t)) + // ret->tris
-                    (16) +                            // ret->framenames
+                    (sizeof(frameinfo_t)) +           // ret->frameinfo
                     (numverts * sizeof(vetor3d_t)) +  // ret->frames
                     (numverts * sizeof(ponto_t));       // ret->verts
 
@@ -118,12 +118,12 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
     ret->numtris   = numtris;
 
     ret->tris       = (triangulo_t *) &ret[1];
-    ret->framenames = (char *)        &ret->tris[numtris];
-    ret->frames     = (vetor3d_t *)   &ret->framenames[16];
-    ret->verts      = (ponto_t *)       &ret->frames[numverts];
+    ret->frameinfo  = (frameinfo_t *) &ret->tris[numtris];
+    ret->frames     = (vetor3d_t *)   &ret->frameinfo[1];
+    ret->verts      = (ponto_t *)     &ret->frames[numverts];
     ret->framesanims= NULL;
 
-    strcpy(ret->framenames, "Plano01");
+    strcpy(ret->frameinfo->nome, "Plano01");
 
     // VXTs
     int PX, PZ = 0 - ((sizeY / 2) * 10);

@@ -38,7 +38,7 @@ obj3d_t *readMdl(char *mdlfilename)
                     (header.skinwidth * header.skinheight) + // ret->skin
                     (header.numverts * sizeof(skinvert_t)) + // ret->skinmap
                     (header.numtris * sizeof(triangulo_t)) + // ret->tris
-                    (header.numframes * 16) +                // ret->framenames
+                    (header.numframes * sizeof(frameinfo_t))+// ret->frameinfo
                     (header.numframes * header.numverts * sizeof(vetor3d_t)) + // ret->frames
                     (header.numverts * sizeof(ponto_t));     // ret->verts
 
@@ -126,14 +126,15 @@ obj3d_t *readMdl(char *mdlfilename)
     // CARREGAR FRAMES ==========================================
     printf("Carregando %d Frames\n", header.numframes);
 
-    ret->framenames = (char *)&ret->tris[header.numtris];
-    ret->frames = (vetor3d_t *)&ret->framenames[header.numframes * 16];
+    ret->frameinfo = (frameinfo_t *)&ret->tris[header.numtris];
+    ret->frames = (vetor3d_t *)&ret->frameinfo[header.numframes];
     ret->verts  = (ponto_t *)&ret->frames[header.numframes * header.numverts];
 
     aliasframetype_t tipoFrame;
     trivertx_t vertFrame;
-    ponto_t p;
-    for (int cnt_frames=0; cnt_frames<header.numframes; cnt_frames++) {
+    vetor3d_t ponto;
+    frameinfo_t *frameinfo = ret->frameinfo;
+    for (int cnt_frames=0; cnt_frames<header.numframes; cnt_frames++, frameinfo++) {
         fread(&tipoFrame, 1, 4, fp);
 
         //printf("TipoFrame[%d]: %d\n", cnt_frames, tipoFrame);
@@ -144,46 +145,26 @@ obj3d_t *readMdl(char *mdlfilename)
 
             //printf("NOME Frame[%d]: %s\n", cnt_frames, frame.name);
 
-            strcpy(&ret->framenames[cnt_frames * 16], frame.name);
+            strcpy(frameinfo->nome, frame.name);
+            frameinfo->bboxmin[0] = frame.bboxmin.v[0];
+            frameinfo->bboxmin[1] = frame.bboxmin.v[1];
+            frameinfo->bboxmin[2] = frame.bboxmin.v[2];
+            frameinfo->bboxmax[0] = frame.bboxmax.v[0];
+            frameinfo->bboxmax[1] = frame.bboxmax.v[1];
+            frameinfo->bboxmax[2] = frame.bboxmax.v[2];
 
-            vetor3d_t min = { 1000,1000,1000 }, max = { 0,0,0 };
-            for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
-                fread(&vertFrame, 1, sizeof(trivertx_t), fp);
-                vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
+            vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts];
+            for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++, pnt++) {
+                fread(&vertFrame, 1, sizeof(trivertx_t), fp);    
 
-                p.rot.x = (float)vertFrame.v[0] * header.scale[0] + header.scale_origin[0];
-                p.rot.y = (float)vertFrame.v[1] * header.scale[1] + header.scale_origin[1];
-                p.rot.z = (float)vertFrame.v[2] * header.scale[2] + header.scale_origin[2];
-                rotacao2DEixoX(&p.rot, 90);
+                ponto.x = (float)vertFrame.v[0] * header.scale[0] + header.scale_origin[0];
+                ponto.y = (float)vertFrame.v[1] * header.scale[1] + header.scale_origin[1];
+                ponto.z = (float)vertFrame.v[2] * header.scale[2] + header.scale_origin[2];
+                
+                rotacao2DEixoX(&ponto, 90); // TODO - nao esta acabando com as normais aqui?
 
-                pnt->x = p.rot.x;
-                pnt->y = p.rot.y;
-                pnt->z = p.rot.z;
-
-                // bounding box
-                if (pnt->x < min.x) min.x = pnt->x;
-                if (pnt->x > max.x) max.x = pnt->x;
-                if (pnt->y < min.y) min.y = pnt->y;
-                if (pnt->y > max.y) max.y = pnt->y;
-                if (pnt->z < min.z) min.z = pnt->z;
-                if (pnt->z > max.z) max.z = pnt->z;
-
-                //printf("Frame[%d]Vert[%d]: v1:%d v2:%d v3:%d\n", cnt_frames, cnt_vert, vertFrame.v[0], vertFrame.v[1], vertFrame.v[2]);
+                *pnt = ponto;
             }
-
-            // centralizar
-            // vetor3d_t med = {
-            //     min.x + (max.x - min.x) / 2,
-            //     min.y + (max.y - min.y) / 2,
-            //     min.z + (max.z - min.z) / 2
-            // };
-            // for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++) {
-            //     vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts + cnt_vert];
-
-            //     pnt->x -= 128;//med.x;
-            //     pnt->y -= -min.y;
-            //     pnt->z -= 128;//med.z;
-            // }
 
         } else {
             printf("TipoFrame GROUP!\n\n");
@@ -197,7 +178,7 @@ obj3d_t *readMdl(char *mdlfilename)
 	int frameInicial, frameFinal;
 	int totAnims = 0;
     for (int nf=0; nf<ret->numframes; nf++) {
-        char *nomeFrame = &ret->framenames[nf * 16];
+        char *nomeFrame = ret->frameinfo[nf].nome;
 
         if (!strlen(basenome)) {
             // Achar a base do nome do frame, sem o numero

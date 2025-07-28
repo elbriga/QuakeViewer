@@ -72,6 +72,13 @@ typedef struct
 
 typedef struct
 {
+	char nome[16];
+    byte bboxmin[3];
+    byte bboxmax[3];
+} frameinfo_t;
+
+typedef struct
+{
 	int frameI;
     int frameF;
 } animationframes_t;
@@ -131,7 +138,7 @@ typedef struct
     texture_t   texture;
     skinvert_t *skinmap;
 
-    char        *framenames;
+    frameinfo_t *frameinfo;
     vetor3d_t   *frames;
     triangulo_t *tris;
     vetor3d_t   *trisnormals;
