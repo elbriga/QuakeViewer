@@ -9,6 +9,8 @@ bool trace_bsp(mapa_t *mapa, vetor3d_t de, vetor3d_t para, float *alturaChao);
 
 void fisica_update_entidade(mapa_t *mapa, entidade_t *ent, float deltaTime)
 {
+    //float alturaPes = - ent->obj->frameinfo[ent->numFrameSel].bboxmin[2];
+
     // aplica gravidade
     if (!ent->noChao)
         ent->velocidade.z -= GRAVIDADE * deltaTime;
