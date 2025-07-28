@@ -4,13 +4,12 @@
 #include "3d.h"
 #include "fisica.h"
 #include "entidade.h"
+#include "mapa.h"
 
 bool trace_bsp(mapa_t *mapa, vetor3d_t de, vetor3d_t para, float *alturaChao);
 
 void fisica_update_entidade(mapa_t *mapa, entidade_t *ent, float deltaTime)
 {
-    //float alturaPes = - ent->obj->frameinfo[ent->numFrameSel].bboxmin[2];
-
     // aplica gravidade
     if (!ent->noChao)
         ent->velocidade.z -= GRAVIDADE * deltaTime;
@@ -83,7 +82,7 @@ bool trace_bsp(mapa_t *mapa, vetor3d_t de, vetor3d_t para, float *alturaChao)
     face_t *face = mapa->faces;
     for (int i = 0; i < mapa->numfaces; i++, face++) {
         
-        // if (!face_solida(face)) continue;
+        if (!mapa_face_solida(face)) continue;
 
         // verifica se a face é plana no eixo Z (horizontal)
         if (fabs(face->plano->normal.x) > 0.1f || fabs(face->plano->normal.y) > 0.1f)

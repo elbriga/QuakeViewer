@@ -9,6 +9,11 @@
 
 extern int grafico_altura, grafico_largura; // de gfx.c
 
+bool mapa_face_solida(face_t *face)
+{
+	return (face->texture->name[0] != '*');
+}
+
 /**
  * mapa_discover_leaf
  * Retorna o Leaf que o ponto esta no mapa
