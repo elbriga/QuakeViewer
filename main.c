@@ -33,7 +33,7 @@ int _debug = 0;
 int _lightON = 1;
 int _showRendering = 0;
 int _showMap2D = 1;
-
+float _lightFactor = 2.0;
 extern int FOV;
 
 float oldTS = 0;
@@ -268,6 +268,9 @@ int loopPrincipal()
 
 		else if (c == '0') FOV += 5;
 		else if (c == '9') FOV -= 5;
+
+		else if (c == '-') _lightFactor += 0.1;
+		else if (c == '=') _lightFactor -= 0.1;
 
 		else if (c == 'e') _lightON = 1 - _lightON;
 

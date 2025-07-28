@@ -15,6 +15,7 @@
 extern char paleta[256][3];
 
 extern int _debug;
+extern float _lightFactor;
 extern float tempo_de_jogo;
 
 float *zBuffer = NULL;
@@ -113,7 +114,7 @@ byte get_light_level(char *light, int light_u, int light_v, int lightW, int ligh
     float i1 = l01 * (1 - frac_u) + l11 * frac_u;
     float value = i0 * (1 - frac_v) + i1 * frac_v;
 
-    return (byte)value;
+    return (byte)value * _lightFactor;
 }
 
 void grafico_desenha_poligono(ponto_t **verticesPoligono, int numVerts, texture_t *tex, byte *light, int lightW, int lightH)
