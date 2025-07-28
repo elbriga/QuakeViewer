@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
 #include <unistd.h>
 #include <libgen.h> // basename
 
@@ -241,7 +242,7 @@ int loopPrincipal()
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
 				(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
 
-			printf("[dbg:%d][FOV:%d] >>>\n", _debug, FOV);
+			//printf("[dbg:%d][FOV:%d] >>>\n", _debug, FOV);
 		}
 
 		char c = engine_get_key();
@@ -273,6 +274,8 @@ int loopPrincipal()
 		else if (c == '2') _showRendering = 1 - _showRendering;
 		else if (c == '3') _showMap2D     = 1 - _showMap2D;
 
+		else if (c == '4') cam.ang.y -= 180;
+
 		else if (c == '\\') {
 			entidade_dec_anim(0);
 		} else if (c == 'z') {
@@ -293,8 +296,23 @@ int loopPrincipal()
 			cam.ang.y = mapa->player_start_angle;
 		} else if (c == 'n') {
 			vetor3d_t pos = cam.pos;
+			float angRads = to_radians(cam.ang.y);
+			pos.x += sin(angRads) * 50;
+			pos.y += cos(angRads) * 50;
+			pos.z += 100;
 			vetor3d_t ang = { 270, 0, 90 };
 			entidade_create("data/models/ogre.mdl", pos, ang);
+		} else if (c == 'm') {
+			vetor3d_t pos = cam.pos;
+			float angRads = to_radians(cam.ang.y);
+			pos.x += sin(angRads) * 50;
+			pos.y += cos(angRads) * 50;
+			pos.z += 100;
+			vetor3d_t ang = { 270, 0, 90 };
+			entidade_create("data/models/shambler.mdl", pos, ang);
+		} else if (c == 'p') {
+			// Pulo!!
+			entidades_pula();
 		}
 
 		if (FOV < 100) FOV = 100;
