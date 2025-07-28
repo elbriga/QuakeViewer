@@ -31,6 +31,8 @@ obj3d_t *obj_get_base(char *modelName)
 
 void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
 {
+    if (totInstances >= MAX_ENTIDADES) return; // TODO - erro
+
     int idNova = totInstances++;
 
     memset(&entidades[idNova], 0, sizeof(entidade_t));
