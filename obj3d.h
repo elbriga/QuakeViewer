@@ -135,6 +135,8 @@ typedef struct
     int numframes;
     int totAnims;
 
+    int offsetChao;
+
     texture_t   texture;
     skinvert_t *skinmap;
 
@@ -199,6 +201,7 @@ typedef struct
 void freeObj3D(obj3d_t *obj);
 void freeMapa3D(mapa_t *mapa);
 
+void obj_calculate_offsetChao(obj3d_t *obj);
 void obj_calculate_face_normals(obj3d_t *obj);
 
 void mapa_projecao3D(camera_t *cam, mapa_t *mapa);

@@ -28,6 +28,8 @@ void entidades_render(camera_t *cam);
 void entidades_update(mapa_t *mapa, float deltaTime);
 void entidades_destroy();
 
+void entidades_pula(); // kkk
+
 void entidade_projecao3D(camera_t *cam, entidade_t *ent);
 
 void entidade_inc_frame(int id);

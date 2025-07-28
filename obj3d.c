@@ -9,6 +9,12 @@
 #include "readMdl.h"
 #include "render.h"
 
+void obj_calculate_offsetChao(obj3d_t *obj)
+{
+    // TODO calcular do 1o frame!!
+    obj->offsetChao = 25;
+}
+
 void obj_calculate_face_normals(obj3d_t *obj)
 {
     obj->trisnormals = malloc(obj->numframes * obj->numtris * sizeof(vetor3d_t));
@@ -116,6 +122,7 @@ obj3d_t *obj_plano(int sizeX, int sizeY)
     ret->numframes = 1;
     ret->numverts  = numverts;
     ret->numtris   = numtris;
+    ret->offsetChao= 0;
 
     ret->tris       = (triangulo_t *) &ret[1];
     ret->frameinfo  = (frameinfo_t *) &ret->tris[numtris];

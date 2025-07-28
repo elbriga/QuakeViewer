@@ -71,6 +71,15 @@ void entidades_destroy()
         freeObj3D(objBase[i]);
 }
 
+void entidades_pula()
+{
+    int i;
+
+    for (i=0; i < totInstances; i++) {
+        entidades[i].posicao.z += 100;
+    }
+}
+
 void entidade_projecao3D(camera_t *cam, entidade_t *ent)
 {
     int         i;
@@ -95,7 +104,7 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
         pnt->rot.x += ent->posicao.x - cam->pos.x;
         pnt->rot.y += ent->posicao.y - cam->pos.y;
-        pnt->rot.z += ent->posicao.z - cam->pos.z;
+        pnt->rot.z += ent->posicao.z - cam->pos.z + obj->offsetChao;
 
         // Rotacao de Camera - coordenadas de camera
         rotacao2DEixoX(&pnt->rot, cam->ang.x);

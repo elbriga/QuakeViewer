@@ -235,6 +235,7 @@ obj3d_t *readMdl(char *mdlfilename)
 
     // Normals
     obj_calculate_face_normals(ret);
+    obj_calculate_offsetChao(ret);
 
     printf("Modelo carregado!\n\n\n");
 
