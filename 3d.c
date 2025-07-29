@@ -15,20 +15,34 @@ double to_radians(double deg)
   return deg * M_PI / 180.0;
 }
 
-float vector_length(vetor3d_t *v)
+void vetor_add(vetor3d_t *um, vetor3d_t *dois)
+{
+    um->x += dois->x;
+    um->y += dois->y;
+    um->z += dois->z;
+}
+
+void vetor_sub(vetor3d_t *um, vetor3d_t *dois)
+{
+    um->x -= dois->x;
+    um->y -= dois->y;
+    um->z -= dois->z;
+}
+
+float vetor_length(vetor3d_t *v)
 {
     return sqrt(v->x*v->x + v->y*v->y + v->z*v->z);
 }
 
-void normalize(vetor3d_t *normal)
+void vetor_normalize(vetor3d_t *normal)
 {
-    float len = 1.0 / vector_length(normal);
+    float len = 1.0 / vetor_length(normal);
     normal->x *= len;
     normal->y *= len;
     normal->z *= len;
 }
 
-vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
+vetor3d_t vetor_cross_product(vetor3d_t a, vetor3d_t b)
 {
     vetor3d_t result;
 
@@ -39,7 +53,7 @@ vetor3d_t cross_product(vetor3d_t a, vetor3d_t b)
     return result;
 }
 
-float dot_product(vetor3d_t a, vetor3d_t b)
+float vetor_dot_product(vetor3d_t a, vetor3d_t b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
@@ -73,7 +87,7 @@ void camera_strafe(camera_t *cam, int step, mapa_t *mapa)
     }
 }
 
-void rotacao2DEixoX(vetor3d_t *p, int angulo)
+void vetor_rotacao2DEixoX(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
     float valY = p->y;
@@ -82,7 +96,7 @@ void rotacao2DEixoX(vetor3d_t *p, int angulo)
     p->z = sin(anguloRad) * valY + cos(anguloRad) * p->z;
 }
 
-void rotacao2DEixoY(vetor3d_t *p, int angulo)
+void vetor_rotacao2DEixoY(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
     float valX = p->x;
@@ -91,7 +105,7 @@ void rotacao2DEixoY(vetor3d_t *p, int angulo)
     p->z = sin(anguloRad) * valX + cos(anguloRad) * p->z;
 }
 
-void rotacao2DEixoZ(vetor3d_t *p, int angulo)
+void vetor_rotacao2DEixoZ(vetor3d_t *p, int angulo)
 {
     double anguloRad = to_radians(angulo);
     float valX = p->x;
@@ -100,7 +114,7 @@ void rotacao2DEixoZ(vetor3d_t *p, int angulo)
     p->y = sin(anguloRad) * valX + cos(anguloRad) * p->y;
 }
 
-void projetaPonto3D(ponto_t *pnt, camera_t *cam)
+void vetor_projetaPonto3D(ponto_t *pnt, camera_t *cam)
 {
     // Coordenadas de Mundo - posicao do objeto e posicao da camera
         pnt->rot.x -= cam->pos.x;
@@ -108,9 +122,9 @@ void projetaPonto3D(ponto_t *pnt, camera_t *cam)
         pnt->rot.z -= cam->pos.z;// + obj->offsetChao;
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&pnt->rot, cam->ang.x);
-        rotacao2DEixoY(&pnt->rot, cam->ang.y);
-        rotacao2DEixoZ(&pnt->rot, cam->ang.z);
+        vetor_rotacao2DEixoX(&pnt->rot, cam->ang.x);
+        vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
+        vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
         // Projecao para 2D - so depois do clipping
         grafico_projecao3D(pnt);

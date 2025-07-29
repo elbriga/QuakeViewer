@@ -31,7 +31,7 @@ leaf_t *mapa_discoverLeaf(vetor3d_t *pos, mapa_t *mapa)
 			return (leaf_t *)node;
         
 		plano = node->plane;
-		d = dot_product (*pos, plano->normal) - plano->dist;
+		d = vetor_dot_product (*pos, plano->normal) - plano->dist;
 		if (d > 0)
 			node = node->children[0];
 		else

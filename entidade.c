@@ -79,7 +79,25 @@ void entidades_pula()
         entidades[i].posicao.z += 100;
     }
 }
+/*
+bool entidade_consegue_ver(entidade_t *monstro, entidade_t *jogador)
+{
+    vetor3d_t olhoM = ent_pos_olho(monstro);
+    vetor3d_t olhoJ = ent_pos_olho(jogador);
+    vetor3d_t dir = vetor_sub(olhoJ, olhoM);
 
+    float distancia = vetor_norma(dir);
+    if (distancia > 800.0f) return false;  // muito longe
+
+    vetor3_t frente = angulo_para_direcao(monstro->angulo_visao);  // vetor olhando
+
+    dir = vetor_normaliza(dir);
+    float dp = vetor_dot(frente, dir);
+    if (dp < 0.7f) return false;  // fora do campo de visão (ex: > 45°)
+
+    return trace_bsp_visibilidade(olhoM, olhoJ);
+}
+*/
 void entidade_projecao3D(camera_t *cam, entidade_t *ent)
 {
     int         i;
@@ -99,9 +117,9 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
         pnt->rot.z = base->z;
 
         // Rotacao do objeto - coordenadas de objeto
-        rotacao2DEixoX(&pnt->rot, ent->rotacao.x);
-        rotacao2DEixoY(&pnt->rot, ent->rotacao.y);
-        rotacao2DEixoZ(&pnt->rot, ent->rotacao.z);
+        vetor_rotacao2DEixoX(&pnt->rot, ent->rotacao.x);
+        vetor_rotacao2DEixoY(&pnt->rot, ent->rotacao.y);
+        vetor_rotacao2DEixoZ(&pnt->rot, ent->rotacao.z);
 
         // Coordenadas de Mundo - posicao do objeto e posicao da camera
         pnt->rot.x += ent->posicao.x - cam->pos.x;
@@ -109,9 +127,9 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
         pnt->rot.z += ent->posicao.z - cam->pos.z + obj->offsetChao;
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&pnt->rot, cam->ang.x);
-        rotacao2DEixoY(&pnt->rot, cam->ang.y);
-        rotacao2DEixoZ(&pnt->rot, cam->ang.z);
+        vetor_rotacao2DEixoX(&pnt->rot, cam->ang.x);
+        vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
+        vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
         // Projecao para 2D - so depois do clipping
         //grafico_projecao3D(pnt);
@@ -127,17 +145,17 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
         tri->normal.z = triBase->z;
 
         // Rotacao do objeto - coordenadas de objeto
-        rotacao2DEixoX(&tri->normal, ent->rotacao.x);
-        rotacao2DEixoY(&tri->normal, ent->rotacao.y);
-        rotacao2DEixoZ(&tri->normal, ent->rotacao.z);
+        vetor_rotacao2DEixoX(&tri->normal, ent->rotacao.x);
+        vetor_rotacao2DEixoY(&tri->normal, ent->rotacao.y);
+        vetor_rotacao2DEixoZ(&tri->normal, ent->rotacao.z);
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&tri->normal, cam->ang.x);
-        rotacao2DEixoY(&tri->normal, cam->ang.y);
-        rotacao2DEixoZ(&tri->normal, cam->ang.z);
+        vetor_rotacao2DEixoX(&tri->normal, cam->ang.x);
+        vetor_rotacao2DEixoY(&tri->normal, cam->ang.y);
+        vetor_rotacao2DEixoZ(&tri->normal, cam->ang.z);
 
         // Normalização (opcional, mas recomendado)
-        normalize(&tri->normal);
+        vetor_normalize(&tri->normal);
     }
 }
 

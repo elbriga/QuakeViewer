@@ -73,8 +73,8 @@ typedef struct
 typedef struct
 {
 	char nome[16];
-    byte bboxmin[3];
-    byte bboxmax[3];
+    vetor3d_t bboxmin;
+    vetor3d_t bboxmax;
 } frameinfo_t;
 
 typedef struct

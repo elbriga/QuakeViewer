@@ -17,7 +17,7 @@ int facesRendered;
 
 extern int _debug;
 extern int _lightON;
-extern int _showRendering, _showMap2D;
+extern int _showRendering, _showMap2D, _showBBox;
 
 extern float tempo_de_jogo;
 
@@ -135,9 +135,9 @@ void render_desenha_entidade(camera_t *cam, entidade_t *ent)
 		viewDir.x = (verts[0]->rot.x + verts[1]->rot.x + verts[2]->rot.x) / 3.0f;
 		viewDir.y = (verts[0]->rot.y + verts[1]->rot.y + verts[2]->rot.y) / 3.0f;
 		viewDir.z = (verts[0]->rot.z + verts[1]->rot.z + verts[2]->rot.z) / 3.0f;
-		normalize(&viewDir); // opcional, mas bom para estabilidade
+		vetor_normalize(&viewDir); // opcional, mas bom para estabilidade
 		// Dot product entre normal da face e viewDir
-		if (dot_product(tri->normal, viewDir) >= 0) {
+		if (vetor_dot_product(tri->normal, viewDir) >= 0) {
 			continue; // Culling: está de costas
 		}
 
@@ -169,6 +169,16 @@ void render_desenha_entidade(camera_t *cam, entidade_t *ent)
 
 		grafico_desenha_poligono(clipped_ptrs, clipped_count, &obj->texture, NULL,0,0);
 		// objFacesRendered++;
+	}
+
+	if (_showBBox) {
+		vetor3d_t bboxmin = {0,0,0};
+		vetor3d_t bboxmax = {10,10,10};
+		// vetor3d_t bboxmin = ent->obj->frameinfo[ent->numFrameSel].bboxmin;
+		// vetor3d_t bboxmax = ent->obj->frameinfo[ent->numFrameSel].bboxmax;
+		// vetor3d_t bboxmin = { (float)bbMin[0]-128, (float)bbMin[1]-128, (float)bbMin[2] };
+		// vetor3d_t bboxmax = { (float)bbMax[0]-128, (float)bbMax[1]-128, (float)bbMax[2] };
+		grafico_desenha_cubo(cam, ent->posicao, bboxmin, bboxmax, 100,230,100);
 	}
 
 	// printf(" obj[%s]fr[%d de %d]", obj->nome, objFacesRendered, obj->numtris);
@@ -206,8 +216,8 @@ int render_desenhaFace(face_t *face, mapa_t *mapa)
 		verts[v] = &mapa->verts[vxtNum];
 
 		vBase = &mapa->base[vxtNum];
-		float s = dot_product(*vBase, face->texinfo->vetorS) + face->texinfo->distS;
-		float t = dot_product(*vBase, face->texinfo->vetorT) + face->texinfo->distT;
+		float s = vetor_dot_product(*vBase, face->texinfo->vetorS) + face->texinfo->distS;
+		float t = vetor_dot_product(*vBase, face->texinfo->vetorT) + face->texinfo->distT;
 
 		// Coordenadas da textura (normalizadas 0–1)
 		verts[v]->tex.x = s / face->texture->width;

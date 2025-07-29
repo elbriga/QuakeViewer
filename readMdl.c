@@ -146,12 +146,12 @@ obj3d_t *readMdl(char *mdlfilename)
             //printf("NOME Frame[%d]: %s\n", cnt_frames, frame.name);
 
             strcpy(frameinfo->nome, frame.name);
-            frameinfo->bboxmin[0] = frame.bboxmin.v[0];
-            frameinfo->bboxmin[1] = frame.bboxmin.v[1];
-            frameinfo->bboxmin[2] = frame.bboxmin.v[2];
-            frameinfo->bboxmax[0] = frame.bboxmax.v[0];
-            frameinfo->bboxmax[1] = frame.bboxmax.v[1];
-            frameinfo->bboxmax[2] = frame.bboxmax.v[2];
+            frameinfo->bboxmin.x = (float)frame.bboxmin.v[0] * header.scale[0];
+            frameinfo->bboxmin.y = (float)frame.bboxmin.v[1] * header.scale[1];
+            frameinfo->bboxmin.z = (float)frame.bboxmin.v[2] * header.scale[2];
+            frameinfo->bboxmax.x = (float)frame.bboxmax.v[0] * header.scale[0];
+            frameinfo->bboxmax.y = (float)frame.bboxmax.v[1] * header.scale[1];
+            frameinfo->bboxmax.z = (float)frame.bboxmax.v[2] * header.scale[2];
 
             vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts];
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++, pnt++) {
@@ -161,7 +161,7 @@ obj3d_t *readMdl(char *mdlfilename)
                 ponto.y = (float)vertFrame.v[1] * header.scale[1] + header.scale_origin[1];
                 ponto.z = (float)vertFrame.v[2] * header.scale[2] + header.scale_origin[2];
                 
-                rotacao2DEixoX(&ponto, 90); // TODO - nao esta acabando com as normais aqui?
+                vetor_rotacao2DEixoX(&ponto, 90); // TODO - nao esta acabando com as normais aqui?
 
                 *pnt = ponto;
             }

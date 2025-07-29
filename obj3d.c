@@ -37,8 +37,8 @@ void obj_calculate_face_normals(obj3d_t *obj)
             vetor3d_t a = { v3->x - v1->x, v3->y - v1->y, v3->z - v1->z };
             vetor3d_t b = { v2->x - v1->x, v2->y - v1->y, v2->z - v1->z };
 
-            vetor3d_t normal = cross_product(a, b);
-            normalize(&normal);
+            vetor3d_t normal = vetor_cross_product(a, b);
+            vetor_normalize(&normal);
 
             vetor3d_t *normalObj = &obj->trisnormals[offsetFrameTri + numTri];
             normalObj->x = normal.x;
@@ -60,9 +60,9 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         pnt->rot.z = base->z - cam->pos.z;
 
         // Rotacao de Camera - coordenadas de camera
-        rotacao2DEixoX(&pnt->rot, cam->ang.x);
-        rotacao2DEixoY(&pnt->rot, cam->ang.y);
-        rotacao2DEixoZ(&pnt->rot, cam->ang.z);
+        vetor_rotacao2DEixoX(&pnt->rot, cam->ang.x);
+        vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
+        vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 
         // Projecao para 2D
         // TODO projetar apenas depois do near clipping
@@ -80,7 +80,7 @@ void mapa_projecao3D(camera_t *cam, mapa_t *mapa)
         view_vector.z = plano->ponto.z - cam->pos.z;
 
         // produto escalar no espaço do mundo
-        plano->ON = (dot_product(plano->normal, view_vector) < 0) ? 1 : 0;  // visível se a câmera vê a frente do plano
+        plano->ON = (vetor_dot_product(plano->normal, view_vector) < 0) ? 1 : 0;  // visível se a câmera vê a frente do plano
     }
 
     // face_t *face = mapa->faces;

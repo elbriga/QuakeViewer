@@ -43,20 +43,23 @@ typedef struct
 
 #include "obj3d.h"
 
-float vector_length(vetor3d_t *v);
-vetor3d_t cross_product(vetor3d_t a, vetor3d_t b);
-float dot_product(vetor3d_t a, vetor3d_t b);
-void normalize(vetor3d_t *normal);
+void vetor_add(vetor3d_t *um, vetor3d_t *dois);
+void vetor_sub(vetor3d_t *um, vetor3d_t *dois);
+
+float vetor_length(vetor3d_t *v);
+vetor3d_t vetor_cross_product(vetor3d_t a, vetor3d_t b);
+float vetor_dot_product(vetor3d_t a, vetor3d_t b);
+void vetor_normalize(vetor3d_t *normal);
 
 double to_radians(double deg);
-void rotacao2DEixoX(vetor3d_t *p, int angulo);
-void rotacao2DEixoY(vetor3d_t *p, int angulo);
-void rotacao2DEixoZ(vetor3d_t *p, int angulo);
+void vetor_rotacao2DEixoX(vetor3d_t *p, int angulo);
+void vetor_rotacao2DEixoY(vetor3d_t *p, int angulo);
+void vetor_rotacao2DEixoZ(vetor3d_t *p, int angulo);
 
 void camera_pitch(camera_t *cam, int step);
 void camera_step(camera_t *cam, int step, mapa_t *mapa);
 void camera_strafe(camera_t *cam, int step, mapa_t *mapa);
 
-void projetaPonto3D(ponto_t *pnt, camera_t *cam);
+void vetor_projetaPonto3D(ponto_t *pnt, camera_t *cam);
 
 #endif

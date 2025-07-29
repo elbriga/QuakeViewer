@@ -140,7 +140,7 @@ int loadPlanes (mapa_t *mapa, lump_t *l, byte *buffer)
         plano->normal.y = in->normal[1];
         plano->normal.z = in->normal[2];
 
-        normalize(&plano->normal);
+        vetor_normalize(&plano->normal);
 
         plano->dist = in->dist;
         plano->type = in->type;

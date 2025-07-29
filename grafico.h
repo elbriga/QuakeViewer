@@ -22,5 +22,6 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
 
 void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g, byte b);
 void grafico_desenha_linha(int x0, int y0, float z0, int x1, int y1, float z1, byte r, byte g, byte b);
+void grafico_desenha_cubo(camera_t *cam, vetor3d_t pos, vetor3d_t bboxmin, vetor3d_t bboxmax, byte r, byte g, byte b);
 
 #endif

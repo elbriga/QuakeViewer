@@ -32,6 +32,7 @@ float tempo_de_jogo = 0.0f;
 int _debug = 0;
 int _lightON = 1;
 int _showRendering = 0;
+int _showBBox = 1;
 int _showMap2D = 1;
 float _lightFactor = 2.0;
 extern int FOV;
@@ -236,13 +237,20 @@ int loopPrincipal()
 
 			entidades_render(&cam);
 
+// vetor3d_t p0 = cam.pos;
+// float angRads = to_radians(cam.ang.y);
+// p0.x += sin(angRads) * 50;
+// p0.y += cos(angRads) * 50;
+// vetor3d_t p1 = {1786,1111,342};
+// grafico_linha_3D(p0, p1, &cam, 255,10,10);
+
 			grafico_mostra();
 
 			printf("cam{%d,%d,%d a:%d,%d,%d} ",
 				(int)cam.pos.x,(int)cam.pos.y,(int)cam.pos.z,
 				(int)cam.ang.x,(int)cam.ang.y,(int)cam.ang.z);
 
-			//printf("[dbg:%d][FOV:%d] >>>\n", _debug, FOV);
+			printf("[dbg:%d][FOV:%d] >>>\n", _debug, FOV);
 		}
 
 		char c = engine_get_key();

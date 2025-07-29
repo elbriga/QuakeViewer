@@ -470,9 +470,7 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
     }
 }
 
-void grafico_desenha_linha(int x0, int y0, float z0,
-                           int x1, int y1, float z1,
-                           byte r, byte g, byte b)
+void grafico_desenha_linha(int x0, int y0, float z0, int x1, int y1, float z1, byte r, byte g, byte b)
 {
     int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
@@ -507,7 +505,7 @@ void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g,
     ponto_t p_cam[2];
     for (int i = 0; i < 2; i++) {
         p_cam[i].rot = (i == 0) ? p0 : p1;
-        projetaPonto3D(&p_cam[i], cam);
+        vetor_projetaPonto3D(&p_cam[i], cam);
     }
 
     // Clipping simples: descarta se ambos pontos estão atrás da câmera
@@ -518,4 +516,27 @@ void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g,
         p_cam[0].screen.x, p_cam[0].screen.y, p_cam[0].rot.z,
         p_cam[1].screen.x, p_cam[1].screen.y, p_cam[1].rot.z,
         r, g, b);
+}
+
+void grafico_desenha_cubo(camera_t *cam, vetor3d_t pos, vetor3d_t bboxmin, vetor3d_t bboxmax, byte r, byte g, byte b)
+{
+    vetor3d_t verts[8] = {
+            { bboxmin.x + pos.x, bboxmin.y + pos.y, bboxmin.z + pos.z },
+            { bboxmax.x + pos.x, bboxmin.y + pos.y, bboxmin.z + pos.z },
+            { bboxmax.x + pos.x, bboxmax.y + pos.y, bboxmin.z + pos.z },
+            { bboxmin.x + pos.x, bboxmax.y + pos.y, bboxmin.z + pos.z },
+            { bboxmin.x + pos.x, bboxmin.y + pos.y, bboxmax.z + pos.z },
+            { bboxmax.x + pos.x, bboxmin.y + pos.y, bboxmax.z + pos.z },
+            { bboxmax.x + pos.x, bboxmax.y + pos.y, bboxmax.z + pos.z },
+            { bboxmin.x + pos.x, bboxmax.y + pos.y, bboxmax.z + pos.z },
+        };
+    int arestas[12][2] = {
+            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+            { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
+            { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 },
+        };
+    
+    for (int i=0; i < 12; i++) {
+        grafico_linha_3D(verts[arestas[i][0]], verts[arestas[i][1]], cam, (!i || i==3 || i==8) ? 255 : r, g, b);
+    }
 }
