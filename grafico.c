@@ -469,3 +469,53 @@ void grafico_desenha_poligono_sky(ponto_t **verticesPoligono, int numVerts, text
         }
     }
 }
+
+void grafico_desenha_linha(int x0, int y0, float z0,
+                           int x1, int y1, float z1,
+                           byte r, byte g, byte b)
+{
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy, e2;
+
+    int x = x0, y = y0;
+    int steps = (dx > -dy) ? dx : -dy;
+    float dz = (steps == 0) ? 0 : (z1 - z0) / steps;
+    float z = z0;
+
+    for (int i = 0; i <= steps; i++) {
+        if (x >= 0 && x < grafico_largura && y >= 0 && y < grafico_altura) {
+            int idx = y * grafico_largura + x;
+            if (z < zBuffer[idx]) {
+                zBuffer[idx] = z;
+                gfx_point(x, y, r, g, b);
+            }
+        }
+
+        if (x == x1 && y == y1) break;
+
+        e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x += sx; }
+        if (e2 <= dx) { err += dx; y += sy; }
+        z += dz;
+    }
+}
+
+void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g, byte b)
+{
+    // Transforma ponto do mundo para espaço da câmera (view space)
+    ponto_t p_cam[2];
+    for (int i = 0; i < 2; i++) {
+        p_cam[i].rot = (i == 0) ? p0 : p1;
+        projetaPonto3D(&p_cam[i], cam);
+    }
+
+    // Clipping simples: descarta se ambos pontos estão atrás da câmera
+    if (p_cam[0].rot.z <= 0 && p_cam[1].rot.z <= 0) return;
+
+    // Chamada da linha com z-buffer
+    grafico_desenha_linha(
+        p_cam[0].screen.x, p_cam[0].screen.y, p_cam[0].rot.z,
+        p_cam[1].screen.x, p_cam[1].screen.y, p_cam[1].rot.z,
+        r, g, b);
+}
