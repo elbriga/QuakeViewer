@@ -57,4 +57,6 @@ void camera_pitch(camera_t *cam, int step);
 void camera_step(camera_t *cam, int step, mapa_t *mapa);
 void camera_strafe(camera_t *cam, int step, mapa_t *mapa);
 
+void projetaPonto3D(ponto_t *pnt, camera_t *cam);
+
 #endif
