@@ -90,7 +90,9 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
 
     obj3d_t *obj = ent->obj;
 
-    for (i=0, base=&obj->frames[ent->numFrameSel*obj->numverts], pnt=obj->verts; i<obj->numverts; i++, base++, pnt++) {
+    base = &obj->frames[ent->numFrameSel * obj->numverts];
+    pnt  = obj->verts;
+    for (i=0; i<obj->numverts; i++, base++, pnt++) {
         // Reset - Coordenadas de Objeto
         pnt->rot.x = base->x;
         pnt->rot.y = base->y;
@@ -116,7 +118,9 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
     }
 
     // Projetar as normais das faces
-    for (i=0, triBase=&obj->trisnormals[ent->numFrameSel*obj->numtris], tri=obj->tris; i<obj->numtris; i++, triBase++, tri++) {
+    triBase = &obj->trisnormals[ent->numFrameSel * obj->numtris];
+    tri     = obj->tris;
+    for (i=0; i<obj->numtris; i++, triBase++, tri++) {
         // Reset - Coordenadas de Objeto
         tri->normal.x = triBase->x;
         tri->normal.y = triBase->y;
