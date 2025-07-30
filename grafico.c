@@ -520,15 +520,24 @@ void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g,
 
 void grafico_desenha_cubo(camera_t *cam, vetor3d_t pos, vetor3d_t bboxmin, vetor3d_t bboxmax, byte r, byte g, byte b)
 {
+    vetor3d_t diff = bboxmax;
+    vetor_sub(&diff, &bboxmin);
+    float offsetX = 0 - (bboxmax.x - bboxmin.x) / 2.0f;
+    float offsetY = 0 - (bboxmax.y - bboxmin.y) / 2.0f;
+
+    bboxmin.x = 0;
+    bboxmin.y = 0;
+    bboxmin.z = 0;
+
     vetor3d_t verts[8] = {
-            { bboxmin.x + pos.x, bboxmin.y + pos.y, bboxmin.z + pos.z },
-            { bboxmax.x + pos.x, bboxmin.y + pos.y, bboxmin.z + pos.z },
-            { bboxmax.x + pos.x, bboxmax.y + pos.y, bboxmin.z + pos.z },
-            { bboxmin.x + pos.x, bboxmax.y + pos.y, bboxmin.z + pos.z },
-            { bboxmin.x + pos.x, bboxmin.y + pos.y, bboxmax.z + pos.z },
-            { bboxmax.x + pos.x, bboxmin.y + pos.y, bboxmax.z + pos.z },
-            { bboxmax.x + pos.x, bboxmax.y + pos.y, bboxmax.z + pos.z },
-            { bboxmin.x + pos.x, bboxmax.y + pos.y, bboxmax.z + pos.z },
+            {          pos.x + offsetX,          pos.y + offsetY, pos.z },
+            { diff.x + pos.x + offsetX,          pos.y + offsetY, pos.z },
+            { diff.x + pos.x + offsetX, diff.y + pos.y + offsetY, pos.z },
+            {          pos.x + offsetX, diff.y + pos.y + offsetY, pos.z },
+            {          pos.x + offsetX,          pos.y + offsetY, diff.z + pos.z },
+            { diff.x + pos.x + offsetX,          pos.y + offsetY, diff.z + pos.z },
+            { diff.x + pos.x + offsetX, diff.y + pos.y + offsetY, diff.z + pos.z },
+            {          pos.x + offsetX, diff.y + pos.y + offsetY, diff.z + pos.z },
         };
     int arestas[12][2] = {
             { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
