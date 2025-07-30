@@ -79,6 +79,7 @@ typedef struct
 
 typedef struct
 {
+    char nome[16];
 	int frameI;
     int frameF;
 } animationframes_t;
@@ -136,6 +137,10 @@ typedef struct
     int totAnims;
 
     int offsetChao;
+
+    int numAnimIdle;
+    int numAnimWalk;
+    int numAnimAttack;
 
     texture_t   texture;
     skinvert_t *skinmap;

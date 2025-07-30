@@ -172,10 +172,10 @@ void render_desenha_entidade(camera_t *cam, entidade_t *ent)
 	}
 
 	if (_showBBox) {
-		vetor3d_t bboxmin = {0,0,0};
-		vetor3d_t bboxmax = {10,10,10};
-		// vetor3d_t bboxmin = ent->obj->frameinfo[ent->numFrameSel].bboxmin;
-		// vetor3d_t bboxmax = ent->obj->frameinfo[ent->numFrameSel].bboxmax;
+		// vetor3d_t bboxmin = {20,20,20};
+		// vetor3d_t bboxmax = {30,30,30};
+		vetor3d_t bboxmin = ent->obj->frameinfo[ent->numFrameSel].bboxmin;
+		vetor3d_t bboxmax = ent->obj->frameinfo[ent->numFrameSel].bboxmax;
 		// vetor3d_t bboxmin = { (float)bbMin[0]-128, (float)bbMin[1]-128, (float)bbMin[2] };
 		// vetor3d_t bboxmax = { (float)bbMax[0]-128, (float)bbMax[1]-128, (float)bbMax[2] };
 		grafico_desenha_cubo(cam, ent->posicao, bboxmin, bboxmax, 100,230,100);

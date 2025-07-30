@@ -175,6 +175,7 @@ obj3d_t *readMdl(char *mdlfilename)
     }
 
     char basenome[16] = {0}, strFramesAnims[256] = {0}, strNumFrames[16] = {0};
+    char strNomesAnims[265] = {0};
 	int frameInicial, frameFinal;
 	int totAnims = 0;
     for (int nf=0; nf<ret->numframes; nf++) {
@@ -201,7 +202,8 @@ obj3d_t *readMdl(char *mdlfilename)
                 sprintf(strNumFrames, "%d-%d ", frameInicial, frameFinal);
                 strcat(strFramesAnims, strNumFrames);
 
-                printf("Base %s :: %d-%d\n", basenome, frameInicial, frameFinal);
+                strcat(strNomesAnims, basenome);
+                strcat(strNomesAnims, " ");
 
                 basenome[0] = 0; // proximo
                 nf--;
@@ -209,9 +211,9 @@ obj3d_t *readMdl(char *mdlfilename)
         }
     }
 
-    printf("Base %s :: %d-%d\n", basenome, frameInicial, frameFinal);
     sprintf(strNumFrames, "%d-%d", frameInicial, frameFinal);
     strcat(strFramesAnims, strNumFrames);
+    strcat(strNomesAnims, basenome);
 
     ret->totAnims    = totAnims;
     ret->framesanims = malloc(totAnims * sizeof(animationframes_t));
@@ -219,21 +221,43 @@ obj3d_t *readMdl(char *mdlfilename)
     //printf("frames: %s\n", strFramesAnims);
 
     char *tok = strtok(strFramesAnims, " ");
+    animationframes_t *fa = ret->framesanims;
     int numAnim = 0;
     while (tok) {
-        sscanf(tok, "%d-%d", &ret->framesanims[numAnim].frameI, &ret->framesanims[numAnim].frameF);
+        sscanf(tok, "%d-%d", &fa->frameI, &fa->frameF);
 
         tok = strtok(NULL, " ");
         numAnim++;
+        fa++;
     }
 
     if (numAnim != ret->totAnims) {
         printf("ERRO!!!!!!!!!!!!! numAnim: %d - totAnims: %d\n", numAnim, ret->totAnims);
     }
 
+    char *tokNome = strtok(strNomesAnims, " ");
+    fa = ret->framesanims;
+    while (tokNome) {
+        strcpy(fa->nome, tokNome);
+        printf("Base %s :: %d-%d\n", fa->nome, fa->frameI, fa->frameF);
+
+        tokNome = strtok(NULL, " ");
+        fa++;
+    }
+
     fclose(fp);
 
-    // Normals
+    // Anims
+    for (int i=0; i<ret->totAnims; i++) {
+        if (!strcmp(ret->framesanims[i].nome, "stand")) {
+            ret->numAnimIdle = i;
+        } else if (!strcmp(ret->framesanims[i].nome, "axrun")) {
+            ret->numAnimWalk = i;
+        } else if (!strcmp(ret->framesanims[i].nome, "shotatt")) {
+            ret->numAnimAttack = i;
+        }
+    }
+
     obj_calculate_face_normals(ret);
     obj_calculate_offsetChao(ret);
 
