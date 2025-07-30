@@ -11,6 +11,7 @@
 #include "gfx.h"
 #include "grafico.h"
 #include "mapa.h"
+#include "render.h"
 
 extern char paleta[256][3];
 
@@ -501,22 +502,49 @@ void grafico_desenha_linha(int x0, int y0, float z0, int x1, int y1, float z1, b
 
 void grafico_linha_3D(vetor3d_t p0, vetor3d_t p1, camera_t *cam, byte r, byte g, byte b)
 {
-    // Transforma ponto do mundo para espaço da câmera (view space)
     ponto_t p_cam[2];
-    for (int i = 0; i < 2; i++) {
-        p_cam[i].rot = (i == 0) ? p0 : p1;
-        vetor_projetaPonto3D(&p_cam[i], cam);
+
+    // Espaço de mundo (sem transformar/projetar ainda!)
+    p_cam[0].rot = p0;
+    p_cam[1].rot = p1;
+
+    // transformar para espaço de camera
+    vetor_transformaPonto3D(&p_cam[0], cam);
+    vetor_transformaPonto3D(&p_cam[1], cam);
+
+    // Se ambos estão atrás do near plane -> descarta
+    if (p_cam[0].rot.z < NEAR_Z && p_cam[1].rot.z < NEAR_Z)
+        return;
+
+    // Se só um está atrás -> interpola no espaço da câmera
+    if (p_cam[0].rot.z < NEAR_Z || p_cam[1].rot.z < NEAR_Z) {
+        vetor3d_t *A = &p_cam[0].rot;
+        vetor3d_t *B = &p_cam[1].rot;
+
+        if (A->z < NEAR_Z) {
+            float t = (NEAR_Z - A->z) / (B->z - A->z);
+            A->x = A->x + t * (B->x - A->x);
+            A->y = A->y + t * (B->y - A->y);
+            A->z = NEAR_Z;
+        } else {
+            float t = (NEAR_Z - B->z) / (A->z - B->z);
+            B->x = B->x + t * (A->x - B->x);
+            B->y = B->y + t * (A->y - B->y);
+            B->z = NEAR_Z;
+        }
     }
 
-    // Clipping simples: descarta se ambos pontos estão atrás da câmera
-    if (p_cam[0].rot.z <= 0 && p_cam[1].rot.z <= 0) return;
+    // Só agora projeta
+    grafico_projecao3D(&p_cam[0]);
+    grafico_projecao3D(&p_cam[1]);
 
-    // Chamada da linha com z-buffer
+    // Desenha
     grafico_desenha_linha(
         p_cam[0].screen.x, p_cam[0].screen.y, p_cam[0].rot.z,
         p_cam[1].screen.x, p_cam[1].screen.y, p_cam[1].rot.z,
         r, g, b);
 }
+
 
 void grafico_desenha_cubo(camera_t *cam, vetor3d_t pos, vetor3d_t bboxmin, vetor3d_t bboxmax, byte r, byte g, byte b)
 {

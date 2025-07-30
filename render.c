@@ -10,7 +10,7 @@
 #include "mapa.h"
 
 #define MAX_VERTS_POR_POLIGONO 16
-#define NEAR_Z 0.1f
+
 #define FAR_CLIP 500.0
 
 int facesRendered;
@@ -171,7 +171,7 @@ void render_desenha_entidade(camera_t *cam, entidade_t *ent)
 		// objFacesRendered++;
 	}
 
-	if (_showBBox) {
+	if (_showBBox && !ent->id) {
 		// vetor3d_t bboxmin = {20,20,20};
 		// vetor3d_t bboxmax = {30,30,30};
 		vetor3d_t bboxmin = ent->obj->frameinfo[ent->numFrameSel].bboxmin;

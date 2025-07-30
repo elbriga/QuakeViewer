@@ -114,18 +114,15 @@ void vetor_rotacao2DEixoZ(vetor3d_t *p, int angulo)
     p->y = sin(anguloRad) * valX + cos(anguloRad) * p->y;
 }
 
-void vetor_projetaPonto3D(ponto_t *pnt, camera_t *cam)
+void vetor_transformaPonto3D(ponto_t *pnt, camera_t *cam)
 {
     // Coordenadas de Mundo - posicao do objeto e posicao da camera
-        pnt->rot.x -= cam->pos.x;
-        pnt->rot.y -= cam->pos.y;
-        pnt->rot.z -= cam->pos.z;// + obj->offsetChao;
+    pnt->rot.x -= cam->pos.x;
+    pnt->rot.y -= cam->pos.y;
+    pnt->rot.z -= cam->pos.z;
 
-        // Rotacao de Camera - coordenadas de camera
-        vetor_rotacao2DEixoX(&pnt->rot, cam->ang.x);
-        vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
-        vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
-
-        // Projecao para 2D - so depois do clipping
-        grafico_projecao3D(pnt);
+    // Rotacao de Camera - coordenadas de camera
+    vetor_rotacao2DEixoX(&pnt->rot, cam->ang.x);
+    vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
+    vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 }
