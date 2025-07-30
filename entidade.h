@@ -32,6 +32,7 @@ void entidades_pula(); // kkk
 
 void entidade_projecao3D(camera_t *cam, entidade_t *ent);
 
+void entidade_set_anim(entidade_t *ent, int num);
 void entidade_inc_frame(int id);
 void entidade_dec_anim(int id);
 void entidade_inc_anim(int id);

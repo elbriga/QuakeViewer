@@ -33,14 +33,16 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
 {
     if (totInstances >= MAX_ENTIDADES) return; // TODO - erro
 
-    int idNova = totInstances++;
+    entidade_t *ent = &entidades[totInstances++];
 
-    memset(&entidades[idNova], 0, sizeof(entidade_t));
+    memset(ent, 0, sizeof(entidade_t));
 
-    entidades[idNova].obj = obj_get_base(modelName);
-    entidades[idNova].posicao = pos;
-    entidades[idNova].rotacao = ang;
-    entidades[idNova].vivo = 1;
+    ent->obj = obj_get_base(modelName);
+    ent->posicao = pos;
+    ent->rotacao = ang;
+    ent->vivo = 1;
+
+    entidade_set_anim(ent, ent->obj->numAnimIdle);
 }
 
 void entidades_update(mapa_t *mapa, float deltaTime)
@@ -176,25 +178,27 @@ void entidade_inc_frame(int id)
     }
 }
 
-void entidade_dec_anim(int id)
+void entidade_set_anim(entidade_t *ent, int num)
 {
-    entidade_t *ent = &entidades[id];
+    ent->numAnimSel = num;
 
-    ent->numAnimSel--;
     if (ent->numAnimSel < -1)
         ent->numAnimSel = -1;
+    else if (ent->numAnimSel >= ent->obj->totAnims)
+        ent->numAnimSel = ent->obj->totAnims - 1;
     
     int naSel = (ent->numAnimSel == -1) ? ent->numAnimSelAuto : ent->numAnimSel;
     ent->numFrameSel = ent->obj->framesanims[naSel].frameI;
 }
 
+void entidade_dec_anim(int id)
+{
+    entidade_t *ent = &entidades[id];
+    entidade_set_anim(ent, ent->numAnimSel - 1);
+}
+
 void entidade_inc_anim(int id)
 {
     entidade_t *ent = &entidades[id];
-
-    ent->numAnimSel++;
-    if (ent->numAnimSel >= ent->obj->totAnims)
-        ent->numAnimSel = ent->obj->totAnims - 1;
-
-    ent->numFrameSel = ent->obj->framesanims[ent->numAnimSel].frameI;
+    entidade_set_anim(ent, ent->numAnimSel + 1);
 }
