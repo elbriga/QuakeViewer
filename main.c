@@ -192,6 +192,11 @@ int loadData()
 		fclose(camPosIn);
 	}
 
+	// entidades[0] = player
+	vetor3d_t playerPos = mapa->player_start;
+	vetor3d_t playerAng = { 270, 0, mapa->player_start_angle };
+	entidade_create("data/models/player.mdl", playerPos, playerAng);
+
 	return 0;
 }
 
@@ -277,13 +282,13 @@ int loopPrincipal()
 		else if (c == '0') FOV += 5;
 		else if (c == '9') FOV -= 5;
 
-		else if (c == '-') _lightFactor += 0.1;
-		else if (c == '=') _lightFactor -= 0.1;
+		else if (c == '-') _lightFactor -= 0.1;
+		else if (c == '=') _lightFactor += 0.1;
 
-		else if (c == 'e') _lightON = 1 - _lightON;
-
+		else if (c == 'e') _lightON       = 1 - _lightON;
 		else if (c == '2') _showRendering = 1 - _showRendering;
 		else if (c == '3') _showMap2D     = 1 - _showMap2D;
+		else if (c == '5') _showBBox      = 1 - _showBBox;
 
 		else if (c == '4') cam.ang.y -= 180;
 
