@@ -137,6 +137,7 @@ typedef struct
     int totAnims;
 
     int offsetChao;
+    vetor3d_t posOlho;
 
     int numAnimIdle;
     int numAnimWalk;

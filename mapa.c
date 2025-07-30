@@ -51,6 +51,37 @@ int mapa_canMoveTo(float px, float py, float pz, mapa_t *mapa)
     return ((node_t *)leaf != mapa->nodes && leaf->visofs);
 }
 
+bool mapa_trace_bsp_visibilidade(mapa_t *mapa, vetor3d_t de, vetor3d_t para)
+{
+    // Raycast BSP traversal:
+    // percorra os nós da BSP e pare se colidir com um sólido
+    // você pode usar uma versão simplificada do seu trace de física
+
+    vetor3d_t direcao = para;
+	vetor_sub(&para, &de);
+
+    float distancia = vetor_length(&direcao);
+
+    // normalize a direção
+	vetor_normalize(&direcao);
+
+    // trace em pequenos passos (step trace simplificado)
+    vetor3d_t pos = de;
+    for (float t = 0; t <= distancia; t += 4.0f) {
+        vetor3d_t ponto = {
+            de.x + direcao.x * t,
+            de.y + direcao.y * t,
+            de.z + direcao.z * t
+        };
+
+        // testando se esse ponto está dentro de uma parte sólida
+        if (!mapa_canMoveTo(ponto.x, ponto.y, ponto.z, mapa))
+            return false;
+    }
+
+    return true;  // não encontrou obstáculo
+}
+
 /*
 ===================
 Mod_DecompressVis

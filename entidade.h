@@ -9,6 +9,7 @@
 
 typedef struct
 {
+    int     id; // indice do array, 0 = player
     obj3d_t *obj;
 
     vetor3d_t posicao;
@@ -23,10 +24,14 @@ typedef struct
     int noChao;
 } entidade_t;
 
+entidade_t *entidade_get(int id);
 void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang);
 void entidades_render(camera_t *cam);
 void entidades_update(mapa_t *mapa, float deltaTime);
 void entidades_destroy();
+
+vetor3d_t entidade_pos_olho(entidade_t *ent);
+bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador);
 
 void entidades_pula(); // kkk
 

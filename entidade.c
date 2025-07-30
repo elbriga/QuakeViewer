@@ -15,6 +15,11 @@ static int totObjs = 0;
 entidade_t entidades[MAX_ENTIDADES];
 static int totInstances = 0;
 
+entidade_t *entidade_get(int id)
+{
+    return (id < 0 || id >= totInstances) ? NULL : &entidades[id];
+}
+
 obj3d_t *obj_get_base(char *modelName)
 {
     // Verificar se ja esta carregado
@@ -33,10 +38,12 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
 {
     if (totInstances >= MAX_ENTIDADES) return; // TODO - erro
 
-    entidade_t *ent = &entidades[totInstances++];
+    int novoID = totInstances++;
+    entidade_t *ent = &entidades[novoID];
 
     memset(ent, 0, sizeof(entidade_t));
 
+    ent->id = novoID;
     ent->obj = obj_get_base(modelName);
     ent->posicao = pos;
     ent->rotacao = ang;
@@ -81,25 +88,50 @@ void entidades_pula()
         entidades[i].posicao.z += 100;
     }
 }
-/*
-bool entidade_consegue_ver(entidade_t *monstro, entidade_t *jogador)
-{
-    vetor3d_t olhoM = ent_pos_olho(monstro);
-    vetor3d_t olhoJ = ent_pos_olho(jogador);
-    vetor3d_t dir = vetor_sub(olhoJ, olhoM);
 
-    float distancia = vetor_norma(dir);
+vetor3d_t entidade_pos_olho(entidade_t *ent)
+{
+    // altura dos olhos pode ser no topo ou meio da cabeça
+    vetor3d_t ret = ent->posicao;
+
+    // vetor_add(&ret, &ent->obj->posOlho);
+    ret.z += 50;
+
+    return ret;
+}
+
+vetor3d_t angulo_para_direcao(float yaw, float pitch)
+{
+    float cy = cos(to_radians(yaw));
+    float sy = sin(to_radians(yaw));
+    float cp = cos(to_radians(pitch));
+    float sp = sin(to_radians(pitch));
+
+    vetor3d_t dir = { cp * cy, cp * sy, -sp }; // convenção Quake: pitch positivo olha para baixo
+
+    return dir;
+}
+
+bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador)
+{
+    vetor3d_t olhoM = entidade_pos_olho(monstro);
+    vetor3d_t olhoJ = entidade_pos_olho(jogador);
+
+    vetor3d_t dir = olhoJ;
+    vetor_sub(&dir, &olhoM);
+
+    float distancia = vetor_length(&dir);
     if (distancia > 800.0f) return false;  // muito longe
 
-    vetor3_t frente = angulo_para_direcao(monstro->angulo_visao);  // vetor olhando
+    vetor3d_t frente = angulo_para_direcao(monstro->rotacao.z, 0);  // vetor olhando
 
-    dir = vetor_normaliza(dir);
-    float dp = vetor_dot(frente, dir);
+    vetor_normalize(&dir);
+    float dp = vetor_dot_product(frente, dir);
     if (dp < 0.7f) return false;  // fora do campo de visão (ex: > 45°)
 
-    return trace_bsp_visibilidade(olhoM, olhoJ);
+    return mapa_trace_bsp_visibilidade(mapa, olhoM, olhoJ);
 }
-*/
+
 void entidade_projecao3D(camera_t *cam, entidade_t *ent)
 {
     int         i;

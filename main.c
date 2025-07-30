@@ -18,6 +18,7 @@
 
 #include "render.h"
 #include "mapa.h"
+#include "entidade.h"
 
 int janX = 1600, janY = 800;
 
@@ -25,6 +26,9 @@ char paleta[256][3];
 
 camera_t cam;
 mapa_t *mapa;
+
+entidade_t *player;
+entidade_t *monstro;
 
 float tempo_de_jogo = 0.0f;
 
@@ -197,6 +201,18 @@ int loadData()
 	vetor3d_t playerAng = { 270, 0, mapa->player_start_angle };
 	entidade_create("data/models/player.mdl", playerPos, playerAng);
 
+// Testes
+vetor3d_t pos = { 544, -650, 42 };
+vetor3d_t ang = { 270,    0, 90 };
+entidade_create("data/models/hknight.mdl", pos, ang);
+
+pos.y += 100;
+ang.z  = 270;
+entidade_create("data/models/hknight.mdl", pos, ang);
+
+	player  = entidade_get(0);
+	monstro = entidade_get(1);
+
 	return 0;
 }
 
@@ -241,6 +257,15 @@ int loopPrincipal()
 			entidades_update(mapa, delta_time);
 
 			entidades_render(&cam);
+
+			vetor3d_t olhoM = entidade_pos_olho(monstro);
+    		vetor3d_t olhoJ = entidade_pos_olho(player);
+			bool ve = entidade_consegue_ver(mapa, monstro, player);
+			if (ve) {
+				grafico_linha_3D(olhoJ, olhoM, &cam, 100,250,100);
+			} else {
+				grafico_linha_3D(olhoJ, olhoM, &cam, 250,100,100);
+			}
 
 // vetor3d_t p0 = cam.pos;
 // float angRads = to_radians(cam.ang.y);
@@ -301,9 +326,9 @@ int loopPrincipal()
 		} else if (c == 'h') {
 			cam.pos.z -= 10;
 		} else if (c == 'u') {
-			cam.ang.x += 5;
+			monstro->rotacao.z += 5;
 		} else if (c == 'j') {
-			cam.ang.x -= 5;
+			monstro->rotacao.z -= 5;
 		} else if (c == '1') {
 			cam.pos.x = mapa->player_start.x;
 			cam.pos.y = mapa->player_start.y;
@@ -361,18 +386,10 @@ int main(int argc, char **argv)
 
 	msg("Init!");
 	
-	mostraTexturas(mapa);
+	// mostraTexturas(mapa);
 	// grafico_desenha_objeto(&cam, obj, numFrameSel, paleta);
 	// grafico_desenha_objeto(&cam, chao, 0, NULL);
-	testePoligono(mapa);
-
-vetor3d_t pos = { 544, -650, 42 };
-vetor3d_t ang = { 270,    0, 90 };
-entidade_create("data/models/hknight.mdl", pos, ang);
-
-pos.y += 100;
-ang.z  = 270;
-entidade_create("data/models/hknight.mdl", pos, ang);
+	// testePoligono(mapa);
 
 	msg("Loop!");
 	err = loopPrincipal();

@@ -54,6 +54,10 @@ obj3d_t *readMdl(char *mdlfilename)
     ret->numverts  = header.numverts;
     ret->numtris   = header.numtris;
 
+    ret->posOlho.x = header.eyeposition[0];
+    ret->posOlho.y = header.eyeposition[1];
+    ret->posOlho.z = header.eyeposition[2];
+
     ret->texture.width  = header.skinwidth;
     ret->texture.height = header.skinheight;
 
@@ -146,12 +150,12 @@ obj3d_t *readMdl(char *mdlfilename)
             //printf("NOME Frame[%d]: %s\n", cnt_frames, frame.name);
 
             strcpy(frameinfo->nome, frame.name);
-            frameinfo->bboxmin.x = (float)frame.bboxmin.v[0] * header.scale[0];
-            frameinfo->bboxmin.y = (float)frame.bboxmin.v[1] * header.scale[1];
-            frameinfo->bboxmin.z = (float)frame.bboxmin.v[2] * header.scale[2];
-            frameinfo->bboxmax.x = (float)frame.bboxmax.v[0] * header.scale[0];
-            frameinfo->bboxmax.y = (float)frame.bboxmax.v[1] * header.scale[1];
-            frameinfo->bboxmax.z = (float)frame.bboxmax.v[2] * header.scale[2];
+            frameinfo->bboxmin.x = (float)frame.bboxmin.v[0] * header.scale[0] + header.scale_origin[0];
+            frameinfo->bboxmin.y = (float)frame.bboxmin.v[1] * header.scale[1] + header.scale_origin[1];
+            frameinfo->bboxmin.z = (float)frame.bboxmin.v[2] * header.scale[2] + header.scale_origin[2];
+            frameinfo->bboxmax.x = (float)frame.bboxmax.v[0] * header.scale[0] + header.scale_origin[0];
+            frameinfo->bboxmax.y = (float)frame.bboxmax.v[1] * header.scale[1] + header.scale_origin[1];
+            frameinfo->bboxmax.z = (float)frame.bboxmax.v[2] * header.scale[2] + header.scale_origin[2];
 
             vetor3d_t *pnt = &ret->frames[cnt_frames * header.numverts];
             for (int cnt_vert=0; cnt_vert<header.numverts; cnt_vert++, pnt++) {
