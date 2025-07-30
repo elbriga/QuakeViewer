@@ -26,7 +26,7 @@ typedef struct
 
 entidade_t *entidade_get(int id);
 void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang);
-void entidades_render(camera_t *cam);
+void entidades_render(mapa_t *mapa, camera_t *cam);
 void entidades_update(mapa_t *mapa, float deltaTime);
 void entidades_destroy();
 

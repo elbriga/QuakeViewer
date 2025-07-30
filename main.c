@@ -28,7 +28,6 @@ camera_t cam;
 mapa_t *mapa;
 
 entidade_t *player;
-entidade_t *monstro;
 
 float tempo_de_jogo = 0.0f;
 
@@ -210,8 +209,7 @@ pos.y += 100;
 ang.z  = 270;
 entidade_create("data/models/hknight.mdl", pos, ang);
 
-	player  = entidade_get(0);
-	monstro = entidade_get(1);
+	player = entidade_get(0);
 
 	return 0;
 }
@@ -242,6 +240,8 @@ int loopPrincipal()
 
 	int cntRender = 20;
 
+	entidade_t *monstro = entidade_get(1);
+
 	while (1)
 	{
 		if (cntRender++ > 10) {
@@ -252,20 +252,11 @@ int loopPrincipal()
 			float delta_time = 0.1;//calcula_delta_tempo();
 			tempo_de_jogo += delta_time;
 
-			render_desenha_mapa(&cam, mapa);
+			render_desenha_mapa(mapa, &cam);
 
 			entidades_update(mapa, delta_time);
 
-			entidades_render(&cam);
-
-			vetor3d_t olhoM = entidade_pos_olho(monstro);
-    		vetor3d_t olhoJ = entidade_pos_olho(player);
-			bool ve = entidade_consegue_ver(mapa, monstro, player);
-			if (ve) {
-				grafico_linha_3D(olhoJ, olhoM, &cam, 100,250,100);
-			} else {
-				grafico_linha_3D(olhoJ, olhoM, &cam, 250,100,100);
-			}
+			entidades_render(mapa, &cam);
 
 // vetor3d_t p0 = cam.pos;
 // float angRads = to_radians(cam.ang.y);

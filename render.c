@@ -308,7 +308,7 @@ void render_desenha_node(node_t *node, mapa_t *mapa, camera_t *cam, char *vis)
     render_desenha_node(node->children[tras], mapa, cam, vis);
 }
 
-void render_desenha_mapa(camera_t *cam, mapa_t *mapa)
+void render_desenha_mapa(mapa_t *mapa, camera_t *cam)
 {
 	int		 i, bspON = 1;
 	leaf_t	*leafCAM;

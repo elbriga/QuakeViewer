@@ -20,13 +20,14 @@ obj3d_t *readMdl(char *mdlfilename)
     }
 
     fread(&header, 1, sizeof(mdl_t), fp);
-    if(strncmp(header.ident, "IDPO", 4)) {
+    if(strncmp(header.ident, "IDPO", 4) || header.version != 6) {
         fclose(fp);
         printf("Arquivo nao é MDL!\n\n");
         return NULL;
     }
 
-    printf("Version...: %d\n", header.version);
+    printf("Carregando modelo [%s]\n", mdlfilename);
+
     printf("Scale.....: %f %f %f\n", header.scale[0], header.scale[1], header.scale[2]);
     printf("ScaleOrg..: %f %f %f\n", header.scale_origin[0], header.scale_origin[1], header.scale_origin[2]);
     printf("EyePosit..: %f %f %f\n", header.eyeposition[0], header.eyeposition[1], header.eyeposition[2]);

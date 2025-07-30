@@ -58,7 +58,7 @@ bool mapa_trace_bsp_visibilidade(mapa_t *mapa, vetor3d_t de, vetor3d_t para)
     // você pode usar uma versão simplificada do seu trace de física
 
     vetor3d_t direcao = para;
-	vetor_sub(&para, &de);
+	vetor_sub(&direcao, &de);
 
     float distancia = vetor_length(&direcao);
 

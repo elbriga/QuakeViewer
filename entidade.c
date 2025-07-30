@@ -8,12 +8,15 @@
 #include "render.h"
 #include "entidade.h"
 #include "fisica.h"
+#include "grafico.h"
 
 obj3d_t *objBase[MAX_OBJS];
 static int totObjs = 0;
 
 entidade_t entidades[MAX_ENTIDADES];
 static int totInstances = 0;
+
+extern entidade_t *player;
 
 entidade_t *entidade_get(int id)
 {
@@ -65,12 +68,27 @@ void entidades_update(mapa_t *mapa, float deltaTime)
     }
 }
 
-void entidades_render(camera_t *cam)
+void entidades_render(mapa_t *mapa, camera_t *cam)
 {
     int i;
+    entidade_t *monstro;
 
     for (i=0; i < totInstances; i++) {
         render_desenha_entidade(cam, &entidades[i]);
+
+        if (i) {
+            monstro = &entidades[i];
+
+            vetor3d_t olhoM = entidade_pos_olho(monstro);
+    		vetor3d_t olhoJ = entidade_pos_olho(player);
+
+			bool ve = entidade_consegue_ver(mapa, monstro, player);
+			if (ve) {
+				grafico_linha_3D(olhoJ, olhoM, cam, 100,250,100);
+			} else {
+				grafico_linha_3D(olhoJ, olhoM, cam, 250,100,100);
+			}
+        }
     }
 }
 
