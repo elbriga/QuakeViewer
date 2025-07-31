@@ -9,6 +9,7 @@
 #include "entidade.h"
 #include "fisica.h"
 #include "grafico.h"
+#include "monstros.h"
 
 obj3d_t *objBase[MAX_OBJS];
 static int totObjs = 0;
@@ -51,13 +52,21 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
     ent->posicao = pos;
     ent->rotacao = ang;
     ent->vivo = 1;
+    ent->estado = MONSTRO_IDLE;
 
     entidade_set_anim(ent, ent->obj->numAnimIdle);
 }
 
-void entidades_update(mapa_t *mapa, float deltaTime)
+void entidade_set_state(entidade_t *m, entidade_estado_t estado)
+{
+    m->estado      = estado;
+    m->tempoEstado = 0;
+}
+
+void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime)
 {
     int i;
+    entidade_t *monstro;
 
     for (i=0; i < totInstances; i++) {
         if (entidades[i].vivo) {
@@ -65,30 +74,21 @@ void entidades_update(mapa_t *mapa, float deltaTime)
         }
 
         fisica_update_entidade(mapa, &entidades[i], deltaTime);
+
+        if (i > 0) {
+            monstro = &entidades[i];
+
+            monstro_update(mapa, monstro, player, deltaTime);
+        }
     }
 }
 
 void entidades_render(mapa_t *mapa, camera_t *cam)
 {
     int i;
-    entidade_t *monstro;
 
     for (i=0; i < totInstances; i++) {
         render_desenha_entidade(cam, &entidades[i]);
-
-        if (i) {
-            monstro = &entidades[i];
-
-            vetor3d_t olhoM = entidade_pos_olho(monstro);
-    		vetor3d_t olhoJ = entidade_pos_olho(player);
-
-			bool ve = entidade_consegue_ver(mapa, monstro, player);
-			if (ve) {
-				grafico_linha_3D(olhoJ, olhoM, cam, 100,250,100);
-			} else {
-				grafico_linha_3D(olhoJ, olhoM, cam, 250,100,100);
-			}
-        }
     }
 }
 
@@ -118,34 +118,24 @@ vetor3d_t entidade_pos_olho(entidade_t *ent)
     return ret;
 }
 
-vetor3d_t angulo_para_direcao(float yaw, float pitch)
-{
-    float cy = cos(to_radians(yaw));
-    float sy = sin(to_radians(yaw));
-    float cp = cos(to_radians(pitch));
-    float sp = sin(to_radians(pitch));
-
-    vetor3d_t dir = { cp * cy, cp * sy, -sp }; // convenção Quake: pitch positivo olha para baixo
-
-    return dir;
-}
-
-bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador)
+bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, float *dot, float *cross)
 {
     vetor3d_t olhoM = entidade_pos_olho(monstro);
     vetor3d_t olhoJ = entidade_pos_olho(jogador);
 
-    vetor3d_t dir = olhoJ;
-    vetor_sub(&dir, &olhoM);
+    vetor3d_t dirPlayer = olhoJ;
+    vetor_sub(&dirPlayer, &olhoM);
 
-    float distancia = vetor_length(&dir);
+    float distancia = vetor_length(&dirPlayer);
     if (distancia > 800.0f) return false;  // muito longe
 
     vetor3d_t frente = angulo_para_direcao(monstro->rotacao.z, 0);  // vetor olhando
 
-    vetor_normalize(&dir);
-    float dp = vetor_dot_product(frente, dir);
-    if (dp < 0.7f) return false;  // fora do campo de visão (ex: > 45°)
+    vetor_normalize(&dirPlayer);
+    *dot = vetor_dot_product(frente, dirPlayer);
+    if (*dot < 0.7f) return false;  // fora do campo de visão (ex: > 45°)
+
+    *cross = frente.x * dirPlayer.y - frente.y * dirPlayer.x;
 
     return mapa_trace_bsp_visibilidade(mapa, olhoM, olhoJ);
 }

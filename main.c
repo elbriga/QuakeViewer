@@ -254,7 +254,7 @@ int loopPrincipal()
 
 			render_desenha_mapa(mapa, &cam);
 
-			entidades_update(mapa, delta_time);
+			entidades_update(mapa, &cam, delta_time);
 
 			entidades_render(mapa, &cam);
 
