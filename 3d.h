@@ -62,4 +62,6 @@ void camera_strafe(camera_t *cam, int step, mapa_t *mapa);
 
 void vetor_transformaPonto3D(ponto_t *pnt, camera_t *cam);
 
+vetor3d_t angulo_para_direcao(float yaw, float pitch);
+
 #endif

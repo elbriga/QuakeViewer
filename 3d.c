@@ -126,3 +126,15 @@ void vetor_transformaPonto3D(ponto_t *pnt, camera_t *cam)
     vetor_rotacao2DEixoY(&pnt->rot, cam->ang.y);
     vetor_rotacao2DEixoZ(&pnt->rot, cam->ang.z);
 }
+
+vetor3d_t angulo_para_direcao(float yaw, float pitch)
+{
+    float cy = cos(to_radians(yaw));
+    float sy = sin(to_radians(yaw));
+    float cp = cos(to_radians(pitch));
+    float sp = sin(to_radians(pitch));
+
+    vetor3d_t dir = { cp * cy, cp * sy, -sp }; // convenção Quake: pitch positivo olha para baixo
+
+    return dir;
+}
