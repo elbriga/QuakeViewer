@@ -256,9 +256,9 @@ obj3d_t *readMdl(char *mdlfilename)
     for (int i=0; i<ret->totAnims; i++) {
         if (!strcmp(ret->framesanims[i].nome, "stand")) {
             ret->numAnimIdle = i;
-        } else if (!strcmp(ret->framesanims[i].nome, "axrun")) {
+        } else if (!strcmp(ret->framesanims[i].nome, "walk") || !strcmp(ret->framesanims[i].nome, "axrun")) {
             ret->numAnimWalk = i;
-        } else if (!strcmp(ret->framesanims[i].nome, "shotatt")) {
+        } else if (!strcmp(ret->framesanims[i].nome, "w_attack") || !strcmp(ret->framesanims[i].nome, "shotatt")) {
             ret->numAnimAttack = i;
         }
     }
