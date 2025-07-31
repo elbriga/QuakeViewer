@@ -61,6 +61,14 @@ void entidade_set_state(entidade_t *m, entidade_estado_t estado)
 {
     m->estado      = estado;
     m->tempoEstado = 0;
+
+    if (estado == MONSTRO_IDLE) {
+        entidade_set_anim(m, m->obj->numAnimIdle);
+    } else if (estado == MONSTRO_ANDANDO) {
+        entidade_set_anim(m, m->obj->numAnimWalk);
+    } else if (estado == MONSTRO_ATACANDO) {
+        entidade_set_anim(m, m->obj->numAnimAttack);
+    }
 }
 
 void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime)
