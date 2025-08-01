@@ -148,6 +148,36 @@ bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogado
     return mapa_trace_bsp_visibilidade(mapa, olhoM, olhoJ);
 }
 
+bool entidade_tem_chao_a_frente(mapa_t *mapa, entidade_t *ent)
+{
+    // direção olhando no plano XY
+    vetor3d_t frente = angulo_para_direcao(ent->rotacao.z, 0);
+
+    // ponto à frente, mas na mesma altura
+    vetor3d_t pontoTeste = {
+        ent->posicao.x + frente.x * 24.0f, // distância à frente
+        ent->posicao.y + frente.y * 24.0f,
+        ent->posicao.z + 24.0f             // um pouco acima dos pés
+    };
+
+    // desce bastante para procurar piso
+    vetor3d_t pontoFim = {
+        pontoTeste.x,
+        pontoTeste.y,
+        pontoTeste.z - 128.0f
+    };
+
+    float alturaChao;
+    if (mapa_trace_bsp_chao(mapa, pontoTeste, pontoFim, &alturaChao)) {
+        // existe piso visível à frente
+        float delta = alturaChao - ent->posicao.z;
+        return (delta > -STEP_SIZE && delta < STEP_SIZE);
+    }
+
+    // nada encontrado = sem chão
+    return false;
+}
+
 void entidade_projecao3D(camera_t *cam, entidade_t *ent)
 {
     int         i;

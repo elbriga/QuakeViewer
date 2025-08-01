@@ -44,6 +44,7 @@ void entidades_destroy();
 
 vetor3d_t entidade_pos_olho(entidade_t *ent);
 bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, float *dot, float *cross);
+bool entidade_tem_chao_a_frente(mapa_t *mapa, entidade_t *ent);
 
 void entidades_pula(); // kkk
 

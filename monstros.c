@@ -37,6 +37,13 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, floa
             break;
         }
 
+        // checar se há piso antes de andar
+        if (!entidade_tem_chao_a_frente(mapa, monstro)) {
+            monstro->velocidade.x = monstro->velocidade.y = 0;
+            entidade_set_state(monstro, MONSTRO_IDLE); // para na borda
+            break;
+        }
+
         // calcula distância ao player
         vetor3d_t olhoM = entidade_pos_olho(monstro);
         vetor3d_t olhoJ = entidade_pos_olho(jogador);
