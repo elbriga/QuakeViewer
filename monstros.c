@@ -1,6 +1,7 @@
 #include "3d.h"
 #include "entidade.h"
 #include "monstros.h"
+#include "fisica.h"
 
 void monstro_update(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, float deltaTime)
 {
@@ -64,6 +65,8 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, floa
             monstro->velocidade.x = frente.x * vel;
             monstro->velocidade.y = frente.y * vel;
         }
+
+        monstro_ajusta_chao(mapa, monstro);
         break;
 
     case MONSTRO_ATACANDO:
@@ -72,5 +75,27 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, floa
             entidade_set_state(monstro, MONSTRO_ANDANDO);
         }
         break;
+    }
+}
+
+void monstro_ajusta_chao(mapa_t *mapa, entidade_t *ent)
+{
+    // Posição base atual
+    vetor3d_t base = ent->posicao;
+    base.z += STEP_SIZE;
+
+    // Posição desejada (XY atual, mas descendo bastante em Z)
+    vetor3d_t fim = { base.x, base.y, base.z - 128.0f };
+
+    float alturaChao;
+    if (mapa_trace_bsp_chao(mapa, base, fim, &alturaChao)) {
+        float delta = alturaChao - base.z;
+
+        if (delta > -STEP_SIZE && delta < STEP_SIZE) {
+            // ajusta suavemente pro novo piso
+            ent->posicao.z = alturaChao;
+            ent->noChao = 1;
+            ent->velocidade.z = 0;
+        }
     }
 }
