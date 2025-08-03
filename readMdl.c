@@ -258,8 +258,24 @@ obj3d_t *readMdl(char *mdlfilename)
             ret->numAnimIdle = i;
         } else if (!strcmp(ret->framesanims[i].nome, "walk") || !strcmp(ret->framesanims[i].nome, "axrun")) {
             ret->numAnimWalk = i;
-        } else if (!strcmp(ret->framesanims[i].nome, "w_attack") || !strcmp(ret->framesanims[i].nome, "shotatt")) {
-            ret->numAnimAttack = i;
+        } else if (!strcmp(ret->framesanims[i].nome, "w_attack") ||
+                   !strcmp(ret->framesanims[i].nome, "shotatt") ||
+                   !strcmp(ret->framesanims[i].nome, "magica") ||
+                   !strcmp(ret->framesanims[i].nome, "magicb") ||
+                   !strcmp(ret->framesanims[i].nome, "slice") ||
+                   !strcmp(ret->framesanims[i].nome, "smash") ||
+                   !strcmp(ret->framesanims[i].nome, "magicc")
+            ) {
+            if (ret->totAnimAttack < 6)
+                ret->numAnimAttack[ret->totAnimAttack++] = i;
+        } else if (!strcmp(ret->framesanims[i].nome, "death") ||
+                   !strcmp(ret->framesanims[i].nome, "deatha") ||
+                   !strcmp(ret->framesanims[i].nome, "deathb") ||
+                   !strcmp(ret->framesanims[i].nome, "deathc") ||
+                   !strcmp(ret->framesanims[i].nome, "deathd")
+            ) {
+            if (ret->totAnimDeath < 4)
+                ret->numAnimDeath[ret->totAnimDeath++] = i;
         }
     }
 

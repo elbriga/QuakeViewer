@@ -67,7 +67,8 @@ void entidade_set_state(entidade_t *m, entidade_estado_t estado)
     } else if (estado == MONSTRO_ANDANDO) {
         entidade_set_anim(m, m->obj->numAnimWalk);
     } else if (estado == MONSTRO_ATACANDO) {
-        entidade_set_anim(m, m->obj->numAnimAttack);
+        int numAnim = rand() % m->obj->totAnimAttack;
+        entidade_set_anim(m, m->obj->numAnimAttack[numAnim]);
     }
 }
 

@@ -141,7 +141,10 @@ typedef struct
 
     int numAnimIdle;
     int numAnimWalk;
-    int numAnimAttack;
+    int numAnimAttack[6];
+    int totAnimAttack;
+    int numAnimDeath[4];
+    int totAnimDeath;
 
     texture_t   texture;
     skinvert_t *skinmap;
