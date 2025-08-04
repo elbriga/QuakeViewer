@@ -11,10 +11,11 @@ typedef enum {
     MONSTRO_IDLE,
     MONSTRO_VIRANDO,
     MONSTRO_ANDANDO,
-    MONSTRO_ATACANDO
+    MONSTRO_ATACANDO,
+    MONSTRO_MORTO
 } entidade_estado_t;
 
-typedef struct
+typedef struct entidade_s
 {
     int     id; // indice do array, 0 = player
     obj3d_t *obj;
@@ -27,8 +28,13 @@ typedef struct
     int numAnimSel;
     int numAnimSelAuto;
 
-    int vivo;
+    int  vida;
+    bool vivo;
+
     int noChao;
+    
+    struct entidade_s *alvo;
+    bool jaDeuDano;
 
     entidade_estado_t   estado;
     float               tempoEstado;
@@ -45,7 +51,7 @@ void entidades_destroy();
 vetor3d_t entidade_pos_olho(entidade_t *ent);
 bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, float *dot, float *cross);
 bool entidade_tem_chao_a_frente(mapa_t *mapa, entidade_t *ent);
-
+void entidade_aplica_dano(entidade_t *alvo, int dano);
 void entidades_pula(); // kkk
 
 void entidade_projecao3D(camera_t *cam, entidade_t *ent);

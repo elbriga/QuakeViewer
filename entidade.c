@@ -12,10 +12,10 @@
 #include "monstros.h"
 
 obj3d_t *objBase[MAX_OBJS];
-static int totObjs = 0;
+int totObjs = 0;
 
 entidade_t entidades[MAX_ENTIDADES];
-static int totInstances = 0;
+int totInstances = 0;
 
 extern entidade_t *player;
 
@@ -47,12 +47,18 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
 
     memset(ent, 0, sizeof(entidade_t));
 
-    ent->id = novoID;
+    ent->id  = novoID;
     ent->obj = obj_get_base(modelName);
+
     ent->posicao = pos;
     ent->rotacao = ang;
-    ent->vivo = 1;
+
+    ent->vivo = true;
+    ent->vida = 30;
     ent->estado = MONSTRO_IDLE;
+
+    ent->alvo = 0; // Sem alvo
+    ent->jaDeuDano = false;
 
     entidade_set_anim(ent, ent->obj->numAnimIdle);
 }
@@ -63,12 +69,16 @@ void entidade_set_state(entidade_t *m, entidade_estado_t estado)
     m->tempoEstado = 0;
 
     if (estado == MONSTRO_IDLE) {
+        m->alvo = 0;
         entidade_set_anim(m, m->obj->numAnimIdle);
     } else if (estado == MONSTRO_ANDANDO) {
         entidade_set_anim(m, m->obj->numAnimWalk);
     } else if (estado == MONSTRO_ATACANDO) {
         int numAnim = rand() % m->obj->totAnimAttack;
         entidade_set_anim(m, m->obj->numAnimAttack[numAnim]);
+    } else if (estado == MONSTRO_MORTO) {
+        int numAnim = rand() % m->obj->totAnimDeath;
+        entidade_set_anim(m, m->obj->numAnimDeath[numAnim]);
     }
 }
 
@@ -87,7 +97,7 @@ void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime)
         if (i > 0) {
             monstro = &entidades[i];
 
-            monstro_update(mapa, monstro, player, deltaTime);
+            monstro_update(mapa, monstro, deltaTime);
         }
     }
 }
@@ -252,7 +262,12 @@ void entidade_inc_frame(int id)
             ent->numAnimSelAuto = rand() % ent->obj->totAnims;
             ent->numFrameSel = ent->obj->framesanims[ent->numAnimSelAuto].frameI;
         } else {
-            ent->numFrameSel = ent->obj->framesanims[naSel].frameI;
+            if (!ent->vida) {
+                // fim da animacao de morte
+                ent->vivo = 0;
+            } else {
+                ent->numFrameSel = ent->obj->framesanims[naSel].frameI;
+            }
         }
     }
 }
@@ -280,4 +295,15 @@ void entidade_inc_anim(int id)
 {
     entidade_t *ent = &entidades[id];
     entidade_set_anim(ent, ent->numAnimSel + 1);
+}
+
+void entidade_aplica_dano(entidade_t *alvo, int dano)
+{
+    if (alvo->vida <= 0) return;
+
+    alvo->vida -= dano;
+    if (alvo->vida <= 0) {
+        alvo->vida = 0;
+        entidade_set_state(alvo, MONSTRO_MORTO);
+    }
 }
