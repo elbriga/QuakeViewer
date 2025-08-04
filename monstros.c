@@ -22,9 +22,12 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
 
         // Buscar um Alvo!
         for (int i=1; i<totInstances; i++) {
-            if (i == monstro->id || !monstro->vida) continue;
+            if (i == monstro->id) continue;
 
             outroMonstro = &entidades[i];
+            
+            if (!outroMonstro->vida) continue;
+
             ve = entidade_consegue_ver(mapa, monstro, outroMonstro, &dot, &cross);
             if (ve) {
                 // Travar no alvo
