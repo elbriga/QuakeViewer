@@ -305,6 +305,10 @@ void entidade_aplica_dano(entidade_t *origem, entidade_t *alvo, int dano)
 {
     if (alvo->vida <= 0) return;
 
+    if (!strcmp(origem->obj->nome, "shambler")) {
+        dano = dano * 2;
+    }
+
     alvo->vida -= dano;
     if (alvo->vida <= 0) {
         alvo->vida = 0;
