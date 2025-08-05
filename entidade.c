@@ -54,6 +54,10 @@ void entidade_create(char *modelName, vetor3d_t pos, int ang)
     ent->rotacao = (vetor3d_t){ 270, 0, ang };
 
     ent->vida = 100;
+    if (!strcmp(modelName, "shambler")) {
+        ent->vida += 100;
+    }
+
     ent->vivo = true;
     ent->estado = MONSTRO_IDLE;
 
@@ -297,7 +301,7 @@ void entidade_inc_anim(int id)
     entidade_set_anim(ent, ent->numAnimSel + 1);
 }
 
-void entidade_aplica_dano(entidade_t *alvo, int dano)
+void entidade_aplica_dano(entidade_t *origem, entidade_t *alvo, int dano)
 {
     if (alvo->vida <= 0) return;
 
@@ -305,5 +309,11 @@ void entidade_aplica_dano(entidade_t *alvo, int dano)
     if (alvo->vida <= 0) {
         alvo->vida = 0;
         entidade_set_state(alvo, MONSTRO_MORTO);
+    }
+
+    // Revidar!
+    if (alvo->alvo == 0) {
+        alvo->alvo = origem;
+        entidade_set_state(alvo, MONSTRO_VIRANDO);
     }
 }

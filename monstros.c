@@ -97,7 +97,7 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
         if (monstro->tempoEstado > 0.25f && !monstro->jaDeuDano) {
             // no meio da animação do ataque → aplica dano uma vez
             int forca = 5 + (rand() % 10);
-            entidade_aplica_dano(monstro->alvo, forca);
+            entidade_aplica_dano(monstro, monstro->alvo, forca);
             monstro->jaDeuDano = true;
 
             if (!monstro->alvo->vida) {

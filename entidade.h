@@ -51,7 +51,7 @@ void entidades_destroy();
 vetor3d_t entidade_pos_olho(entidade_t *ent);
 bool entidade_consegue_ver(mapa_t *mapa, entidade_t *monstro, entidade_t *jogador, float *dot, float *cross);
 bool entidade_tem_chao_a_frente(mapa_t *mapa, entidade_t *ent);
-void entidade_aplica_dano(entidade_t *alvo, int dano);
+void entidade_aplica_dano(entidade_t *origem, entidade_t *alvo, int dano);
 void entidades_pula(); // kkk
 
 void entidade_projecao3D(camera_t *cam, entidade_t *ent);
