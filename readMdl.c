@@ -256,6 +256,7 @@ obj3d_t *readMdl(char *modelName)
     fclose(fp);
 
     // Anims
+    // TODO run e pain
     for (int i=0; i<ret->totAnims; i++) {
         if (!strcmp(ret->framesanims[i].nome, "stand")) {
             ret->numAnimIdle = i;
@@ -264,6 +265,7 @@ obj3d_t *readMdl(char *modelName)
             ret->numAnimWalk = i;
         } else if (!strcmp(ret->framesanims[i].nome, "w_attack") ||
                    !strcmp(ret->framesanims[i].nome, "shotatt") ||
+                   !strcmp(ret->framesanims[i].nome, "shoot") ||
                    !strcmp(ret->framesanims[i].nome, "attack") ||
                    !strcmp(ret->framesanims[i].nome, "atta") ||
                    !strcmp(ret->framesanims[i].nome, "attb") ||
