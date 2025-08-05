@@ -139,11 +139,16 @@ void monstro_ajusta_chao(mapa_t *mapa, entidade_t *ent)
 
 void monstro_novo(mapa_t *mapa)
 {
-    char models[5][16] = {
+    char models[10][16] = {
+        "demon",
+        "dog",
         "enforcer",
         "hknight",
+        "knight",
         "ogre",
         "shambler",
+        "soldier",
+        "tarbaby",
         "zombie"
     };
 
@@ -154,6 +159,6 @@ void monstro_novo(mapa_t *mapa)
         return;
     }
 
-    int modelNum = rand() % 5;
+    int modelNum = rand() % 10;
     entidade_create(models[modelNum], pos, rand() % 360);
 }
