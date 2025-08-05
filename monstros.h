@@ -6,5 +6,6 @@
 
 void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime);
 void monstro_ajusta_chao(mapa_t *mapa, entidade_t *ent);
+void monstro_novo(mapa_t *mapa);
 
 #endif

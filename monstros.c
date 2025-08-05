@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "3d.h"
@@ -134,4 +135,25 @@ void monstro_ajusta_chao(mapa_t *mapa, entidade_t *ent)
             ent->velocidade.z = 0;
         }
     }
+}
+
+void monstro_novo(mapa_t *mapa)
+{
+    char models[5][16] = {
+        "enforcer",
+        "hknight",
+        "ogre",
+        "shambler",
+        "zombie"
+    };
+
+    // Achar uma Posicao
+    vetor3d_t pos = mapa_acha_posicao_spawn(mapa);
+    if (!pos.x && !pos.y && !pos.z) {
+        printf("Nao achei posicao!\n\n");
+        return;
+    }
+
+    int modelNum = rand() % 5;
+    entidade_create(models[modelNum], pos, rand() % 360);
 }
