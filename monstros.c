@@ -40,7 +40,7 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
 
     case MONSTRO_VIRANDO:
         ve = entidade_consegue_ver(mapa, monstro, monstro->alvo, &dot, &cross);
-        if (!ve) {
+        if (monstro->tempoEstado > 4.0f && !ve) {
             entidade_set_state(monstro, MONSTRO_IDLE);
             break;
         }
