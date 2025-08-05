@@ -125,6 +125,8 @@ bool mapa_trace_bsp_chao(mapa_t *mapa, vetor3d_t de, vetor3d_t para, float *altu
     // percorre faces do mapa (ou use o BSP traversal)
     face_t *face = mapa->faces;
     for (int i = 0; i < mapa->numfaces; i++, face++) {
+		// Chao sempre tem side = 0!
+		if (face->side) continue;
         
         if (!mapa_face_solida(face)) continue;
 
@@ -148,6 +150,39 @@ bool mapa_trace_bsp_chao(mapa_t *mapa, vetor3d_t de, vetor3d_t para, float *altu
     }
 
     return false;
+}
+
+vetor3d_t mapa_acha_posicao_spawn(mapa_t *mapa)
+{
+    for (int tentativas = 0; tentativas < 100; tentativas++) {
+        // 1. pega limites globais do mapa
+        float minX = mapa->bbMin.x;
+        float maxX = mapa->bbMax.x;
+        float minY = mapa->bbMin.y;
+        float maxY = mapa->bbMax.y;
+
+        // 2. gera ponto aleatório
+        float x = minX + (rand() / (float)RAND_MAX) * (maxX - minX);
+        float y = minY + (rand() / (float)RAND_MAX) * (maxY - minY);
+        float z = mapa->bbMax.z; // começa lá em cima
+
+        vetor3d_t origem = { x, y, z };
+        vetor3d_t fim    = { x, y, mapa->bbMin.z - 512.0f };
+
+        // 3. trace vertical para achar piso
+        float alturaChao;
+        if (!mapa_trace_bsp_chao(mapa, origem, fim, &alturaChao))
+            continue; // nada sólido embaixo
+
+        // 4. testa se o ponto está dentro de sólido
+        vetor3d_t pos = { x, y, alturaChao };
+        // if (mapa_ponto_em_solido(mapa, pos))
+        //     continue;
+
+        return pos;
+    }
+
+    return (vetor3d_t){ 0,0,0 }; // não achou lugar válido
 }
 
 /*
