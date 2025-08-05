@@ -5,12 +5,15 @@
 #include "3d.h"
 #include "readMdl.h"
 
-obj3d_t *readMdl(char *mdlfilename)
+obj3d_t *readMdl(char *modelName)
 {
     obj3d_t *ret;
 
     FILE *fp;
     mdl_t header;
+
+    char mdlfilename[128];
+    sprintf(mdlfilename, "data/models/%s.mdl", modelName);
 
     fp = fopen(mdlfilename, "rb");
 
@@ -26,7 +29,7 @@ obj3d_t *readMdl(char *mdlfilename)
         return NULL;
     }
 
-    printf("Carregando modelo [%s]\n", mdlfilename);
+    printf("Carregando modelo [%s]\n", modelName);
 
     printf("Scale.....: %f %f %f\n", header.scale[0], header.scale[1], header.scale[2]);
     printf("ScaleOrg..: %f %f %f\n", header.scale_origin[0], header.scale_origin[1], header.scale_origin[2]);
@@ -50,7 +53,7 @@ obj3d_t *readMdl(char *mdlfilename)
         return NULL;
     }
 
-    strncpy(ret->nome, mdlfilename, 64);
+    strncpy(ret->nome, modelName, 64);
     ret->numframes = header.numframes;
     ret->numverts  = header.numverts;
     ret->numtris   = header.numtris;
@@ -256,27 +259,41 @@ obj3d_t *readMdl(char *mdlfilename)
     for (int i=0; i<ret->totAnims; i++) {
         if (!strcmp(ret->framesanims[i].nome, "stand")) {
             ret->numAnimIdle = i;
-        } else if (!strcmp(ret->framesanims[i].nome, "walk") || !strcmp(ret->framesanims[i].nome, "axrun")) {
+        } else if (!strcmp(ret->framesanims[i].nome, "walk") ||
+                   !strcmp(ret->framesanims[i].nome, "axrun")) {
             ret->numAnimWalk = i;
         } else if (!strcmp(ret->framesanims[i].nome, "w_attack") ||
                    !strcmp(ret->framesanims[i].nome, "shotatt") ||
+                   !strcmp(ret->framesanims[i].nome, "attack") ||
+                   !strcmp(ret->framesanims[i].nome, "atta") ||
+                   !strcmp(ret->framesanims[i].nome, "attb") ||
+                   !strcmp(ret->framesanims[i].nome, "attc") ||
+                   !strcmp(ret->framesanims[i].nome, "magic") ||
                    !strcmp(ret->framesanims[i].nome, "magica") ||
                    !strcmp(ret->framesanims[i].nome, "magicb") ||
                    !strcmp(ret->framesanims[i].nome, "slice") ||
                    !strcmp(ret->framesanims[i].nome, "smash") ||
-                   !strcmp(ret->framesanims[i].nome, "magicc")
-            ) {
+                   !strcmp(ret->framesanims[i].nome, "magicc")) {
             if (ret->totAnimAttack < 6)
                 ret->numAnimAttack[ret->totAnimAttack++] = i;
         } else if (!strcmp(ret->framesanims[i].nome, "death") ||
                    !strcmp(ret->framesanims[i].nome, "deatha") ||
                    !strcmp(ret->framesanims[i].nome, "deathb") ||
                    !strcmp(ret->framesanims[i].nome, "deathc") ||
-                   !strcmp(ret->framesanims[i].nome, "deathd")
-            ) {
+                   !strcmp(ret->framesanims[i].nome, "cruc_") ||
+                   !strcmp(ret->framesanims[i].nome, "deathd")) {
             if (ret->totAnimDeath < 4)
                 ret->numAnimDeath[ret->totAnimDeath++] = i;
         }
+    }
+
+    if (!ret->totAnimAttack) {
+        printf("\n\nModel %s sem anim de ATTACK\n\n", mdlfilename);
+        ret->numAnimAttack[ret->totAnimAttack++] = 0;
+    }
+    if (!ret->totAnimDeath) {
+        printf("\n\nModel %s sem anim de DEATH\n\n", mdlfilename);
+        ret->numAnimDeath[ret->totAnimDeath++] = 0;
     }
 
     obj_calculate_face_normals(ret);
