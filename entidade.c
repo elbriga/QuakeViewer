@@ -38,7 +38,7 @@ obj3d_t *obj_get_base(char *modelName)
     return objBase[idNovo];
 }
 
-void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
+void entidade_create(char *modelName, vetor3d_t pos, int ang)
 {
     if (totInstances >= MAX_ENTIDADES) return; // TODO - erro
 
@@ -51,10 +51,10 @@ void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang)
     ent->obj = obj_get_base(modelName);
 
     ent->posicao = pos;
-    ent->rotacao = ang;
+    ent->rotacao = (vetor3d_t){ 270, 0, ang };
 
+    ent->vida = 100;
     ent->vivo = true;
-    ent->vida = 30;
     ent->estado = MONSTRO_IDLE;
 
     ent->alvo = 0; // Sem alvo

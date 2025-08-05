@@ -43,7 +43,7 @@ typedef struct entidade_s
 entidade_t *entidade_get(int id);
 void entidade_set_state(entidade_t *m, entidade_estado_t estado);
 
-void entidade_create(char *modelName, vetor3d_t pos, vetor3d_t ang);
+void entidade_create(char *modelName, vetor3d_t pos, int ang);
 void entidades_render(mapa_t *mapa, camera_t *cam);
 void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime);
 void entidades_destroy();

@@ -19,6 +19,7 @@
 #include "render.h"
 #include "mapa.h"
 #include "entidade.h"
+#include "monstros.h"
 
 int janX = 1600, janY = 800;
 
@@ -35,8 +36,8 @@ float tempo_de_jogo = 0.0f;
 int _debug = 0;
 int _lightON = 1;
 int _showRendering = 0;
-int _showBBox = 1;
-int _showMap2D = 1;
+int _showBBox = 0;
+int _showMap2D = 0;
 float _lightFactor = 2.0;
 extern int FOV;
 
@@ -197,17 +198,14 @@ int loadData()
 
 	// entidades[0] = player
 	vetor3d_t playerPos = mapa->player_start;
-	vetor3d_t playerAng = { 270, 0, mapa->player_start_angle };
-	entidade_create("data/models/player.mdl", playerPos, playerAng);
+	entidade_create("player", playerPos, mapa->player_start_angle);
 
 // Testes
 vetor3d_t pos = { 544, -650, 42 };
-vetor3d_t ang = { 270,    0, 90 };
-entidade_create("data/models/hknight.mdl", pos, ang);
+entidade_create("hknight", pos, 90);
 
-pos.y += 100;
-ang.z  = 270;
-entidade_create("data/models/hknight.mdl", pos, ang);
+pos.y += 200;
+entidade_create("enforcer", pos, 270);
 
 	player = entidade_get(0);
 
@@ -304,9 +302,16 @@ int loopPrincipal()
 		else if (c == 'e') _lightON       = 1 - _lightON;
 		else if (c == '2') _showRendering = 1 - _showRendering;
 		else if (c == '3') _showMap2D     = 1 - _showMap2D;
-		else if (c == '5') _showBBox      = 1 - _showBBox;
+		else if (c == '4') _showBBox      = 1 - _showBBox;
 
-		else if (c == '4') cam.ang.y -= 180;
+		else if (c == '5') cam.ang.x += 10;
+		else if (c == '6') cam.ang.x -= 10;
+
+		else if (c == '7') monstro_novo(mapa);
+		else if (c == '8') {
+			for(int z=0; z<50; z++)
+				monstro_novo(mapa);
+		}
 
 		else if (c == '\\') {
 			entidade_dec_anim(0);
@@ -332,16 +337,14 @@ int loopPrincipal()
 			pos.x += sin(angRads) * 50;
 			pos.y += cos(angRads) * 50;
 			pos.z += 100;
-			vetor3d_t ang = { 270, 0, 90 };
-			entidade_create("data/models/ogre.mdl", pos, ang);
+			entidade_create("ogre", pos, 90);
 		} else if (c == 'm') {
 			vetor3d_t pos = cam.pos;
 			float angRads = to_radians(cam.ang.y);
 			pos.x += sin(angRads) * 50;
 			pos.y += cos(angRads) * 50;
 			pos.z += 100;
-			vetor3d_t ang = { 270, 0, 90 };
-			entidade_create("data/models/shambler.mdl", pos, ang);
+			entidade_create("shambler", pos, 90);
 		} else if (c == 'p') {
 			// Pulo!!
 			entidades_pula();
