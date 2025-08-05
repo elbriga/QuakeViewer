@@ -68,8 +68,9 @@ void camera_step(camera_t *cam, int step, mapa_t *mapa)
     double anguloRad = to_radians(cam->ang.y);
     float newPX = cam->pos.x - sin(anguloRad) * step;
     float newPY = cam->pos.y - cos(anguloRad) * step;
+    bool estaFora = !mapa_canMoveTo(cam->pos.x, cam->pos.y, cam->pos.z, mapa);
 
-    if (mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
+    if (estaFora || mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
         cam->pos.x = newPX;
         cam->pos.y = newPY;
     }
@@ -80,8 +81,9 @@ void camera_strafe(camera_t *cam, int step, mapa_t *mapa)
     double anguloRad = to_radians(cam->ang.y);
     float newPX = cam->pos.x - cos(anguloRad) * step;
     float newPY = cam->pos.y + sin(anguloRad) * step;
+    bool estaFora = !mapa_canMoveTo(cam->pos.x, cam->pos.y, cam->pos.z, mapa);
 
-    if (mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
+    if (estaFora || mapa_canMoveTo(newPX, newPY, cam->pos.z, mapa)) {
         cam->pos.x = newPX;
         cam->pos.y = newPY;
     }
