@@ -60,7 +60,7 @@ float vetor_dot_product(vetor3d_t a, vetor3d_t b)
 
 void camera_pitch(camera_t *cam, int step)
 {
-    cam->ang.y = (int)(cam->ang.y + step) % 360;
+    cam->ang.y = (int)(cam->ang.y + step + 360) % 360;
 }
 
 void camera_step(camera_t *cam, int step, mapa_t *mapa)
