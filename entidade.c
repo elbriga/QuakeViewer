@@ -72,17 +72,26 @@ void entidade_set_state(entidade_t *m, entidade_estado_t estado)
     m->estado      = estado;
     m->tempoEstado = 0;
 
-    if (estado == MONSTRO_IDLE) {
-        m->alvo = 0;
-        entidade_set_anim(m, m->obj->numAnimIdle);
-    } else if (estado == MONSTRO_ANDANDO) {
-        entidade_set_anim(m, m->obj->numAnimWalk);
-    } else if (estado == MONSTRO_ATACANDO) {
-        int numAnim = rand() % m->obj->totAnimAttack;
-        entidade_set_anim(m, m->obj->numAnimAttack[numAnim]);
-    } else if (estado == MONSTRO_MORTO) {
-        int numAnim = rand() % m->obj->totAnimDeath;
-        entidade_set_anim(m, m->obj->numAnimDeath[numAnim]);
+    switch (estado) {
+        case MONSTRO_IDLE:
+            m->alvo = 0;
+            entidade_set_anim(m, m->obj->numAnimIdle);
+            break;
+        
+        case MONSTRO_ANDANDO:
+        case MONSTRO_PASSEANDO:
+            entidade_set_anim(m, m->obj->numAnimWalk);
+            break;
+        
+        case MONSTRO_ATACANDO: {
+            int numAnim = rand() % m->obj->totAnimAttack;
+            entidade_set_anim(m, m->obj->numAnimAttack[numAnim]);
+        } break;
+        
+        case MONSTRO_MORTO: {
+            int numAnim = rand() % m->obj->totAnimDeath;
+            entidade_set_anim(m, m->obj->numAnimDeath[numAnim]);
+        } break;
     }
 }
 
