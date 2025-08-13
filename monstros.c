@@ -1,13 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "3d.h"
 #include "entidade.h"
 #include "monstros.h"
+#include "mapa.h"
 #include "fisica.h"
 
 extern entidade_t entidades[MAX_ENTIDADES];
 extern int totInstances;
+
+void monstro_busca_alvo(entidade_t *monstro, mapa_t *mapa)
+{
+    bool ve;
+    float dot, cross;
+    entidade_t *outroMonstro;
+
+    // Buscar um Alvo!
+    for (int i=1; i<totInstances; i++) {
+        if (i == monstro->id) continue;
+
+        outroMonstro = &entidades[i];
+        
+        if (!outroMonstro->vida) continue;
+
+        ve = entidade_consegue_ver(mapa, monstro, outroMonstro, &dot, &cross);
+        if (ve) {
+            // Travar no alvo
+            monstro->alvo = outroMonstro;
+            entidade_set_state(monstro, MONSTRO_VIRANDO);
+        }
+    }
+}
 
 void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
 {
@@ -21,22 +46,69 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
     case MONSTRO_IDLE:
         monstro->velocidade.x = monstro->velocidade.y = 0;
 
-        // Buscar um Alvo!
-        for (int i=1; i<totInstances; i++) {
-            if (i == monstro->id) continue;
-
-            outroMonstro = &entidades[i];
-            
-            if (!outroMonstro->vida) continue;
-
-            ve = entidade_consegue_ver(mapa, monstro, outroMonstro, &dot, &cross);
-            if (ve) {
-                // Travar no alvo
-                monstro->alvo = outroMonstro;
-                entidade_set_state(monstro, MONSTRO_VIRANDO);
+        // chance de começar a andar após ficar parado
+        if (monstro->tempoEstado > 2.0f) { // parado por 2s
+            if ((rand() % 100) < 10) {   // 10% de chance a cada frame
+                monstro->direcaoIdle = (float)(rand() % 360); // ângulo aleatório
+                monstro->tempoAndando = 111.0f + (rand() % 900) / 100.0f; // 1.0 a 10.0s
+                entidade_set_state(monstro, MONSTRO_PASSEANDO_VIRANDO);
             }
         }
+
+        monstro_busca_alvo(monstro, mapa);
         break;
+    
+    case MONSTRO_PASSEANDO_VIRANDO: {
+        monstro->velocidade.x = monstro->velocidade.y = 0;
+
+        float atual = monstro->rotacao.z;
+        float alvo  = monstro->direcaoIdle;
+        float step  = 60.0f * deltaTime; // velocidade de rotação
+
+        // Normaliza ângulos para [0, 360)
+        while (atual < 0)     atual += 360;
+        while (atual >= 360)  atual -= 360;
+        while (alvo < 0)      alvo += 360;
+        while (alvo >= 360)   alvo -= 360;
+
+        // Calcula diferença entre ângulos
+        float diff = alvo - atual;
+
+        // Ajusta para menor ângulo (-180 a 180)
+        if (diff > 180)  diff -= 360;
+        if (diff < -180) diff += 360;
+
+        if (fabsf(diff) < 15.0f) {
+            monstro->rotacao.z = alvo;
+            entidade_set_state(monstro, MONSTRO_PASSEANDO);
+        } else {
+            monstro->rotacao.z += (diff > 0 ? step : -step);
+        }
+
+        // procura inimigo durante o passeio também
+        monstro_busca_alvo(monstro, mapa);
+    }
+    break;
+
+    
+    case MONSTRO_PASSEANDO: {
+        vetor3d_t frente = angulo_para_direcao(monstro->direcaoIdle, 0);
+        float vel = 60.0f; // mais lento que perseguindo
+
+        monstro->velocidade.x = frente.x * vel;
+        monstro->velocidade.y = frente.y * vel;
+
+        monstro->tempoAndando -= deltaTime;
+
+        // se acabou o tempo ou encontrou obstáculo → volta pro idle
+        if (monstro->tempoAndando <= 0 || !entidade_tem_chao_a_frente(mapa, monstro)) {
+            entidade_set_state(monstro, MONSTRO_IDLE);
+            break;
+        }
+
+        // procura inimigo durante o passeio também
+        monstro_busca_alvo(monstro, mapa);
+    } break;
 
     case MONSTRO_VIRANDO:
         ve = entidade_consegue_ver(mapa, monstro, monstro->alvo, &dot, &cross);
@@ -44,7 +116,7 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
             entidade_set_state(monstro, MONSTRO_IDLE);
             break;
         }
-        if (dot < 0.97f) {
+        if (dot < 0.94f) {
             float velRot = 120.0f * deltaTime;
             if (cross > 0) monstro->rotacao.z += velRot;
             else           monstro->rotacao.z -= velRot;
@@ -67,7 +139,7 @@ void monstro_update(mapa_t *mapa, entidade_t *monstro, float deltaTime)
             break;
         }
 
-        // calcula distância ao player
+        // calcula distância ao alvo
         vetor3d_t olhoM = entidade_pos_olho(monstro);
         vetor3d_t olhoJ = entidade_pos_olho(monstro->alvo);
         float dx = olhoJ.x - olhoM.x;

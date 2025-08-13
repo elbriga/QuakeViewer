@@ -9,6 +9,8 @@
 
 typedef enum {
     MONSTRO_IDLE,
+    MONSTRO_PASSEANDO,
+    MONSTRO_PASSEANDO_VIRANDO,
     MONSTRO_VIRANDO,
     MONSTRO_ANDANDO,
     MONSTRO_ATACANDO,
@@ -32,6 +34,7 @@ typedef struct entidade_s
     bool vivo;
 
     int noChao;
+    int direcaoIdle, tempoAndando;
     
     struct entidade_s *alvo;
     bool jaDeuDano;
