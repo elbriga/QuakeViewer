@@ -11,8 +11,7 @@
 #include "grafico.h"
 #include "monstros.h"
 
-obj3d_t *objBase[MAX_OBJS];
-int totObjs = 0;
+obj3d_t *objBaseList = NULL; // Linked list
 
 entidade_t entidades[MAX_ENTIDADES];
 int totInstances = 0;
@@ -26,17 +25,22 @@ entidade_t *entidade_get(int id)
 
 obj3d_t *obj_get_base(char *modelName)
 {
-    // Verificar se ja esta carregado
-    for(int i=0; i<totObjs; i++)
-        if (!strcmp(modelName, objBase[i]->nome))
-            return objBase[i];
-        
-    // Carregar novo obj base
-    int idNovo = totObjs++;
-    objBase[idNovo] = readMdl(modelName);
+    obj3d_t **pp = &objBaseList;
 
-    return objBase[idNovo];
+    // procurar na lista
+    while (*pp) {
+        if (!strcmp(modelName, (*pp)->nome))
+            return *pp;
+        pp = &(*pp)->next;
+    }
+
+    // não achou -> cria novo e adiciona no fim
+    *pp = readMdl(modelName);
+    (*pp)->next = NULL;
+
+    return *pp;
 }
+
 
 void entidade_create(char *modelName, vetor3d_t pos, int ang)
 {
@@ -126,8 +130,13 @@ void entidades_render(mapa_t *mapa, camera_t *cam)
 
 void entidades_destroy()
 {
-    for(int i=0; i<totObjs; i++)
-        freeObj3D(objBase[i]);
+    obj3d_t *obj = objBaseList, *next = NULL;
+
+    while(obj) {
+        next = obj->next;
+        freeObj3D(obj);
+        obj = next;
+    }
 }
 
 void entidades_pula()

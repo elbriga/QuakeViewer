@@ -127,8 +127,9 @@ typedef struct mleaf_s
 	// byte		ambient_sound_level[NUM_AMBIENTS];
 } leaf_t;
 
-typedef struct
+typedef struct obj3d_s
 {
+    struct obj3d_s *next;
     char nome[64];
 
     int numverts;

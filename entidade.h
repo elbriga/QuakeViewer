@@ -4,7 +4,6 @@
 #include "3d.h"
 #include "mapa.h"
 
-#define MAX_OBJS        32
 #define MAX_ENTIDADES   1024
 
 typedef enum {
