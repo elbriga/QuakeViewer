@@ -140,13 +140,21 @@ void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime)
             entidade_inc_frame(ent);
         }
 
+        entidade_t *prox = ent->next; // salva antes pois a funcao abaixo pode remover
+        
         fisica_update_entidade(mapa, ent, deltaTime);
 
         if (ent != entList) { // pular o player
             monstro_update(mapa, ent, deltaTime);
         }
 
-        ent = ent->next;
+        if (ent->posicao.z < -9999.0f) {
+            // caiu no void!
+            printf("caiu no void!\n");
+            entidade_destroy(ent);
+        }
+
+        ent = prox;
     }
 }
 
