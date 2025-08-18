@@ -13,14 +13,22 @@
 
 obj3d_t *objBaseList = NULL; // Linked list
 
-entidade_t entidades[MAX_ENTIDADES];
-int totInstances = 0;
+int proxID = 0;
+entidade_t *entList = NULL; // Linked list
 
 extern entidade_t *player;
 
 entidade_t *entidade_get(int id)
 {
-    return (id < 0 || id >= totInstances) ? NULL : &entidades[id];
+    entidade_t *ent = entList;
+
+    while (ent) {
+        if (ent->id == id)
+            return ent;
+        ent = ent->next;
+    }
+
+    return NULL;
 }
 
 obj3d_t *obj_get_base(char *modelName)
@@ -41,34 +49,59 @@ obj3d_t *obj_get_base(char *modelName)
     return *pp;
 }
 
-
 void entidade_create(char *modelName, vetor3d_t pos, int ang)
 {
-    if (totInstances >= MAX_ENTIDADES) return; // TODO - erro
+    // aloca nova entidade
+    entidade_t *nova = malloc(sizeof(entidade_t));
+    if (!nova) return; // TODO: tratar erro
 
-    int novoID = totInstances++;
-    entidade_t *ent = &entidades[novoID];
+    memset(nova, 0, sizeof(entidade_t));
 
-    memset(ent, 0, sizeof(entidade_t));
+    // inicializa os campos
+    nova->id  = proxID++;
+    nova->obj = obj_get_base(modelName);
 
-    ent->id  = novoID;
-    ent->obj = obj_get_base(modelName);
+    nova->posicao = pos;
+    nova->rotacao = (vetor3d_t){ 270, 0, ang };
 
-    ent->posicao = pos;
-    ent->rotacao = (vetor3d_t){ 270, 0, ang };
-
-    ent->vida = 100;
+    nova->vida = 100;
     if (!strcmp(modelName, "shambler")) {
-        ent->vida += 100;
+        nova->vida += 100;
     }
 
-    ent->vivo = true;
-    ent->estado = MONSTRO_IDLE;
+    nova->vivo   = true;
+    nova->estado = MONSTRO_IDLE;
 
-    ent->alvo = 0; // Sem alvo
-    ent->jaDeuDano = false;
+    nova->alvo       = 0;
+    nova->jaDeuDano  = false;
 
-    entidade_set_anim(ent, ent->obj->numAnimIdle);
+    entidade_set_anim(nova, nova->obj->numAnimIdle);
+
+    // insere no fim da lista
+    nova->next = NULL;
+    entidade_t **pp = &entList;
+
+    // acha o último ponteiro da lista (ou a raiz, se estiver vazia)
+    while (*pp)
+        pp = &(*pp)->next;
+
+    // liga o novo nó
+    *pp = nova;
+}
+
+void entidade_destroy(entidade_t *ent)
+{
+    entidade_t **pp = &entList;
+
+    while (*pp) {
+        if (*pp == ent) {
+            // achou -> remove da lista
+            *pp = ent->next;
+            free(ent);
+            return;
+        }
+        pp = &(*pp)->next;
+    }
 }
 
 void entidade_set_state(entidade_t *m, entidade_estado_t estado)
@@ -101,50 +134,54 @@ void entidade_set_state(entidade_t *m, entidade_estado_t estado)
 
 void entidades_update(mapa_t *mapa, camera_t *cam, float deltaTime)
 {
-    int i;
-    entidade_t *monstro;
-
-    for (i=0; i < totInstances; i++) {
-        if (entidades[i].vivo) {
-            entidade_inc_frame(i);
+    entidade_t *ent = entList;
+    while (ent) {
+        if (ent->vivo) {
+            entidade_inc_frame(ent);
         }
 
-        fisica_update_entidade(mapa, &entidades[i], deltaTime);
+        fisica_update_entidade(mapa, ent, deltaTime);
 
-        if (i > 0) {
-            monstro = &entidades[i];
-
-            monstro_update(mapa, monstro, deltaTime);
+        if (ent != entList) { // pular o player
+            monstro_update(mapa, ent, deltaTime);
         }
+
+        ent = ent->next;
     }
 }
 
 void entidades_render(mapa_t *mapa, camera_t *cam)
 {
-    int i;
-
-    for (i=0; i < totInstances; i++) {
-        render_desenha_entidade(cam, &entidades[i]);
+    entidade_t *ent = entList;
+    while (ent) {
+        render_desenha_entidade(cam, ent);
+        ent = ent->next;
     }
 }
 
 void entidades_destroy()
 {
-    obj3d_t *obj = objBaseList, *next = NULL;
-
+    obj3d_t *obj = objBaseList, *next;
     while(obj) {
         next = obj->next;
         freeObj3D(obj);
         obj = next;
     }
+
+    entidade_t *ent = entList, *prox;
+    while (ent) {
+        prox = ent->next;
+        free(ent);
+        ent = prox;
+    }
 }
 
 void entidades_pula()
 {
-    int i;
-
-    for (i=0; i < totInstances; i++) {
-        entidades[i].posicao.z += 100;
+    entidade_t *ent = entList;
+    while (ent) {
+        ent->posicao.z += 100;
+        ent = ent->next;
     }
 }
 
@@ -272,10 +309,8 @@ void entidade_projecao3D(camera_t *cam, entidade_t *ent)
     }
 }
 
-void entidade_inc_frame(int id)
+void entidade_inc_frame(entidade_t *ent)
 {
-    entidade_t *ent = &entidades[id];
-
     ent->numFrameSel++;
 
     int naSel = (ent->numAnimSel == -1) ? ent->numAnimSelAuto : ent->numAnimSel;
@@ -307,15 +342,13 @@ void entidade_set_anim(entidade_t *ent, int num)
     ent->numFrameSel = ent->obj->framesanims[naSel].frameI;
 }
 
-void entidade_dec_anim(int id)
+void entidade_dec_anim(entidade_t *ent)
 {
-    entidade_t *ent = &entidades[id];
     entidade_set_anim(ent, ent->numAnimSel - 1);
 }
 
-void entidade_inc_anim(int id)
+void entidade_inc_anim(entidade_t *ent)
 {
-    entidade_t *ent = &entidades[id];
     entidade_set_anim(ent, ent->numAnimSel + 1);
 }
 

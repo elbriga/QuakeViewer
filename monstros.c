@@ -8,29 +8,26 @@
 #include "mapa.h"
 #include "fisica.h"
 
-extern entidade_t entidades[MAX_ENTIDADES];
-extern int totInstances;
+extern entidade_t *entList;
 
 void monstro_busca_alvo(entidade_t *monstro, mapa_t *mapa)
 {
     bool ve;
     float dot, cross;
-    entidade_t *outroMonstro;
 
     // Buscar um Alvo!
-    for (int i=1; i<totInstances; i++) {
-        if (i == monstro->id) continue;
-
-        outroMonstro = &entidades[i];
-        
-        if (!outroMonstro->vida) continue;
-
-        ve = entidade_consegue_ver(mapa, monstro, outroMonstro, &dot, &cross);
-        if (ve) {
-            // Travar no alvo
-            monstro->alvo = outroMonstro;
-            entidade_set_state(monstro, MONSTRO_VIRANDO);
+    entidade_t *outroMonstro = entList->next; // pular o player
+    while (outroMonstro) {
+        if (outroMonstro != monstro && outroMonstro->vida > 0) {
+            ve = entidade_consegue_ver(mapa, monstro, outroMonstro, &dot, &cross);
+            if (ve) {
+                // Travar no alvo
+                monstro->alvo = outroMonstro;
+                entidade_set_state(monstro, MONSTRO_VIRANDO);
+            }
         }
+
+        outroMonstro = outroMonstro->next;
     }
 }
 
